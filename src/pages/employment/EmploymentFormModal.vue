@@ -1,364 +1,189 @@
 <template>
-  <BaseFormModal
-    :title="modalTitle"
-    :is-loading="isLoading"
-    size="xl"
-    @close="closeModal"
-    @save="submitForm"
+  <div
+    class="modal fade show d-block"
+    tabindex="-1"
+    role="dialog"
+    @click.self="closeModal"
   >
-    <form @submit.prevent="submitForm" id="userForm" class="p-1">
-      <div class="row">
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">
-            Nama Lengkap <span class="text-danger">*</span>
-          </label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.nama"
-            :class="{ 'is-invalid': formErrors.nama }"
-            placeholder="Nama lengkap pegawai"
-            required
-          />
-          <div class="invalid-feedback">{{ formErrors.nama }}</div>
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h5 class="modal-title">{{ modalTitle }}</h5>
+          <button
+            type="button"
+            class="btn-close"
+            @click="closeModal"
+            :disabled="isLoading"
+          ></button>
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Gelar Depan</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.gelardepan"
-            placeholder="Contoh: Dr., Ir."
-          />
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Gelar Belakang</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.gelarbelakang"
-            placeholder="Contoh: S.Kom, M.M."
-          />
-        </div>
-
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">NIK</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.nik"
-            placeholder="Nomor Induk Kependudukan"
-          />
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">NIP</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.nip"
-            placeholder="Nomor Induk Pegawai"
-          />
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">
-            Email <span class="text-danger">*</span>
-          </label>
-          <input
-            type="email"
-            class="form-control"
-            v-model="formData.email"
-            :class="{ 'is-invalid': formErrors.email }"
-            placeholder="email@instansi.go.id"
-            required
-          />
-          <div class="invalid-feedback">{{ formErrors.email }}</div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">No. Telepon</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.telp"
-            placeholder="08xxxxxxxx"
-          />
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">No. Karpeg</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.no_karpeg"
-            placeholder="Kartu Pegawai"
-          />
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">
-            Level / Role <span class="text-danger">*</span>
-          </label>
-          <select
-            class="form-select"
-            v-model="formData.idlevel"
-            :class="{ 'is-invalid': formErrors.idlevel }"
-            required
+        <!-- Modal Body with Wizard -->
+        <div class="modal-body">
+          <Wizard
+            ref="wizardRef"
+            :custom-tabs="wizardTabs"
+            :beforeChange="onTabBeforeChange"
+            @change="onChangeCurrentTab"
+            @complete:wizard="wizardCompleted"
+            card-background
+            :next-button-text="'Selanjutnya'"
+            :back-button-text="'Sebelumnya'"
+            :finish-button-text="'Selesai'"
           >
-            <option value="" disabled>
-              {{ rolesLoading ? "Memuat..." : "Pilih Level" }}
-            </option>
-            <option
-              v-for="role in roleOptions"
-              :key="role.idlevel"
-              :value="role.idlevel"
-            >
-              {{ role.namalevel }}
-            </option>
-          </select>
-          <div class="invalid-feedback">{{ formErrors.idlevel }}</div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold d-block">Status Akun</label>
-          <div class="form-check form-switch mt-2">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              role="switch"
-              id="statusSwitch"
-              v-model="formData.status"
-              true-value="Aktif"
-              false-value="Tidak Aktif"
-            />
-            <label class="form-check-label" for="statusSwitch">
-              {{ formData.status || "Tidak Aktif" }}
-            </label>
-          </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Tempat Lahir</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="formData.tempatlahir"
-            placeholder="Kota kelahiran"
-          />
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Tanggal Lahir</label>
-          <input
-            type="date"
-            class="form-control"
-            v-model="formData.tanggallahir"
-          />
-        </div>
-
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">Alamat Lengkap</label>
-          <textarea
-            class="form-control"
-            v-model="formData.alamat"
-            placeholder="Jalan, RT/RW, Dusun..."
-            rows="2"
-          ></textarea>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Provinsi</label>
-          <select
-            class="form-select"
-            v-model="formData.kodepropinsi"
-            :disabled="regionsLoading"
-          >
-            <option value="" disabled>
-              {{ regionsLoading ? "Memuat..." : "Pilih Provinsi" }}
-            </option>
-            <template v-if="!regionsLoading">
-              <option
-                v-for="prov in provinceOptions"
-                :key="prov.idwilayah"
-                :value="prov.kodewilayah"
-              >
-                {{ prov.kodewilayah }} - {{ prov.namawilayah }}
-              </option>
-            </template>
-          </select>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Kabupaten</label>
-          <select
-            class="form-select"
-            v-model="formData.kodekabupaten"
-            :disabled="!formData.kodepropinsi || regionsLoading"
-          >
-            <option value="" disabled>
-              {{
-                regionsLoading
-                  ? "Memuat..."
-                  : formData.kodepropinsi
-                  ? "Pilih Kabupaten"
-                  : "Silakan pilih Provinsi terlebih dahulu"
-              }}
-            </option>
-            <template v-if="!regionsLoading">
-              <option
-                v-for="kab in kabupatenOptions"
-                :key="kab.idwilayah"
-                :value="kab.kodewilayah"
-              >
-                {{ kab.kodewilayah }} - {{ kab.namawilayah }}
-              </option>
-            </template>
-          </select>
-        </div>
-
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">Upload Foto</label>
-          <input
-            type="file"
-            class="form-control"
-            @change="handlePhotoUpload"
-            accept="image/*"
-            :class="{ 'is-invalid': formErrors.foto }"
-            ref="fileInput"
-          />
-          <div class="invalid-feedback">{{ formErrors.foto }}</div>
-          <small v-if="isEditMode" class="form-text text-muted">
-            *Kosongkan jika tidak ingin mengubah foto.
-          </small>
-
-          <div
-            class="mt-3"
-            v-if="photoPreviewUrl || (isEditMode && formData.foto)"
-          >
-            <div class="position-relative d-inline-block">
-              <div v-if="photoPreviewUrl">
-                <img
-                  :src="photoPreviewUrl"
-                  alt="Preview Foto Baru"
-                  class="img-thumbnail shadow-sm"
-                  style="
-                    width: 120px;
-                    height: 120px;
-                    object-fit: cover;
-                    background-color: #f8f9fa;
-                  "
-                />
-              </div>
-              <div v-else-if="isEditMode && formData.foto">
-                <img
-                  :src="formData.foto"
-                  alt="Foto Saat Ini"
-                  class="img-thumbnail shadow-sm"
-                  style="
-                    width: 120px;
-                    height: 120px;
-                    object-fit: cover;
-                    background-color: #f8f9fa;
-                  "
-                />
-              </div>
-
-              <button
-                type="button"
-                class="btn btn-danger position-absolute top-0 start-100 translate-middle rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                style="
-                  width: 24px;
-                  height: 24px;
-                  padding: 0;
-                  border: 2px solid white;
-                "
-                @click="removePhoto"
-                title="Hapus Foto"
-              >
-                <i class="fa fa-times" style="font-size: 12px"></i>
-              </button>
+            <!-- Step 1: Biodata -->
+            <div v-if="currentTabIndex === 0">
+              <Step1Biodata
+                v-model="stepData.biodata"
+                @validation-change="(valid) => updateStepValidation(0, valid)"
+              />
             </div>
+
+            <!-- Step 2: Unit Kerja -->
+            <div v-if="currentTabIndex === 1">
+              <Step2UnitKerja
+                v-model="stepData.unitKerja"
+                @validation-change="(valid) => updateStepValidation(1, valid)"
+              />
+            </div>
+
+            <!-- Step 3: Jabatan -->
+            <div v-if="currentTabIndex === 2">
+              <Step3Jabatan
+                v-model="stepData.jabatan"
+                @validation-change="(valid) => updateStepValidation(2, valid)"
+              />
+            </div>
+
+            <!-- Step 4: Pangkat -->
+            <div v-if="currentTabIndex === 3">
+              <Step4Pangkat
+                v-model="stepData.pangkat"
+                @validation-change="(valid) => updateStepValidation(3, valid)"
+              />
+            </div>
+
+            <!-- Step 5: Pendidikan -->
+            <div v-if="currentTabIndex === 4">
+              <Step5Pendidikan
+                v-model="stepData.pendidikan"
+                @validation-change="(valid) => updateStepValidation(4, valid)"
+              />
+            </div>
+
+            <!-- Step 6: Pelatihan -->
+            <div v-if="currentTabIndex === 5">
+              <Step6Pelatihan
+                v-model="stepData.pelatihan"
+                @validation-change="(valid) => updateStepValidation(5, valid)"
+              />
+            </div>
+
+            <!-- Step 7: Prestasi -->
+            <div v-if="currentTabIndex === 6">
+              <Step7Prestasi
+                v-model="stepData.prestasi"
+                @validation-change="(valid) => updateStepValidation(6, valid)"
+              />
+            </div>
+          </Wizard>
+
+          <!-- Error Message -->
+          <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
+            <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
           </div>
         </div>
       </div>
-
-      <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
-        <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
-      </div>
-    </form>
-  </BaseFormModal>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
 </template>
 
 <script setup>
-import BaseFormModal from "@/components/base/BaseFormModal.vue";
-import { addUser, updateUser } from "@/services/referensi/users";
-import { getRoles } from "@/services/referensi/roles";
-import { getRegions } from "@/services/referensi/regions";
-import { reactive, ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
-import * as yup from "yup";
-import { compressImage } from "@/utils/imageCompressor";
+import Wizard from "form-wizard-vue3";
+import "form-wizard-vue3/dist/form-wizard-vue3.css";
 
-// === Props & Emits ===
+// Import Step Components
+import Step1Biodata from "./steps/Step1Biodata.vue";
+import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
+import Step3Jabatan from "./steps/Step3Jabatan.vue";
+import Step4Pangkat from "./steps/Step4Pangkat.vue";
+import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
+import Step6Pelatihan from "./steps/Step6Pelatihan.vue";
+import Step7Prestasi from "./steps/Step7Prestasi.vue";
+
+// Import Services (will be used for submission)
+import { addUser } from "@/services/referensi/users";
+
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
   entityName: { type: String, default: "Pegawai" },
 });
+
 const emit = defineEmits(["close", "save-successful"]);
 const toast = useToast();
 
-// === State Options ===
-const roleOptions = ref([]);
-const rolesLoading = ref(false);
-const allRegions = ref([]);
-const regionsLoading = ref(false);
-
-// === State Form ===
-const formData = reactive({
-  idlevel: "",
-  email: "",
-  nama: "",
-  gelardepan: "",
-  gelarbelakang: "",
-  nik: "",
-  telp: "",
-  tempatlahir: "",
-  tanggallahir: "",
-  alamat: "",
-  kodepropinsi: "",
-  kodekabupaten: "",
-  nip: "",
-  no_karpeg: "",
-  status: "Aktif",
-  foto: null,
-});
-
-const formErrors = reactive({
-  idlevel: "",
-  email: "",
-  nama: "",
-  foto: "",
-  status: "",
-});
-
-// === State UI & File ===
-const selectedPhotoFile = ref(null);
-const photoPreviewUrl = ref(null);
+// === Wizard State ===
+const wizardRef = ref(null);
+const currentTabIndex = ref(0);
 const isLoading = ref(false);
 const errorMessage = ref(null);
-const fileInput = ref(null);
-const isPhotoRemoved = ref(false);
 
-// === Validation Schema ===
-const validationSchema = yup.object().shape({
-  nama: yup.string().required("Nama wajib diisi."),
-  email: yup
-    .string()
-    .email("Format email salah")
-    .required("Email wajib diisi."),
-  idlevel: yup.string().required("Level wajib dipilih."),
-  status: yup.string().required("Status wajib dipilih."),
+// Step validations
+const stepValidations = reactive([
+  true, // Step 1: Biodata (true initially to show cards, will be updated by component)
+  true, // Step 2: Unit Kerja (placeholder, auto-valid)
+  true, // Step 3: Jabatan (placeholder, auto-valid)
+  true, // Step 4: Pangkat (placeholder, auto-valid)
+  true, // Step 5: Pendidikan (placeholder, auto-valid)
+  true, // Step 6: Pelatihan (placeholder, auto-valid)
+  true, // Step 7: Prestasi (placeholder, auto-valid)
+]);
+
+// Data from each step
+const stepData = reactive({
+  biodata: {},
+  unitKerja: {},
+  jabatan: {},
+  pangkat: {},
+  pendidikan: {},
+  pelatihan: {},
+  prestasi: {},
 });
+
+// === Wizard Configuration ===
+const wizardTabs = [
+  {
+    icon: "user",
+    title: "Biodata",
+  },
+  {
+    icon: "building",
+    title: "Unit Kerja",
+  },
+  {
+    icon: "briefcase",
+    title: "Jabatan",
+  },
+  {
+    icon: "star",
+    title: "Pangkat",
+  },
+  {
+    icon: "graduation-cap",
+    title: "Pendidikan",
+  },
+  {
+    icon: "certificate",
+    title: "Pelatihan",
+  },
+  {
+    icon: "trophy",
+    title: "Prestasi",
+  },
+];
 
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
@@ -368,100 +193,106 @@ const modalTitle = computed(() => {
     : `Tambah Data ${props.entityName}`;
 });
 
-const provinceOptions = computed(() => {
-  return allRegions.value
-    .filter((r) => r.tipewilayah === "A")
-    .sort((a, b) =>
-      a.kodewilayah.localeCompare(b.kodewilayah, undefined, { numeric: true })
-    );
+const canSubmit = computed(() => {
+  // Check if all steps are valid
+  return stepValidations.every((valid) => valid);
 });
 
-const kabupatenOptions = computed(() => {
-  if (!formData.kodepropinsi) return [];
-  return allRegions.value
-    .filter((r) => {
-      return (
-        r.tipewilayah === "B" &&
-        r.kodewilayah.startsWith(formData.kodepropinsi + ".")
-      );
-    })
-    .sort((a, b) =>
-      a.kodewilayah.localeCompare(b.kodewilayah, undefined, { numeric: true })
-    );
-});
-
-// === Lifecycle ===
-onMounted(() => {
-  fetchRolesData();
-  fetchRegions();
-});
-
-onUnmounted(() => {
-  if (photoPreviewUrl.value && photoPreviewUrl.value.startsWith("blob:")) {
-    URL.revokeObjectURL(photoPreviewUrl.value);
-  }
-});
-
-// === Fetch Data ===
-async function fetchRolesData() {
-  rolesLoading.value = true;
-  try {
-    const params = { page: 1, limit: 999, sort: "namalevel", dir: "asc" };
-    const response = await getRoles(params);
-
-    if (response.data && Array.isArray(response.data)) {
-      if (response.data[0] && response.data[0].data) {
-        roleOptions.value = response.data[0].data;
-      } else {
-        roleOptions.value = response.data;
-      }
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      roleOptions.value = response.data.data;
-    } else {
-      roleOptions.value = [];
-    }
-  } catch (error) {
-    console.error("Gagal memuat roles:", error);
-    toast.error("Gagal memuat daftar level/role.");
-  } finally {
-    rolesLoading.value = false;
-  }
+// === Methods ===
+function closeModal() {
+  emit("close");
 }
 
-async function fetchRegions() {
-  regionsLoading.value = true;
+function updateStepValidation(stepIndex, isValid) {
+  stepValidations[stepIndex] = isValid;
+}
+
+function onChangeCurrentTab(index, oldIndex) {
+  currentTabIndex.value = index;
+}
+
+function onTabBeforeChange() {
+  // Validation is handled by stepValidations
+  return stepValidations[currentTabIndex.value];
+}
+
+function wizardCompleted() {
+  // This is called when wizard reaches the end (finish button clicked)
+  // Automatically trigger form submission
+  submitForm();
+}
+
+async function submitForm() {
+  if (!canSubmit.value) {
+    toast.warning("Mohon lengkapi semua data yang diperlukan.");
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = null;
+
   try {
-    const params = { page: 1, limit: 100, sort: "kodewilayah", dir: "asc" };
-    const response = await getRegions(params);
+    // Prepare data for submission
+    const biodataInfo = stepData.biodata;
 
-    let accumulatedData = [];
-    let lastPage = 1;
+    // Check if using existing user or creating new
+    if (biodataInfo.isExisting) {
+      // Using existing user
+      // TODO: Link existing user with other data (unit kerja, jabatan, etc.)
+      toast.info(
+        "Mode menggunakan data existing user - implementasi akan ditambahkan"
+      );
+      console.log("Selected User ID:", biodataInfo.userId);
+      console.log("All Step Data:", stepData);
+    } else {
+      // Creating new user
+      const data = new FormData();
+      const userData = biodataInfo.userData;
 
-    if (Array.isArray(response.data) && response.data.length > 0) {
-      const rootData = response.data[0];
-      if (rootData.data) accumulatedData = rootData.data;
-      if (rootData.meta?.pagination)
-        lastPage = rootData.meta.pagination.last_page;
-    }
+      // Append user data
+      data.append("record[idlevel]", userData.idlevel || "");
+      data.append("record[email]", userData.email || "");
+      data.append("record[nama]", userData.nama || "");
+      data.append("record[telp]", userData.telp || "");
+      data.append("record[nik]", userData.nik || "");
+      data.append("record[gelardepan]", userData.gelardepan || "");
+      data.append("record[gelarbelakang]", userData.gelarbelakang || "");
+      data.append("record[alamat]", userData.alamat || "");
+      data.append("record[kodekabupaten]", userData.kodekabupaten || "");
+      data.append("record[nip]", userData.nip || "");
+      data.append("record[no_karpeg]", userData.no_karpeg || "");
+      data.append("record[tempatlahir]", userData.tempatlahir || "");
+      data.append("record[tanggallahir]", userData.tanggallahir || "");
+      data.append("record[status]", userData.status || "Aktif");
 
-    if (lastPage > 1) {
-      const promises = [];
-      for (let i = 2; i <= lastPage; i++) {
-        promises.push(getRegions({ ...params, page: i }));
+      // Append photo if exists
+      if (biodataInfo.photoFile) {
+        data.append(
+          "upload_foto",
+          biodataInfo.photoFile,
+          biodataInfo.photoFile.name
+        );
       }
-      const results = await Promise.all(promises);
-      results.forEach((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          accumulatedData = accumulatedData.concat(res.data[0].data);
-        }
-      });
+
+      // TODO: Append data from other steps
+      // For now, we'll just create the user
+      // Later, you'll need to:
+      // 1. Create user first
+      // 2. Get the user ID
+      // 3. Create related records (unit kerja, jabatan, etc.) with the user ID
+
+      await addUser(data);
+      toast.success("Data pegawai berhasil ditambahkan");
+      emit("save-successful");
+      closeModal();
     }
-    allRegions.value = accumulatedData;
   } catch (error) {
-    console.error("Gagal memuat wilayah:", error);
-    toast.error("Gagal memuat daftar wilayah.");
+    console.error("Error submitting form:", error);
+    errorMessage.value =
+      error.response?.data?.message || "Gagal menyimpan data.";
+    toast.error(errorMessage.value);
   } finally {
-    regionsLoading.value = false;
+    isLoading.value = false;
   }
 }
 
@@ -469,206 +300,108 @@ async function fetchRegions() {
 watch(
   () => props.fieldToEdit,
   (newData) => {
-    selectedPhotoFile.value = null;
-    if (photoPreviewUrl.value && photoPreviewUrl.value.startsWith("blob:")) {
-      URL.revokeObjectURL(photoPreviewUrl.value);
-    }
-    photoPreviewUrl.value = null;
-    isPhotoRemoved.value = false;
-    if (fileInput.value) fileInput.value.value = null;
-
     if (newData) {
-      formData.idlevel = newData.idlevel;
-      formData.email = newData.email;
-      formData.nama = newData.nama;
-      formData.telp = newData.telp;
-      formData.nik = newData.nik;
-      formData.gelardepan = newData.gelardepan;
-      formData.gelarbelakang = newData.gelarbelakang;
-      formData.alamat = newData.alamat;
-      formData.kodekabupaten = newData.kodekabupaten;
-      formData.kodepropinsi = newData.kodekabupaten
-        ? newData.kodekabupaten.split(".")[0]
-        : "";
-      formData.nip = newData.nip;
-      formData.no_karpeg = newData.no_karpeg;
-      formData.tempatlahir = newData.tempatlahir;
-      formData.tanggallahir = newData.tanggallahir;
-      formData.foto = newData.foto;
-      formData.status = newData.status || "Aktif";
+      // TODO: Populate step data for edit mode
+      console.log("Edit mode - data:", newData);
     } else {
-      Object.keys(formData).forEach((key) => (formData[key] = ""));
-      formData.status = "Aktif";
-      formData.foto = null;
+      // Reset all step data
+      Object.keys(stepData).forEach((key) => {
+        stepData[key] = {};
+      });
+      currentTabIndex.value = 0;
     }
-
-    Object.keys(formErrors).forEach((key) => (formErrors[key] = ""));
     errorMessage.value = null;
   },
   { immediate: true }
 );
-
-watch(
-  () => formData.kodepropinsi,
-  (newProv) => {
-    if (!newProv) {
-      formData.kodekabupaten = "";
-      return;
-    }
-    if (formData.kodekabupaten && !formData.kodekabupaten.startsWith(newProv)) {
-      formData.kodekabupaten = "";
-    }
-  }
-);
-
-// === Methods ===
-function closeModal() {
-  emit("close");
-}
-
-function handleError(error) {
-  errorMessage.value = error.response?.data?.message || "Gagal menyimpan data.";
-  toast.error(errorMessage.value);
-}
-
-async function handlePhotoUpload(event) {
-  const file = event.target.files[0];
-  const input = event.target;
-
-  if (photoPreviewUrl.value && photoPreviewUrl.value.startsWith("blob:")) {
-    URL.revokeObjectURL(photoPreviewUrl.value);
-  }
-
-  const resetToOriginal = () => {
-    selectedPhotoFile.value = null;
-    photoPreviewUrl.value = isEditMode.value ? formData.foto : null;
-    if (input) input.value = null;
-  };
-
-  if (!file) {
-    resetToOriginal();
-    formErrors.foto = "";
-    return;
-  }
-
-  if (!file.type.startsWith("image/")) {
-    toast.error("File yang diupload harus berupa gambar.");
-    resetToOriginal();
-    formErrors.foto = "Format file tidak didukung.";
-    return;
-  }
-
-  try {
-    isLoading.value = true;
-    toast.info("Sedang mengompres gambar...", { timeout: 2000 });
-    const compressedFile = await compressImage(file);
-    selectedPhotoFile.value = compressedFile;
-    photoPreviewUrl.value = URL.createObjectURL(compressedFile);
-    formErrors.foto = "";
-    isPhotoRemoved.value = false;
-  } catch (error) {
-    toast.error("Gagal memproses gambar: " + error.message);
-    resetToOriginal();
-    formErrors.foto = "Gagal memproses gambar.";
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-function removePhoto() {
-  const isBlobPreview =
-    photoPreviewUrl.value && photoPreviewUrl.value.startsWith("blob:");
-  if (isBlobPreview) URL.revokeObjectURL(photoPreviewUrl.value);
-
-  if (fileInput.value) fileInput.value.value = null;
-  selectedPhotoFile.value = null;
-
-  if (isEditMode.value && formData.foto) {
-    if (!isBlobPreview) {
-      photoPreviewUrl.value = null;
-      formData.foto = null;
-      isPhotoRemoved.value = true;
-    } else {
-      photoPreviewUrl.value = null;
-      isPhotoRemoved.value = false;
-    }
-  } else {
-    photoPreviewUrl.value = null;
-    isPhotoRemoved.value = false;
-  }
-}
-
-async function validateForm() {
-  Object.keys(formErrors).forEach((key) => (formErrors[key] = ""));
-  try {
-    await validationSchema.validate(formData, { abortEarly: false });
-    return true;
-  } catch (err) {
-    err.inner.forEach((e) => {
-      formErrors[e.path] = e.message;
-    });
-    return false;
-  }
-}
-
-async function submitForm() {
-  if (!(await validateForm())) return;
-
-  isLoading.value = true;
-  errorMessage.value = null;
-
-  const data = new FormData();
-  data.append("record[idlevel]", formData.idlevel);
-  data.append("record[email]", formData.email);
-  data.append("record[nama]", formData.nama);
-  data.append("record[telp]", formData.telp || "");
-  data.append("record[nik]", formData.nik || "");
-  data.append("record[gelardepan]", formData.gelardepan || "");
-  data.append("record[gelarbelakang]", formData.gelarbelakang || "");
-  data.append("record[alamat]", formData.alamat || "");
-  data.append("record[kodekabupaten]", formData.kodekabupaten || "");
-  data.append("record[nip]", formData.nip || "");
-  data.append("record[no_karpeg]", formData.no_karpeg || "");
-  data.append("record[tempatlahir]", formData.tempatlahir || "");
-  data.append("record[tanggallahir]", formData.tanggallahir || "");
-  data.append("record[status]", formData.status);
-
-  if (selectedPhotoFile.value) {
-    data.append(
-      "upload_foto",
-      selectedPhotoFile.value,
-      selectedPhotoFile.value.name
-    );
-  } else if (isPhotoRemoved.value) {
-    data.append("record[foto]", "");
-  }
-
-  try {
-    if (isEditMode.value) {
-      const fieldId = props.fieldToEdit.idpengguna;
-      data.append("_method", "PUT");
-      await updateUser(fieldId, data);
-      toast.success(`Data pegawai berhasil diperbarui`);
-    } else {
-      await addUser(data);
-      toast.success(`Data pegawai berhasil ditambah`);
-    }
-    emit("save-successful");
-    closeModal();
-  } catch (error) {
-    handleError(error);
-  } finally {
-    isLoading.value = false;
-  }
-}
 </script>
 
 <style scoped>
-.invalid-feedback {
-  display: block;
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
 }
-.img-thumbnail {
+
+.modal-content {
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Wizard Styling */
+:deep(.wizard-card-footer) {
+  padding: 1.5rem 0 1rem;
+  margin-top: 1.5rem;
+  display: flex !important;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+}
+
+:deep(.wizard-navigation) {
+  margin-bottom: 1.5rem;
+}
+
+:deep(.wizard-icon-circle) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+:deep(.wizard-icon-circle.checked) {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+:deep(.wizard-nav-pills .active .wizard-icon-circle) {
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Wizard Button Styling */
+:deep(.wizard-btn) {
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+:deep(.wizard-btn-next) {
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  border: none;
+  color: white;
+}
+
+:deep(.wizard-btn-next:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+:deep(.wizard-btn-prev) {
+  background: white;
   border: 1px solid #dee2e6;
-  object-fit: cover;
+  color: #6c757d;
+}
+
+:deep(.wizard-btn-prev:hover) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+:deep(.wizard-btn-finish) {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border: none;
+  color: white;
+}
+
+:deep(.wizard-btn-finish:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+:deep(.wizard-btn:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
 }
 </style>
