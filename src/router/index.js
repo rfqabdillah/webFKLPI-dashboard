@@ -1,0 +1,375 @@
+import {createRouter, createWebHashHistory} from "vue-router";
+import Body from '../components/body';
+
+import Default from '@/pages/dashboard/defaultPage.vue';
+import Login from '@/auth/login.vue';
+
+import IndexEmployments from "@/pages/employment/index.vue";
+
+import IndexEvents from "@/pages/agenda/events/index.vue";
+import IndexEventCategories from "@/pages/agenda/eventCategories/index.vue";
+
+import IndexNews from "@/pages/news/news/index.vue";
+import IndexNewsCategories from "@/pages/news/newsCategories/index.vue";
+import IndexPages from "@/pages/pages/index.vue";
+import IndexAnnouncements from "@/pages/announcements/index.vue";
+import IndexRelatedLinks from "@/pages/relatedLinks/index.vue";
+import IndexMeasurementBooks from "@/pages/measurementBooks/index.vue";
+import IndexDocumentTypes from "@/pages/documentTypes/index.vue";
+import IndexOrganizationStructure from "@/pages/profiles/organizationStructure/index.vue"
+import IndexGallery from "@/pages/gallery/gallery/index.vue";
+import IndexPhotoGallery from "@/pages/gallery/photoGallery/index.vue";
+import IndexVideos from "@/pages/videos/index.vue";
+import IndexBanners from "@/pages/settings/banners/index.vue";
+import IndexMenus from "@/pages/settings/menu/index.vue";
+import IndexContacts from "@/pages/settings/contacts/index.vue";
+
+// Mulai Referensi
+import IndexUsers from "@/pages/general/user/index.vue";
+import IndexRegions from "@/pages/general/regions/index.vue";
+
+import IndexVocationalFields from "@/pages/personnel/vocationalFields/index.vue";
+import IndexVocationalSubfields from "@/pages/personnel/vocationalSubfields/index.vue";
+import IndexRanks from "@/pages/personnel/ranks/index.vue";
+import IndexScale from "@/pages/personnel/scale/index.vue";
+import IndexLevelCategories from "@/pages/personnel/levelCategories/index.vue";
+import IndexPositionLevels from "@/pages/personnel/positionLevels/index.vue";
+import IndexEducationLevels from "@/pages/personnel/educationLevels/index.vue";
+import IndexWorkUnits from "@/pages/personnel/workUnits/index.vue";
+import IndexEmployeeStatuses from "@/pages/personnel/employeeStatuses/index.vue";
+import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
+
+
+
+const routes =[
+    {
+        path: '/auth',
+        children: [
+          {
+            path: '',
+            name: 'Login',
+            component: Login,
+            meta: {
+            title: 'Login',
+            }
+          },
+        ]
+    },
+    {
+        path: '/',
+        component: Body,
+        children: [
+          {
+            path: '',
+            name: 'defaultRoot',
+            component: Default,
+            meta: {
+              title: 'Dashboard',
+              requiresAuth: true, 
+            }
+          },
+        ]
+      },
+      {
+        path: '/employments',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "Employment",
+            component: IndexEmployments,
+            meta: {
+              title: "Kepegawaian",
+            },
+          },
+        ]
+      },
+      {
+        path: '/agenda',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "events",
+            name: "Agenda_events",
+            component: IndexEvents,
+            meta: {
+              title: "Daftar Agenda",
+            },
+          },
+          {
+            path: "event-categories",
+            name: "Agenda_eventCategories",
+            component: IndexEventCategories,
+            meta: {
+              title: "Kategori Agenda",
+            },
+          },
+        ]
+      },
+      {
+        path: '/website',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "news",
+            name: "news",
+            component: IndexNews,
+            meta: {
+              title: "Daftar Berita",
+            },
+          },
+          {
+            path: "news-categories",
+            name: "newsCategories",
+            component: IndexNewsCategories,
+            meta: {
+              title: "Kategori Berita",
+            },
+          },
+          {
+            path: "pages",
+            name: "Pages",
+            component: IndexPages,
+            meta: {
+              title: "Halaman",
+            },
+          },
+          {
+            path: "announcements",
+            name: "Announcements",
+            component: IndexAnnouncements,
+            meta: {
+              title: "Pengumuman",
+            },
+          },
+          {
+            path: "related-links",
+            name: "Related Links",
+            component: IndexRelatedLinks,
+            meta: {
+              title: "Link Terkait",
+            },
+          },
+          {
+            path: "documents",
+            name: "Measurement books (Dokumen)",
+            component: IndexMeasurementBooks,
+            meta: {
+              title: "Dokumen",
+            },
+          },
+          {
+            path: "document-types",
+            name: "Document Types",
+            component: IndexDocumentTypes,
+            meta: {
+              title: "Jenis Dokumen",
+            },
+          }, 
+          {
+            path: "gallery",
+            name: "Gallery",
+            component: IndexGallery,
+            meta: {
+              title: "Galeri",
+            },
+          },
+          {
+            path: "photo-gallery",
+            name: "Photo Gallery",
+            component: IndexPhotoGallery,
+            meta: {
+              title: "Galeri Foto",
+            },
+          },
+          {
+            path: "videos",
+            name: "Videos",
+            component: IndexVideos,
+            meta: {
+              title: "Vidio",
+            },
+          },
+          {
+            path: "profiles/organization-structure",
+            name: "Profile_organization Structure",
+            component: IndexOrganizationStructure,
+            meta: {
+              title: "Struktur Organisasi",
+            },
+          },
+          {
+            path: "settings/banners",
+            name: "Settings_banners",
+            component: IndexBanners,
+            meta: {
+              title: "Banner",
+            },
+          },
+          {
+            path: "settings/menus",
+            name: "Settings_menus",
+            component: IndexMenus,
+            meta: {
+              title: "Menu",
+            },
+          },
+          {
+            path: "settings/contacts",
+            name: "Settings_contacts",
+            component: IndexContacts,
+            meta: {
+              title: "Kontak",
+            },
+          },
+        ]
+      },
+      {
+        path: '/general',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "users",
+            name: "General_users",
+            component: IndexUsers,
+            meta: {
+              title: "Pengguna",
+            },
+          },
+          {
+            path: "regions",
+            name: "General_regions",
+            component: IndexRegions,
+            meta: {
+              title: "Wilayah",
+            },
+          },
+        ]
+      },
+      {
+        path: '/personnel',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          // {
+          //   path: 'vocational-fields',
+          //   name: 'Personnel_VocationalFields',
+          //   component: IndexVocationalFields,
+          //   meta: {
+          //     title: 'Kejuruan',
+          //   }
+          // },
+          // {
+          //   path: 'vocational-subfields',
+          //   name: 'Personnel_VocationalSubfields',
+          //   component: IndexVocationalSubfields,
+          //   meta: {
+          //     title: 'Sub Kejuruan',
+          //   }
+          // },
+          {
+            path: 'ranks',
+            name: 'Personnel_Ranks',
+            component: IndexRanks,
+            meta: {
+              title: 'Pangkat',
+            }
+          },
+          {
+            path: 'level-categories',
+            name: 'Personnel_LevelCategories',
+            component: IndexLevelCategories,
+            meta: {
+              title: 'Jenjang Kategori',
+            }
+          },
+          {
+            path: 'position-levels',
+            name: 'Personnel_PositionLevels',
+            component: IndexPositionLevels,
+            meta: {
+              title: 'Jenjang Jabatan',
+            }
+          },
+          {
+            path: 'education-levels',
+            name: 'Personnel_EducationLevels',
+            component: IndexEducationLevels,
+            meta: {
+              title: 'Jenjang Pendidikan',
+            }
+          },
+          {
+            path: 'work-units',
+            name: 'Personnel_WorkUnits',
+            component: IndexWorkUnits,
+            meta: {
+              title: 'Unit Kerja',
+            }
+          },
+          {
+            path: 'employee-statuses',
+            name: 'Personnel_EmployeStatuses',
+            component: IndexEmployeeStatuses,
+            meta: {
+              title: 'Status Pegawai',
+            }
+          },
+          {
+            path: 'employee-types',
+            name: 'Personnel_EmployeTypes',
+            component: IndexEmployeeTypes,
+            meta: {
+              title: 'Jenis Pegawai',
+            }
+          },
+          {
+            path: 'scale',
+            name: 'Personnel_Scale',
+            component: IndexScale,
+            meta: {
+              title: 'Skala',
+            }
+          },
+        ]
+      },
+
+
+]
+const router=createRouter({
+    history: createWebHashHistory(process.env.BASE_URL),
+    routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.title) {
+    document.title = to.meta.title;
+  }
+
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    
+    if (!localStorage.getItem('token')) {
+      next('/auth');
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+export default router;
