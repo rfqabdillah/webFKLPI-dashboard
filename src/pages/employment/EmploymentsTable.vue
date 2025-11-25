@@ -1,7 +1,7 @@
 <template>
   <BaseTable
     title="Daftar Pegawai"
-    entityName="pegawai"
+    entityName="Pegawai"
     :apiService="employmentApi"
     :FormModalComponent="EmploymentFormModal"
     :DetailModalComponent="EmploymentDetailModal"

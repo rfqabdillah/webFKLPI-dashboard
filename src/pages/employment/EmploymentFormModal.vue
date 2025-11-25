@@ -1,109 +1,167 @@
 <template>
-  <div
-    class="modal fade show d-block"
-    tabindex="-1"
-    role="dialog"
-    @click.self="closeModal"
-  >
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <h5 class="modal-title">{{ modalTitle }}</h5>
-          <button
-            type="button"
-            class="btn-close"
-            @click="closeModal"
-            :disabled="isLoading"
-          ></button>
-        </div>
+  <div class="modal-overlay" @click.self="closeModal">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title">{{ modalTitle }}</h5>
+        <button
+          type="button"
+          class="btn-close"
+          @click="closeModal"
+          :disabled="isLoading"
+        ></button>
+      </div>
 
-        <!-- Modal Body with Wizard -->
-        <div class="modal-body">
-          <Wizard
-            ref="wizardRef"
-            :custom-tabs="wizardTabs"
-            :beforeChange="onTabBeforeChange"
-            @change="onChangeCurrentTab"
-            @complete:wizard="wizardCompleted"
-            card-background
-            :next-button-text="'Selanjutnya'"
-            :back-button-text="'Sebelumnya'"
-            :finish-button-text="'Selesai'"
+      <!-- Modal Body with Wizard -->
+      <div class="modal-body">
+        <form-wizard
+          ref="wizardRef"
+          @on-change="onChangeCurrentTab"
+          @on-complete="wizardCompleted"
+          color="#0d6efd"
+          error-color="#dc3545"
+          :title="null"
+          :subtitle="null"
+          :next-button-text="'Selanjutnya'"
+          :back-button-text="'Sebelumnya'"
+          :finish-button-text="'Selesai'"
+        >
+          <!-- Step 1: Biodata -->
+          <tab-content
+            title="Biodata"
+            icon="fa fa-user"
+            :before-change="() => validateStep(0)"
           >
-            <!-- Step 1: Biodata -->
-            <div v-if="currentTabIndex === 0">
-              <Step1Biodata
-                v-model="stepData.biodata"
-                @validation-change="(valid) => updateStepValidation(0, valid)"
-              />
-            </div>
+            <Step1Biodata
+              v-model="stepData.biodata"
+              @validation-change="(valid) => updateStepValidation(0, valid)"
+            />
+          </tab-content>
 
-            <!-- Step 2: Unit Kerja -->
-            <div v-if="currentTabIndex === 1">
-              <Step2UnitKerja
-                v-model="stepData.unitKerja"
-                @validation-change="(valid) => updateStepValidation(1, valid)"
-              />
-            </div>
+          <!-- Step 2: Unit Kerja -->
+          <tab-content
+            title="Unit Kerja"
+            icon="fa fa-building"
+            :before-change="() => validateStep(1)"
+          >
+            <Step2UnitKerja
+              v-model="stepData.unitKerja"
+              @validation-change="(valid) => updateStepValidation(1, valid)"
+            />
+          </tab-content>
 
-            <!-- Step 3: Jabatan -->
-            <div v-if="currentTabIndex === 2">
-              <Step3Jabatan
-                v-model="stepData.jabatan"
-                @validation-change="(valid) => updateStepValidation(2, valid)"
-              />
-            </div>
+          <!-- Step 3: Jabatan -->
+          <tab-content
+            title="Jabatan"
+            icon="fa fa-briefcase"
+            :before-change="() => validateStep(2)"
+          >
+            <Step3Jabatan
+              v-model="stepData.jabatan"
+              @validation-change="(valid) => updateStepValidation(2, valid)"
+            />
+          </tab-content>
 
-            <!-- Step 4: Pangkat -->
-            <div v-if="currentTabIndex === 3">
-              <Step4Pangkat
-                v-model="stepData.pangkat"
-                @validation-change="(valid) => updateStepValidation(3, valid)"
-              />
-            </div>
+          <!-- Step 4: Pangkat -->
+          <tab-content
+            title="Pangkat"
+            icon="fa fa-star"
+            :before-change="() => validateStep(3)"
+          >
+            <Step4Pangkat
+              v-model="stepData.pangkat"
+              @validation-change="(valid) => updateStepValidation(3, valid)"
+            />
+          </tab-content>
 
-            <!-- Step 5: Pendidikan -->
-            <div v-if="currentTabIndex === 4">
-              <Step5Pendidikan
-                v-model="stepData.pendidikan"
-                @validation-change="(valid) => updateStepValidation(4, valid)"
-              />
-            </div>
+          <!-- Step 5: Pendidikan -->
+          <tab-content
+            title="Pendidikan"
+            icon="fa fa-graduation-cap"
+            :before-change="() => validateStep(4)"
+          >
+            <Step5Pendidikan
+              v-model="stepData.pendidikan"
+              @validation-change="(valid) => updateStepValidation(4, valid)"
+            />
+          </tab-content>
 
-            <!-- Step 6: Pelatihan -->
-            <div v-if="currentTabIndex === 5">
-              <Step6Pelatihan
-                v-model="stepData.pelatihan"
-                @validation-change="(valid) => updateStepValidation(5, valid)"
-              />
-            </div>
+          <!-- Step 6: Pelatihan -->
+          <tab-content
+            title="Pelatihan"
+            icon="fa fa-certificate"
+            :before-change="() => validateStep(5)"
+          >
+            <Step6Pelatihan
+              v-model="stepData.pelatihan"
+              @validation-change="(valid) => updateStepValidation(5, valid)"
+            />
+          </tab-content>
 
-            <!-- Step 7: Prestasi -->
-            <div v-if="currentTabIndex === 6">
-              <Step7Prestasi
-                v-model="stepData.prestasi"
-                @validation-change="(valid) => updateStepValidation(6, valid)"
-              />
-            </div>
-          </Wizard>
+          <!-- Step 7: Prestasi -->
+          <tab-content
+            title="Prestasi"
+            icon="fa fa-trophy"
+            :before-change="() => validateStep(6)"
+          >
+            <Step7Prestasi
+              v-model="stepData.prestasi"
+              @validation-change="(valid) => updateStepValidation(6, valid)"
+            />
+          </tab-content>
+        </form-wizard>
 
-          <!-- Error Message -->
-          <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
-            <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
-          </div>
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
+          <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
         </div>
+      </div>
+
+      <!-- Modal Footer with Custom Navigation -->
+      <div class="modal-footer">
+        <button
+          v-if="currentTabIndex > 0"
+          type="button"
+          class="btn btn-secondary"
+          @click="prevTab"
+          :disabled="isLoading"
+        >
+          Sebelumnya
+        </button>
+        <button
+          v-if="currentTabIndex < 6"
+          type="button"
+          class="btn btn-primary"
+          @click="nextTab"
+          :disabled="isLoading"
+        >
+          Selanjutnya
+        </button>
+        <button
+          v-else
+          type="button"
+          class="btn btn-success"
+          @click="submitForm"
+          :disabled="isLoading"
+        >
+          <span
+            v-if="isLoading"
+            class="spinner-border spinner-border-sm me-1"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          {{ isLoading ? "Menyimpan..." : "Selesai" }}
+        </button>
       </div>
     </div>
   </div>
-  <div class="modal-backdrop fade show"></div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
-import Wizard from "form-wizard-vue3";
-import "form-wizard-vue3/dist/form-wizard-vue3.css";
+import { FormWizard, TabContent } from "vue3-form-wizard";
+import "vue3-form-wizard/dist/style.css";
 
 // Import Step Components
 import Step1Biodata from "./steps/Step1Biodata.vue";
@@ -114,7 +172,7 @@ import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
 import Step6Pelatihan from "./steps/Step6Pelatihan.vue";
 import Step7Prestasi from "./steps/Step7Prestasi.vue";
 
-// Import Services (will be used for submission)
+// Import Services
 import { addUser } from "@/services/referensi/users";
 
 const props = defineProps({
@@ -133,13 +191,13 @@ const errorMessage = ref(null);
 
 // Step validations
 const stepValidations = reactive([
-  true, // Step 1: Biodata (true initially to show cards, will be updated by component)
-  true, // Step 2: Unit Kerja (placeholder, auto-valid)
-  true, // Step 3: Jabatan (placeholder, auto-valid)
-  true, // Step 4: Pangkat (placeholder, auto-valid)
-  true, // Step 5: Pendidikan (placeholder, auto-valid)
-  true, // Step 6: Pelatihan (placeholder, auto-valid)
-  true, // Step 7: Prestasi (placeholder, auto-valid)
+  true, // Step 1: Biodata
+  true, // Step 2: Unit Kerja
+  true, // Step 3: Jabatan
+  true, // Step 4: Pangkat
+  true, // Step 5: Pendidikan
+  true, // Step 6: Pelatihan
+  true, // Step 7: Prestasi
 ]);
 
 // Data from each step
@@ -153,38 +211,6 @@ const stepData = reactive({
   prestasi: {},
 });
 
-// === Wizard Configuration ===
-const wizardTabs = [
-  {
-    icon: "user",
-    title: "Biodata",
-  },
-  {
-    icon: "building",
-    title: "Unit Kerja",
-  },
-  {
-    icon: "briefcase",
-    title: "Jabatan",
-  },
-  {
-    icon: "star",
-    title: "Pangkat",
-  },
-  {
-    icon: "graduation-cap",
-    title: "Pendidikan",
-  },
-  {
-    icon: "certificate",
-    title: "Pelatihan",
-  },
-  {
-    icon: "trophy",
-    title: "Prestasi",
-  },
-];
-
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
 const modalTitle = computed(() => {
@@ -194,7 +220,6 @@ const modalTitle = computed(() => {
 });
 
 const canSubmit = computed(() => {
-  // Check if all steps are valid
   return stepValidations.every((valid) => valid);
 });
 
@@ -207,19 +232,33 @@ function updateStepValidation(stepIndex, isValid) {
   stepValidations[stepIndex] = isValid;
 }
 
-function onChangeCurrentTab(index, oldIndex) {
-  currentTabIndex.value = index;
+function onChangeCurrentTab(prevIndex, nextIndex) {
+  currentTabIndex.value = nextIndex;
 }
 
-function onTabBeforeChange() {
-  // Validation is handled by stepValidations
-  return stepValidations[currentTabIndex.value];
+function validateStep(stepIndex) {
+  // Return true directly to ensure navigation works
+  // Validation logic is handled by the component emitting validation-change
+  // But for wizard navigation, we check the stored validation state
+  const isValid = stepValidations[stepIndex];
+  if (!isValid) {
+    toast.warning("Mohon lengkapi data pada langkah ini sebelum melanjutkan.");
+  }
+  return isValid;
 }
 
 function wizardCompleted() {
-  // This is called when wizard reaches the end (finish button clicked)
-  // Automatically trigger form submission
   submitForm();
+}
+
+function nextTab() {
+  if (validateStep(currentTabIndex.value)) {
+    wizardRef.value.nextTab();
+  }
+}
+
+function prevTab() {
+  wizardRef.value.prevTab();
 }
 
 async function submitForm() {
@@ -232,24 +271,18 @@ async function submitForm() {
   errorMessage.value = null;
 
   try {
-    // Prepare data for submission
     const biodataInfo = stepData.biodata;
 
-    // Check if using existing user or creating new
     if (biodataInfo.isExisting) {
-      // Using existing user
-      // TODO: Link existing user with other data (unit kerja, jabatan, etc.)
       toast.info(
         "Mode menggunakan data existing user - implementasi akan ditambahkan"
       );
       console.log("Selected User ID:", biodataInfo.userId);
       console.log("All Step Data:", stepData);
     } else {
-      // Creating new user
       const data = new FormData();
       const userData = biodataInfo.userData;
 
-      // Append user data
       data.append("record[idlevel]", userData.idlevel || "");
       data.append("record[email]", userData.email || "");
       data.append("record[nama]", userData.nama || "");
@@ -265,7 +298,6 @@ async function submitForm() {
       data.append("record[tanggallahir]", userData.tanggallahir || "");
       data.append("record[status]", userData.status || "Aktif");
 
-      // Append photo if exists
       if (biodataInfo.photoFile) {
         data.append(
           "upload_foto",
@@ -273,13 +305,6 @@ async function submitForm() {
           biodataInfo.photoFile.name
         );
       }
-
-      // TODO: Append data from other steps
-      // For now, we'll just create the user
-      // Later, you'll need to:
-      // 1. Create user first
-      // 2. Get the user ID
-      // 3. Create related records (unit kerja, jabatan, etc.) with the user ID
 
       await addUser(data);
       toast.success("Data pegawai berhasil ditambahkan");
@@ -301,10 +326,8 @@ watch(
   () => props.fieldToEdit,
   (newData) => {
     if (newData) {
-      // TODO: Populate step data for edit mode
       console.log("Edit mode - data:", newData);
     } else {
-      // Reset all step data
       Object.keys(stepData).forEach((key) => {
         stepData[key] = {};
       });
@@ -317,91 +340,79 @@ watch(
 </script>
 
 <style scoped>
-.modal {
-  background-color: rgba(0, 0, 0, 0.5);
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
 }
-
 .modal-content {
+  background: white;
   border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
 }
-
+.modal-header,
+.modal-footer {
+  padding: 1rem;
+  flex-shrink: 0;
+}
+.modal-body {
+  padding: 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
 .modal-header {
   border-bottom: 1px solid #dee2e6;
-}
-
-/* Wizard Styling */
-:deep(.wizard-card-footer) {
-  padding: 1.5rem 0 1rem;
-  margin-top: 1.5rem;
-  display: flex !important;
+  display: flex;
   justify-content: space-between;
-  background: transparent;
-  border: none;
+  align-items: center;
+}
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.invalid-feedback {
+  display: block;
+}
+.text-danger {
+  color: #dc3545 !important;
 }
 
-:deep(.wizard-navigation) {
-  margin-bottom: 1.5rem;
+/* Vue3 Form Wizard Custom Styling */
+:deep(.vue-form-wizard .wizard-navigation .wizard-progress-with-circle) {
+  margin-bottom: 2rem;
 }
 
-:deep(.wizard-icon-circle) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
+:deep(.vue-form-wizard .wizard-icon-circle) {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
 }
 
-:deep(.wizard-icon-circle.checked) {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+:deep(.vue-form-wizard .wizard-nav-pills > li > a) {
+  padding: 10px 15px;
 }
 
-:deep(.wizard-nav-pills .active .wizard-icon-circle) {
-  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+:deep(.vue-form-wizard .wizard-card-footer) {
+  display: none !important;
 }
 
-/* Wizard Button Styling */
-:deep(.wizard-btn) {
-  padding: 0.5rem 1.25rem;
+:deep(.vue-form-wizard .wizard-btn) {
+  padding: 0.5rem 1.5rem;
   font-weight: 500;
   border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-:deep(.wizard-btn-next) {
-  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-  border: none;
-  color: white;
-}
-
-:deep(.wizard-btn-next:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-}
-
-:deep(.wizard-btn-prev) {
-  background: white;
-  border: 1px solid #dee2e6;
-  color: #6c757d;
-}
-
-:deep(.wizard-btn-prev:hover) {
-  background: #f8f9fa;
-  border-color: #adb5bd;
-}
-
-:deep(.wizard-btn-finish) {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  border: none;
-  color: white;
-}
-
-:deep(.wizard-btn-finish:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-
-:deep(.wizard-btn:disabled) {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
   <div class="step-biodata">
-    <div v-if="!selectionMade" class="selection-cards">
-      <div class="row g-4">
-        <div class="col-md-6">
+    <div v-show="showCards" ref="cardsContainer" class="selection-cards">
+      <div class="row g-3 justify-content-center">
+        <div class="col-md-5">
           <div
             class="selection-card"
             :class="{ active: hoveredCard === 'existing' }"
@@ -13,9 +13,9 @@
             <div class="card-icon">
               <i class="fa fa-users"></i>
             </div>
-            <h5 class="card-title">Gunakan Data yang Sudah Ada</h5>
+            <h6 class="card-title">Gunakan Data Existing</h6>
             <p class="card-description">
-              Pilih dari daftar pengguna yang sudah terdaftar di sistem
+              Pilih dari daftar pengguna yang sudah terdaftar
             </p>
             <div class="card-action">
               <i class="fa fa-arrow-right"></i>
@@ -23,7 +23,7 @@
           </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-5">
           <div
             class="selection-card"
             :class="{ active: hoveredCard === 'new' }"
@@ -34,9 +34,9 @@
             <div class="card-icon">
               <i class="fa fa-user-plus"></i>
             </div>
-            <h5 class="card-title">Buat Data Baru</h5>
+            <h6 class="card-title">Buat Data Baru</h6>
             <p class="card-description">
-              Tambahkan pengguna baru dengan mengisi form biodata lengkap
+              Isi form biodata lengkap untuk pengguna baru
             </p>
             <div class="card-action">
               <i class="fa fa-arrow-right"></i>
@@ -46,9 +46,9 @@
       </div>
     </div>
 
-    <div v-else-if="mode === 'existing'" class="existing-user-section">
+    <div v-if="mode === 'existing'" class="existing-user-section">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="mb-0">Pilih Pengguna yang Sudah Ada</h6>
+        <h6 class="mb-0">Pilih Pengguna Existing</h6>
         <button
           type="button"
           class="btn btn-sm btn-outline-secondary"
@@ -59,11 +59,11 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-semibold">
+        <label class="form-label fw-semibold small">
           Cari Pengguna <span class="text-danger">*</span>
         </label>
         <select
-          class="form-select"
+          class="form-select form-select-sm"
           v-model="selectedUserId"
           :disabled="usersLoading"
           @change="onUserSelected"
@@ -73,8 +73,8 @@
           </option>
           <option
             v-for="user in userOptions"
-            :key="user.idpengguna"
-            :value="user.idpengguna"
+            :key="user.idpengguna || user.email"
+            :value="user.idpengguna || user.email"
           >
             {{ user.nama }} - {{ user.email }}
           </option>
@@ -98,73 +98,75 @@
                   </div>
                 </div>
                 <div class="col">
-                  <h5 class="mb-1">{{ selectedUser.nama }}</h5>
-                  <p class="mb-0 text-white-50">{{ selectedUser.email }}</p>
+                  <h6 class="mb-1">{{ selectedUser.nama }}</h6>
+                  <p class="mb-0 text-white-50 small">
+                    {{ selectedUser.email }}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Gelar Depan</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.gelardepan || "-" }}
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Gelar Belakang</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.gelarbelakang || "-" }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small">NIK</label>
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.nik || "-" }}
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small">NIP</label>
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.nip || "-" }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >No. Telepon</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.telp || "-" }}
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >No. Karpeg</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.no_karpeg || "-" }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Level / Role</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ getLevelName(selectedUser.idlevel) }}
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Status</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               <span
                 :class="
                   selectedUser.status === 'Aktif'
@@ -177,45 +179,45 @@
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Tempat Lahir</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.tempatlahir || "-" }}
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Tanggal Lahir</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.tanggallahir || "-" }}
             </div>
           </div>
 
-          <div class="col-12 mb-3">
+          <div class="col-12 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Alamat</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ selectedUser.alamat || "-" }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Provinsi</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ getProvinceName(selectedUser.kodekabupaten) }}
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6 mb-2">
             <label class="form-label fw-semibold text-muted small"
               >Kabupaten</label
             >
-            <div class="form-control-plaintext">
+            <div class="form-control-plaintext py-0 small">
               {{ getKabupatenName(selectedUser.kodekabupaten) }}
             </div>
           </div>
@@ -223,7 +225,7 @@
       </div>
     </div>
 
-    <div v-else-if="mode === 'new'" class="new-user-section">
+    <div v-if="mode === 'new'" class="new-user-section">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="mb-0">Form Biodata Baru</h6>
         <button
@@ -235,97 +237,97 @@
         </button>
       </div>
 
-      <div class="row">
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-semibold small">
             Nama Lengkap <span class="text-danger">*</span>
           </label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.nama"
             placeholder="Nama lengkap pegawai"
             required
           />
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Gelar Depan</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Gelar Depan</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.gelardepan"
             placeholder="Contoh: Dr., Ir."
           />
         </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Gelar Belakang</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Gelar Belakang</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.gelarbelakang"
             placeholder="Contoh: S.Kom, M.M."
           />
         </div>
 
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">NIK</label>
+        <div class="col-12">
+          <label class="form-label fw-semibold small">NIK</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.nik"
             placeholder="Nomor Induk Kependudukan"
           />
         </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">NIP</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">NIP</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.nip"
             placeholder="Nomor Induk Pegawai"
           />
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">
             Email <span class="text-danger">*</span>
           </label>
           <input
             type="email"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.email"
             placeholder="email@instansi.go.id"
             required
           />
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">No. Telepon</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">No. Telepon</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.telp"
             placeholder="08xxxxxxxx"
           />
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">No. Karpeg</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">No. Karpeg</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.no_karpeg"
             placeholder="Kartu Pegawai"
           />
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">
             Level / Role <span class="text-danger">*</span>
           </label>
           <select
-            class="form-select"
+            class="form-select form-select-sm"
             v-model="formData.idlevel"
             :disabled="rolesLoading"
             required
@@ -343,9 +345,11 @@
           </select>
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold d-block">Status Akun</label>
-          <div class="form-check form-switch mt-2">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold d-block small"
+            >Status Akun</label
+          >
+          <div class="form-check form-switch mt-1">
             <input
               class="form-check-input"
               type="checkbox"
@@ -355,44 +359,44 @@
               true-value="Aktif"
               false-value="Tidak Aktif"
             />
-            <label class="form-check-label" for="statusSwitch">
+            <label class="form-check-label small" for="statusSwitch">
               {{ formData.status || "Tidak Aktif" }}
             </label>
           </div>
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Tempat Lahir</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Tempat Lahir</label>
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.tempatlahir"
             placeholder="Kota kelahiran"
           />
         </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Tanggal Lahir</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Tanggal Lahir</label>
           <input
             type="date"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.tanggallahir"
           />
         </div>
 
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">Alamat Lengkap</label>
+        <div class="col-12">
+          <label class="form-label fw-semibold small">Alamat Lengkap</label>
           <textarea
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="formData.alamat"
             placeholder="Jalan, RT/RW, Dusun..."
             rows="2"
           ></textarea>
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Provinsi</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Provinsi</label>
           <select
-            class="form-select"
+            class="form-select form-select-sm"
             v-model="formData.kodepropinsi"
             :disabled="regionsLoading"
           >
@@ -411,10 +415,10 @@
           </select>
         </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Kabupaten</label>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Kabupaten</label>
           <select
-            class="form-select"
+            class="form-select form-select-sm"
             v-model="formData.kodekabupaten"
             :disabled="!formData.kodepropinsi || regionsLoading"
           >
@@ -439,25 +443,25 @@
           </select>
         </div>
 
-        <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">Upload Foto</label>
+        <div class="col-12">
+          <label class="form-label fw-semibold small">Upload Foto</label>
           <input
             type="file"
-            class="form-control"
+            class="form-control form-control-sm"
             @change="handlePhotoUpload"
             accept="image/*"
             ref="fileInput"
           />
 
-          <div class="mt-3" v-if="photoPreviewUrl">
+          <div class="mt-2" v-if="photoPreviewUrl">
             <div class="position-relative d-inline-block">
               <img
                 :src="photoPreviewUrl"
                 alt="Preview Foto"
                 class="img-thumbnail shadow-sm"
                 style="
-                  width: 120px;
-                  height: 120px;
+                  width: 100px;
+                  height: 100px;
                   object-fit: cover;
                   background-color: #f8f9fa;
                 "
@@ -466,15 +470,15 @@
                 type="button"
                 class="btn btn-danger position-absolute top-0 start-100 translate-middle rounded-circle shadow-sm d-flex align-items-center justify-content-center"
                 style="
-                  width: 24px;
-                  height: 24px;
+                  width: 20px;
+                  height: 20px;
                   padding: 0;
                   border: 2px solid white;
                 "
                 @click="removePhoto"
                 title="Hapus Foto"
               >
-                <i class="fa fa-times" style="font-size: 12px"></i>
+                <i class="fa fa-times" style="font-size: 10px"></i>
               </button>
             </div>
           </div>
@@ -485,7 +489,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from "vue";
+import {
+  ref,
+  reactive,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  nextTick,
+} from "vue";
 import { useToast } from "vue-toastification";
 import { getUsers } from "@/services/referensi/users";
 import { getRoles } from "@/services/referensi/roles";
@@ -506,6 +518,7 @@ const toast = useToast();
 const selectionMade = ref(false);
 const mode = ref(""); // 'existing' or 'new'
 const hoveredCard = ref(null);
+const cardsContainer = ref(null);
 
 // === Existing User State ===
 const userOptions = ref([]);
@@ -574,10 +587,14 @@ const isValid = computed(() => {
   return false;
 });
 
+const showCards = computed(() => {
+  // Show cards if selection not made OR mode is invalid/empty
+  return !selectionMade.value || !mode.value;
+});
+
 // === Lifecycle ===
-onMounted(() => {
-  // FIX: Jika mode masih kosong saat dimuat, paksa selectionMade ke false
-  // Ini mencegah layar blank jika state sebelumnya tertinggal
+onMounted(async () => {
+  // FIX: Ensure selectionMade is false if mode is empty
   if (!mode.value) {
     selectionMade.value = false;
   }
@@ -595,14 +612,27 @@ onUnmounted(() => {
 
 // === Watchers ===
 
-// WATCHER BARU: Reset tampilan jika parent mereset data (misal saat tambah data baru)
+// WATCHER: Sync state with props
 watch(
   () => props.modelValue,
   (newVal) => {
-    if (newVal && Object.keys(newVal).length === 0) {
-      // Jika data kosong (reset) dan masih ada status pilihan, reset ke awal
-      if (selectionMade.value || mode.value !== "") {
+    if (!newVal || Object.keys(newVal).length === 0) {
+      // If data is empty, ensure we are in selection mode
+      if (mode.value !== "") {
         resetSelection();
+      }
+    } else {
+      // If data exists (e.g. edit mode or restored state), sync it
+      if (newVal.mode && newVal.mode !== mode.value) {
+        mode.value = newVal.mode;
+        selectionMade.value = true;
+
+        if (newVal.mode === "existing") {
+          selectedUserId.value = newVal.userId;
+          // Note: selectedUser might need to be fetched or set if available
+        } else if (newVal.mode === "new" && newVal.userData) {
+          Object.assign(formData, newVal.userData);
+        }
       }
     }
   },
@@ -702,8 +732,9 @@ async function fetchUsers() {
 
 function onUserSelected() {
   selectedUser.value =
-    userOptions.value.find((u) => u.idpengguna === selectedUserId.value) ||
-    null;
+    userOptions.value.find(
+      (u) => (u.idpengguna || u.email) === selectedUserId.value
+    ) || null;
 }
 
 function getLevelName(idlevel) {
@@ -832,20 +863,20 @@ function removePhoto() {
 
 <style scoped>
 .step-biodata {
-  padding: 1rem 0;
+  padding: 0.5rem 0;
 }
 
 /* Selection Cards */
 .selection-cards {
-  padding: 2rem 0;
-  min-height: 300px; /* Ensure visibility */
+  padding: 0.5rem 0;
+  min-height: 150px;
 }
 
 .selection-card {
   background: #fff;
   border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 2rem;
+  border-radius: 10px;
+  padding: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -860,47 +891,49 @@ function removePhoto() {
 .selection-card.active {
   border-color: #0d6efd;
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
-  transform: translateY(-4px);
+  transform: translateY(-2px);
 }
 
 .card-icon {
-  width: 80px;
-  height: 80px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   transition: all 0.3s ease;
 }
 
 .selection-card:hover .card-icon,
 .selection-card.active .card-icon {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .card-icon i {
-  font-size: 2rem;
+  font-size: 1.2rem;
   color: white;
 }
 
 .card-title {
   font-weight: 600;
   color: #212529;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
 }
 
 .card-description {
   color: #6c757d;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
 }
 
 .card-action {
   margin-top: auto;
   color: #0d6efd;
-  font-size: 1.5rem;
+  font-size: 1rem;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -916,36 +949,36 @@ function removePhoto() {
 }
 
 .user-header-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  border-radius: 10px;
+  padding: 1rem;
   color: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .user-avatar-large {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .user-avatar-placeholder-large {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.2rem;
   color: white;
-  font-size: 2rem;
-  border: 3px solid white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .form-control-plaintext {
-  padding: 0.375rem 0;
+  padding: 0.25rem 0;
   font-weight: 500;
   color: #212529;
 }
