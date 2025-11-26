@@ -16,6 +16,7 @@
                 />
               </a>
             </div>
+
             <div class="login-main">
               <form class="theme-form" @submit.prevent="submitRegister">
                 <h4>Buat akun Anda</h4>
@@ -83,12 +84,11 @@ export default {
       toast: useToast(),
       form: { nama: "", telp: "", email: "", password: "" },
 
-      // reCAPTCHA v3 key
       recaptchaKey: "6LfgoRYsAAAAAHUs_iIg2SVCDTovDKr_hpHsnxnr",
       recaptchaLoaded: false,
 
       dynamicLogoUrl: null,
-      appName: "Login Page",
+      appName: "Register Page",
       isLoadingLogo: true,
     };
   },
@@ -104,7 +104,7 @@ export default {
         const arr = (await getApplication())?.data?.[0]?.data || [];
         if (arr.length > 0) {
           const d = arr[0];
-          this.appName = d.namainstansi || "Login Page";
+          this.appName = d.namainstansi || "Register Page";
           this.dynamicLogoUrl = d.logo || null;
         }
       } catch {
@@ -121,6 +121,8 @@ export default {
     loadRecaptchaScript() {
       return new Promise((resolve) => {
         if (this.recaptchaLoaded) return resolve();
+
+        // Hanya buat script untuk halaman ini
         const s = document.createElement("script");
         s.src = `https://www.google.com/recaptcha/api.js?render=${this.recaptchaKey}`;
         s.async = true;
@@ -155,7 +157,6 @@ export default {
           return;
         }
 
-        // --- FormData ---
         const fd = new FormData();
         fd.append("nama", this.form.nama);
         fd.append("telp", this.form.telp);
@@ -163,16 +164,11 @@ export default {
         fd.append("password", this.form.password);
         fd.append("g-recaptcha-response", token);
 
-        // --- Kirim ke backend ---
         const res = await axios.post(`/register`, fd);
-
-        // --- Sukses ---
         this.toast.success(res.data.message || "Akun berhasil dibuat!");
         this.$router.push("/auth");
       } catch (err) {
         console.error(err);
-
-        // --- Menangani error Laravel ---
         if (err.response?.status === 422) {
           const errors = err.response.data.errors;
           if (errors) {
@@ -194,12 +190,25 @@ export default {
 
   async mounted() {
     await this.fetchLogoData();
-    await this.loadRecaptchaScript();
+
+    // === KUNCI ===
+    // Hanya load script reCAPTCHA di komponen ini
+    if (!this.recaptchaLoaded) {
+      await this.loadRecaptchaScript();
+    }
   },
 
   beforeUnmount() {
-    window.removeEventListener("app-settings-updated", this.fetchLogoData);
+    // Hapus badge saat komponen dilepas
+    const badge = document.querySelector(".grecaptcha-badge");
+    if (badge) badge.remove();
   },
 };
 </script>
 
+<style scoped>
+/* Opsional: sembunyikan badge */
+.grecaptcha-badge {
+  display: none !important;
+}
+</style>
