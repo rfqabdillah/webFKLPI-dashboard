@@ -22,7 +22,6 @@
         </button>
       </div>
 
-      <!-- Empty State -->
       <div
         v-if="pendidikanList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -57,7 +56,6 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <!-- Jenjang Pendidikan -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
                   Jenjang <span class="text-danger">*</span>
@@ -85,7 +83,6 @@
                 </div>
               </div>
 
-              <!-- Tahun Lulus -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
                   Tahun Lulus <span class="text-danger">*</span>
@@ -104,7 +101,6 @@
                 </div>
               </div>
 
-              <!-- Nama Perguruan Tinggi / Sekolah -->
               <div class="col-12">
                 <label class="form-label fw-semibold">
                   Nama Perguruan Tinggi / Sekolah
@@ -126,7 +122,6 @@
                 </div>
               </div>
 
-              <!-- Program Studi -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">Program Studi</label>
                 <input
@@ -137,7 +132,6 @@
                 />
               </div>
 
-              <!-- File Ijazah (Optional in UI, but good to have) -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File Ijazah</label>
                 <input
@@ -169,7 +163,7 @@ import { getEducationLevels } from "@/services/referensi/educationLevels";
 
 const props = defineProps({
   modelValue: {
-    type: Object, // Expecting { list: [] }
+    type: Object,
     default: () => ({ list: [] }),
   },
 });
@@ -185,7 +179,6 @@ const formErrors = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
-  // Initialize from props
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pendidikanList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -218,17 +211,13 @@ async function fetchEducationLevels() {
     };
     const response = await getEducationLevels(params);
 
-    // Handle various response structures
     if (Array.isArray(response.data)) {
-      // Case: Response is an array directly (like the example provided: [{ data: [...], meta: ... }])
       if (response.data[0] && response.data[0].data) {
         educationLevelOptions.value = response.data[0].data;
       } else {
-        // Fallback if it's a flat array of items
         educationLevelOptions.value = response.data;
       }
     } else if (response.data && response.data.data) {
-      // Case: Standard Laravel pagination { data: [...], meta: ... }
       educationLevelOptions.value = response.data.data;
     } else {
       educationLevelOptions.value = [];

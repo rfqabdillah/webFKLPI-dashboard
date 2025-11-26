@@ -1,12 +1,10 @@
 <template>
   <div class="step-biodata">
-    <!-- Selection Cards (Only show if NOT in edit mode and selection not made) -->
     <div
       v-show="showCards && !isEditMode"
       ref="cardsContainer"
       class="selection-cards row g-4 justify-content-center mb-4"
     >
-      <!-- Card: Existing User -->
       <div class="col-md-5 col-lg-4">
         <div
           class="selection-card"
@@ -30,7 +28,6 @@
         </div>
       </div>
 
-      <!-- Card: New User -->
       <div class="col-md-5 col-lg-4">
         <div
           class="selection-card"
@@ -55,7 +52,6 @@
       </div>
     </div>
 
-    <!-- Existing User Selection (Only if mode is existing AND not edit mode AND user not selected) -->
     <div
       v-if="mode === 'existing' && !isEditMode && !selectedUser"
       class="existing-user-section"
@@ -72,7 +68,6 @@
         </button>
       </div>
 
-      <!-- Search & Table Selection -->
       <div class="user-selection-interface">
         <div class="row mb-3">
           <div class="col-md-6">
@@ -216,7 +211,6 @@
       </div>
 
       <div class="row">
-        <!-- Nama Lengkap -->
         <div class="col-12 mb-3">
           <label class="form-label fw-semibold"
             >Nama Lengkap <span class="text-danger">*</span></label
@@ -232,7 +226,6 @@
           <div class="invalid-feedback">{{ formErrors.nama }}</div>
         </div>
 
-        <!-- Gelar Depan & Belakang -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">Gelar Depan</label>
           <input
@@ -252,7 +245,6 @@
           />
         </div>
 
-        <!-- NIK -->
         <div class="col-12 mb-3">
           <label class="form-label fw-semibold">NIK</label>
           <input
@@ -263,7 +255,6 @@
           />
         </div>
 
-        <!-- Email -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold"
             >Email <span class="text-danger">*</span></label
@@ -279,7 +270,6 @@
           <div class="invalid-feedback">{{ formErrors.email }}</div>
         </div>
 
-        <!-- No Telepon -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">No. Telepon</label>
           <input
@@ -290,7 +280,6 @@
           />
         </div>
 
-        <!-- NIP -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">NIP</label>
           <input
@@ -301,7 +290,6 @@
           />
         </div>
 
-        <!-- No Karpeg -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">No. Karpeg</label>
           <input
@@ -312,7 +300,6 @@
           />
         </div>
 
-        <!-- Level / Role -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold"
             >Level / Role <span class="text-danger">*</span></label
@@ -336,7 +323,6 @@
           <div class="invalid-feedback">{{ formErrors.idlevel }}</div>
         </div>
 
-        <!-- Status -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold d-block">Status Akun</label>
           <div class="form-check form-switch mt-2">
@@ -358,7 +344,6 @@
           </div>
         </div>
 
-        <!-- Tempat Lahir -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">Tempat Lahir</label>
           <input
@@ -369,7 +354,6 @@
           />
         </div>
 
-        <!-- Tanggal Lahir -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">Tanggal Lahir</label>
           <input
@@ -379,7 +363,6 @@
           />
         </div>
 
-        <!-- Alamat -->
         <div class="col-12 mb-3">
           <label class="form-label fw-semibold">Alamat Lengkap</label>
           <textarea
@@ -389,7 +372,6 @@
           ></textarea>
         </div>
 
-        <!-- Provinsi -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">Provinsi</label>
           <select
@@ -412,7 +394,6 @@
           </select>
         </div>
 
-        <!-- Kabupaten -->
         <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold">Kabupaten</label>
           <select
@@ -441,7 +422,6 @@
           </select>
         </div>
 
-        <!-- Foto Upload -->
         <div class="col-12 mb-3">
           <label class="form-label fw-semibold">Upload Foto</label>
           <input
@@ -516,7 +496,6 @@
         </div>
       </div>
 
-      <!-- Global Error Alert -->
       <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
         {{ errorMessage }}
       </div>
@@ -555,20 +534,18 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
 
-// === Selection State ===
+// === State ===
 const selectionMade = ref(false);
 const mode = ref("");
 const hoveredCard = ref(null);
 const cardsContainer = ref(null);
 
-// === Existing User State ===
 const userOptions = ref([]);
 const usersLoading = ref(false);
 const selectedUserId = ref("");
 const selectedUser = ref(null);
 const searchQuery = ref("");
 
-// === Form State ===
 const roleOptions = ref([]);
 const rolesLoading = ref(false);
 const allRegions = ref([]);
@@ -608,7 +585,7 @@ const fileInput = ref(null);
 const isPhotoRemoved = ref(false);
 const isUpdatingFromParent = ref(false);
 
-// === Validation Schema (Sama seperti UserFormModal) ===
+// === Validation Schema  ===
 const validationSchema = yup.object().shape({
   nama: yup.string().required("Nama wajib diisi."),
   email: yup
@@ -619,7 +596,7 @@ const validationSchema = yup.object().shape({
   status: yup.string().required("Status wajib dipilih."),
 });
 
-// === Computed Properties ===
+// === Computed  ===
 const isEditMode = computed(() => !!props.fieldToEdit);
 
 const showCards = computed(() => {
@@ -666,7 +643,7 @@ onMounted(async () => {
 
   if (isEditMode.value) {
     populateFormData(props.fieldToEdit);
-    mode.value = "new"; // Treat edit as new form mode
+    mode.value = "new";
     selectionMade.value = true;
   } else if (!mode.value) {
     selectionMade.value = false;
@@ -731,7 +708,6 @@ watch(
     if (isUpdatingFromParent.value) return;
 
     let isValid = false;
-    // Validate form data for both new and existing mode (since existing now shows form)
     if (selectionMade.value) {
       try {
         await validationSchema.validate(formData);
@@ -749,7 +725,7 @@ watch(
       userId: isEditMode.value
         ? props.fieldToEdit.idpengguna
         : selectedUserId.value,
-      userData: { ...formData }, // Always send formData
+      userData: { ...formData },
       photoFile: selectedPhotoFile.value,
       isPhotoRemoved: isPhotoRemoved.value,
     };
@@ -886,9 +862,7 @@ function selectUser(user) {
   });
 }
 
-function handleSearch() {
-  // Client-side filtering handled by computed property
-}
+function handleSearch() {}
 
 async function fetchRolesData() {
   rolesLoading.value = true;
@@ -1003,12 +977,9 @@ async function handlePhotoUpload(event) {
     return;
   }
 
-  // REMOVED MANUAL SIZE VALIDATION
-
   toast.info("Sedang mengompres gambar...", { timeout: 2000 });
 
   try {
-    // Compress Image using default options
     const compressedFile = await compressImage(file);
 
     selectedPhotoFile.value = compressedFile;
@@ -1058,7 +1029,6 @@ defineExpose({ validate });
   padding: 0;
 }
 
-/* Selection Cards */
 .selection-cards {
   padding: 0.5 rem 0;
 }

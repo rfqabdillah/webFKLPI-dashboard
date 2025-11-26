@@ -14,7 +14,6 @@
       </button>
     </div>
 
-    <!-- Empty State -->
     <div
       v-if="pelatihanList.length === 0"
       class="text-center py-4 border rounded bg-light mb-3"
@@ -49,7 +48,6 @@
         </div>
         <div class="card-body">
           <div class="row g-3">
-            <!-- Nama Pelatihan -->
             <div class="col-12">
               <label class="form-label fw-semibold">
                 Nama Pelatihan <span class="text-danger">*</span>
@@ -68,7 +66,6 @@
               </div>
             </div>
 
-            <!-- Nama Penyelenggara -->
             <div class="col-md-12">
               <label class="form-label fw-semibold">
                 Penyelenggara <span class="text-danger">*</span>
@@ -87,7 +84,6 @@
               </div>
             </div>
 
-            <!-- Tanggal Mulai & Selesai -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 Tanggal Mulai <span class="text-danger">*</span>
@@ -113,7 +109,6 @@
               />
             </div>
 
-            <!-- Status (Ditambahkan Kembali) -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Status</label>
               <select class="form-select" v-model="item.status">
@@ -122,7 +117,6 @@
               </select>
             </div>
 
-            <!-- File Sertifikat -->
             <div class="col-12">
               <label class="form-label fw-semibold">File Sertifikat</label>
               <input
@@ -152,7 +146,7 @@ import { useToast } from "vue-toastification";
 
 const props = defineProps({
   modelValue: {
-    type: Object, // Expecting { list: [] }
+    type: Object,
     default: () => ({ list: [] }),
   },
 });
@@ -165,7 +159,6 @@ const formErrors = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
-  // Initialize from props
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pelatihanList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -188,7 +181,7 @@ function addPelatihan() {
     namapenyelenggara: "",
     tglmulai: "",
     tglselesai: "",
-    status: "Selesai", // Default status
+    status: "Selesai",
     filesertifikat: null,
     filesertifikat_preview: "",
   });

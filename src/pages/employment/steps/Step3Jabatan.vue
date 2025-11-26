@@ -22,7 +22,6 @@
         </button>
       </div>
 
-      <!-- Empty State -->
       <div
         v-if="jabatanList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -57,7 +56,6 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <!-- Jenjang Jabatan Dropdown -->
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
                   Jenjang Jabatan <span class="text-danger">*</span>
@@ -83,7 +81,6 @@
                 </div>
               </div>
 
-              <!-- Tanggal Mulai & Selesai -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
                   Tanggal Mulai <span class="text-danger">*</span>
@@ -112,7 +109,6 @@
                 </div>
               </div>
 
-              <!-- File SK -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
                 <input
@@ -127,7 +123,6 @@
                 </div>
               </div>
 
-              <!-- Status Switch -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold d-block">Status</label>
                 <div class="form-check form-switch mt-2">
@@ -162,7 +157,7 @@ import { getPositionLevels } from "@/services/referensi/positionLevels";
 
 const props = defineProps({
   modelValue: {
-    type: Object, // Expecting { list: [] }
+    type: Object,
     default: () => ({ list: [] }),
   },
 });
@@ -178,7 +173,6 @@ const formErrors = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
-  // Initialize from props
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     jabatanList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -195,7 +189,7 @@ onMounted(() => {
 
 // === Methods ===
 async function loadData() {
-  if (isDataLoaded.value) return; // Prevent refetching
+  if (isDataLoaded.value) return;
   await fetchPositionLevels();
   isDataLoaded.value = true;
 }
@@ -226,7 +220,6 @@ async function fetchPositionLevels() {
 }
 
 function addJabatan() {
-  // Deactivate others if new one is active
   jabatanList.value.forEach((item) => (item.status = "Tidak Aktif"));
 
   jabatanList.value.push({

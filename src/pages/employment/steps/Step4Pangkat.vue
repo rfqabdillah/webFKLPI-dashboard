@@ -22,7 +22,6 @@
         </button>
       </div>
 
-      <!-- Empty State -->
       <div
         v-if="pangkatList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -57,7 +56,6 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <!-- Pangkat Dropdown -->
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
                   Pangkat / Golongan <span class="text-danger">*</span>
@@ -83,7 +81,6 @@
                 </div>
               </div>
 
-              <!-- Tanggal Mulai & Selesai -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
                   Tanggal Mulai <span class="text-danger">*</span>
@@ -110,7 +107,6 @@
                 <div class="form-text small">Kosongkan jika masih aktif.</div>
               </div>
 
-              <!-- File SK -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
                 <input
@@ -160,7 +156,7 @@ import { getRanks } from "@/services/referensi/ranks";
 
 const props = defineProps({
   modelValue: {
-    type: Object, // Expecting { list: [] }
+    type: Object,
     default: () => ({ list: [] }),
   },
 });
@@ -176,7 +172,6 @@ const formErrors = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
-  // Initialize from props
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pangkatList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -224,7 +219,6 @@ async function fetchRanks() {
 }
 
 function addPangkat() {
-  // Deactivate others if new one is active
   pangkatList.value.forEach((item) => (item.status = "Tidak Aktif"));
 
   pangkatList.value.push({

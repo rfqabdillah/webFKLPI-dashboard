@@ -12,7 +12,6 @@
       </button>
     </div>
 
-    <!-- Empty State -->
     <div
       v-if="prestasiList.length === 0"
       class="text-center py-4 border rounded bg-light mb-3"
@@ -47,7 +46,6 @@
         </div>
         <div class="card-body">
           <div class="row g-3">
-            <!-- Nama Prestasi -->
             <div class="col-12">
               <label class="form-label fw-semibold">
                 Nama Prestasi <span class="text-danger">*</span>
@@ -66,7 +64,6 @@
               </div>
             </div>
 
-            <!-- Nama Penyelenggara -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 Penyelenggara <span class="text-danger">*</span>
@@ -85,7 +82,6 @@
               </div>
             </div>
 
-            <!-- Skala (Dropdown) -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 Skala <span class="text-danger">*</span>
@@ -111,7 +107,6 @@
               </div>
             </div>
 
-            <!-- Status Switch -->
             <div class="col-md-6">
               <label class="form-label fw-semibold d-block">Status</label>
               <div class="form-check form-switch mt-2">
@@ -129,7 +124,6 @@
               </div>
             </div>
 
-            <!-- File Sertifikat -->
             <div class="col-12">
               <label class="form-label fw-semibold">File Sertifikat</label>
               <input
@@ -160,7 +154,7 @@ import { getScales } from "@/services/referensi/scale";
 
 const props = defineProps({
   modelValue: {
-    type: Object, // Expecting { list: [] }
+    type: Object,
     default: () => ({ list: [] }),
   },
 });
@@ -174,7 +168,6 @@ const scaleOptions = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
-  // Initialize from props
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     prestasiList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -189,8 +182,6 @@ onMounted(() => {
   emit("validation-change", true);
 });
 
-// Lazy loading implemented via loadData
-
 // === Methods ===
 const isDataLoaded = ref(false);
 const isLoading = ref(false);
@@ -204,11 +195,10 @@ async function loadData() {
 async function fetchScales() {
   isLoading.value = true;
   try {
-    // Menggunakan getScales dari @/services/referensi/scale.js
     const params = { limit: 100, sort: "namaskala", dir: "asc" };
     const response = await getScales(params);
 
-    console.log("Response fetchScales:", response); // Debugging
+    // console.log("Response fetchScales:", response);
 
     if (response.data && Array.isArray(response.data)) {
       if (response.data[0] && response.data[0].data) {
@@ -230,7 +220,6 @@ async function fetchScales() {
 }
 
 function addPrestasi() {
-  // If adding a new active item, deactivate others first
   prestasiList.value.forEach((item) => (item.status = "Tidak Aktif"));
 
   prestasiList.value.push({
@@ -238,7 +227,7 @@ function addPrestasi() {
     namaprestasi: "",
     namapenyelenggara: "",
     idskala: "",
-    status: "Aktif", // Default status
+    status: "Aktif",
     filesertifikat: null,
     filesertifikat_preview: "",
   });
@@ -268,7 +257,6 @@ function handleStatusChange(index, isChecked) {
   const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   prestasiList.value[index].status = newStatus;
 
-  // If set to Active, deactivate all others
   if (newStatus === "Aktif") {
     prestasiList.value.forEach((item, i) => {
       if (i !== index) {
