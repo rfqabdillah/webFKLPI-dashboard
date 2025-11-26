@@ -2,15 +2,16 @@
   <li class="profile-nav onhover-dropdown pe-0 py-0">
     <div class="media profile-media">
       <div v-if="user.photo" class="b-r-10 profile-img-container">
-        <img 
-          class="b-r-10 profile-img" 
-          :src="user.photo" 
-          alt="Foto Profil" 
+        <img
+          class="b-r-10 profile-img"
+          :src="user.photo"
+          alt="Foto Profil"
+          @error="handleImageError"
         />
       </div>
 
-      <div 
-        v-else 
+      <div
+        v-else
         class="profile-initial"
         :style="{ backgroundColor: avatarColor }"
       >
@@ -39,30 +40,35 @@
 </template>
 
 <script>
-import apiClient from '@/services/users';
+import apiClient from "@/services/users";
 
 export default {
-  nama: 'Profile',
+  name: "Profile",
   data() {
     return {
       user: {
-        nama: 'Pengguna',
-        nama_level: 'Role',
-        photo: null, 
+        nama: "Pengguna",
+        nama_level: "Role",
+        photo: null,
       },
       colors: [
-        '#6c5ce7', '#00b894', '#0984e3', '#e17055', '#fdcb6e', '#d63031'
+        "#6c5ce7",
+        "#00b894",
+        "#0984e3",
+        "#e17055",
+        "#fdcb6e",
+        "#d63031",
       ],
     };
   },
   computed: {
     userInitials() {
-      if (!this.user.nama) return '?';
-      const words = this.user.nama.trim().split(' ');
+      if (!this.user.nama) return "?";
+      const words = this.user.nama.trim().split(" ");
       if (words.length === 1) {
-        return words[0][0].toUpperCase(); 
+        return words[0][0].toUpperCase();
       } else {
-        return (words[0][0] + words[1][0]).toUpperCase(); 
+        return (words[0][0] + words[1][0]).toUpperCase();
       }
     },
     avatarColor() {
@@ -76,70 +82,88 @@ export default {
     this.loadUserData();
   },
   methods: {
+    handleImageError() {
+      this.user.photo = null;
+    },
+
     loadUserData() {
-    const storedUserData = localStorage.getItem('userData');
-    if (!storedUserData) return;
+      const storedUserData = localStorage.getItem("userData");
+      if (!storedUserData) return;
 
-    try {
-      const parsedData = JSON.parse(storedUserData);
-      const userProfile = parsedData.data?.[0];
+      try {
+        const parsedData = JSON.parse(storedUserData);
+        const userProfile = parsedData.data?.[0];
 
-      if (userProfile) {
-        this.user.nama = userProfile.nama || 'Pengguna';
-        this.user.nama_level = userProfile.nama_level || 'Role';
+        if (userProfile) {
+          this.user.nama = userProfile.nama || "Pengguna";
+          this.user.nama_level = userProfile.nama_level || "Role";
+
+          this.user.photo = userProfile.foto || null;
+        }
+      } catch (error) {
+        console.error("Gagal parse user data dari localStorage:", error);
       }
-    } catch (error) {
-      console.error("Gagal parse user data dari localStorage:", error);
-    }
-  },
+    },
+
     async logout() {
       const result = await this.$swal.fire({
         text: "Apakah Anda yakin ingin keluar?",
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        cancelButtonColor: '#efefef',
-        confirmButtonColor: '#0d6efd',
-        cancelButtonText: 'Batal',
-        confirmButtonText: 'Konfirmasi',
+        cancelButtonColor: "#efefef",
+        confirmButtonColor: "#0d6efd",
+        cancelButtonText: "Batal",
+        confirmButtonText: "Konfirmasi",
         reverseButtons: true,
       });
 
       if (result.isConfirmed) {
         try {
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem("token");
           if (token) {
-            await apiClient.get('/logout', {
+            await apiClient.get("/logout", {
               headers: {
-                Authorization: `Bearer ${token}`
-              }
+                Authorization: `Bearer ${token}`,
+              },
             });
           }
-          
         } catch (err) {
           if (err.response && err.response.status === 401) {
-            console.warn('Sesi sudah berakhir di server, membersihkan data lokal');
+            console.warn(
+              "Sesi sudah berakhir di server, membersihkan data lokal"
+            );
           } else {
-            console.error('Gagal menghubungi server untuk logout:', err);
+            console.error("Gagal menghubungi server untuk logout:", err);
           }
         } finally {
-          localStorage.removeItem('token');
-          localStorage.removeItem('userData');
-          
-          this.$router.replace('/auth');
-          this.$swal.fire('Berhasil!', 'Anda telah berhasil keluar.', 'success');
+          localStorage.removeItem("token");
+          localStorage.removeItem("userData");
+
+          this.$router.replace("/auth");
+          this.$swal.fire(
+            "Berhasil!",
+            "Anda telah berhasil keluar.",
+            "success"
+          );
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-.profile-img {
+.profile-img-container {
   width: 35px;
   height: 35px;
-  object-fit: cover;
+  overflow: hidden;
   border-radius: 50%;
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .profile-initial {

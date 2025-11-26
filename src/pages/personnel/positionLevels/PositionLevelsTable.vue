@@ -1,7 +1,7 @@
 <template>
   <BaseTable
     title="Daftar Jenjang Jabatan"
-    entityName="Jenjang Jabatan" 
+    entityName="Jenjang Jabatan"
     :apiService="rankApi"
     :FormModalComponent="PositionLevelFormModal"
     :columns="columns"
@@ -14,7 +14,11 @@
     <template #filters="{ filters }">
       <div class="row g-3">
         <div class="col-md-4">
-          <label for="filterPositionLevelName" class="form-label text-dark fw-semibold">Jenjang Jabatan</label>
+          <label
+            for="filterPositionLevelName"
+            class="form-label text-dark fw-semibold"
+            >Jenjang Jabatan</label
+          >
           <input
             type="text"
             id="filterPositionLevelName"
@@ -25,9 +29,9 @@
         </div>
       </div>
     </template>
-    <template #cell(namakategorijenjang)="{ item }">
-      <span v-if="item['levels-categories']">
-        {{ item['levels-categories'].namakategorijenjang }}
+    <template #cell(namajenjangkategori)="{ item }">
+      <span v-if="item['level-categories']">
+        {{ item["level-categories"].namajenjangkategori }}
       </span>
       <span v-else class="text-muted">-</span>
     </template>
@@ -35,12 +39,15 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue';
-import BaseTable from '@/components/base/BaseTable.vue';
-import { deletePositionLevel, getPositionLevels } from '@/services/referensi/positionLevels';
+import { defineAsyncComponent } from "vue";
+import BaseTable from "@/components/base/BaseTable.vue";
+import {
+  deletePositionLevel,
+  getPositionLevels,
+} from "@/services/referensi/positionLevels";
 
-const PositionLevelFormModal = defineAsyncComponent(() => 
-  import('./PositionLevelFormModal.vue')
+const PositionLevelFormModal = defineAsyncComponent(() =>
+  import("./PositionLevelFormModal.vue")
 );
 
 const rankApi = {
@@ -49,8 +56,12 @@ const rankApi = {
 };
 
 const columns = [
-  { key: 'namajenjang', label: 'Nama Jenjang Jabatan', sortable: true },
-  { key: 'namajenjangkategori', label: 'Kategori Jenjang Jabatan', sortable: true },
+  { key: "namajenjang", label: "Nama Jenjang Jabatan", sortable: true },
+  {
+    key: "namajenjangkategori",
+    label: "Kategori Jenjang Jabatan",
+    sortable: true,
+  },
 ];
 
 const initialFilters = {

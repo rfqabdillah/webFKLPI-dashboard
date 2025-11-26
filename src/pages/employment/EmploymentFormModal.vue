@@ -33,7 +33,9 @@
             :before-change="() => validateStep(0)"
           >
             <Step1Biodata
+              ref="step1Ref"
               v-model="stepData.biodata"
+              :fieldToEdit="fieldToEdit"
               @validation-change="(valid) => updateStepValidation(0, valid)"
             />
           </tab-content>
@@ -45,6 +47,7 @@
             :before-change="() => validateStep(1)"
           >
             <Step2UnitKerja
+              ref="step2Ref"
               v-model="stepData.unitKerja"
               @validation-change="(valid) => updateStepValidation(1, valid)"
             />
@@ -57,6 +60,7 @@
             :before-change="() => validateStep(2)"
           >
             <Step3Jabatan
+              ref="step3Ref"
               v-model="stepData.jabatan"
               @validation-change="(valid) => updateStepValidation(2, valid)"
             />
@@ -69,6 +73,7 @@
             :before-change="() => validateStep(3)"
           >
             <Step4Pangkat
+              ref="step4Ref"
               v-model="stepData.pangkat"
               @validation-change="(valid) => updateStepValidation(3, valid)"
             />
@@ -81,6 +86,7 @@
             :before-change="() => validateStep(4)"
           >
             <Step5Pendidikan
+              ref="step5Ref"
               v-model="stepData.pendidikan"
               @validation-change="(valid) => updateStepValidation(4, valid)"
             />
@@ -93,6 +99,7 @@
             :before-change="() => validateStep(5)"
           >
             <Step6Pelatihan
+              ref="step6Ref"
               v-model="stepData.pelatihan"
               @validation-change="(valid) => updateStepValidation(5, valid)"
             />
@@ -105,6 +112,7 @@
             :before-change="() => validateStep(6)"
           >
             <Step7Prestasi
+              ref="step7Ref"
               v-model="stepData.prestasi"
               @validation-change="(valid) => updateStepValidation(6, valid)"
             />
@@ -163,7 +171,6 @@ import { useToast } from "vue-toastification";
 import { FormWizard, TabContent } from "vue3-form-wizard";
 import "vue3-form-wizard/dist/style.css";
 
-// Import Step Components
 import Step1Biodata from "./steps/Step1Biodata.vue";
 import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
 import Step3Jabatan from "./steps/Step3Jabatan.vue";
@@ -172,8 +179,13 @@ import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
 import Step6Pelatihan from "./steps/Step6Pelatihan.vue";
 import Step7Prestasi from "./steps/Step7Prestasi.vue";
 
-// Import Services
-import { addUser } from "@/services/referensi/users";
+import { addUser, updateUser } from "@/services/referensi/users";
+import { addUserWorkUnit } from "@/services/general/personnel/userWorkUnits";
+import { addUserLevel } from "@/services/general/personnel/userLevels";
+import { addUserRank } from "@/services/general/personnel/userRanks";
+import { addUserEducation } from "@/services/general/personnel/userEducation";
+import { addUserTraining } from "@/services/general/personnel/userTrainings";
+import { addUserAchievement } from "@/services/general/personnel/userAchievments";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
@@ -185,11 +197,17 @@ const toast = useToast();
 
 // === Wizard State ===
 const wizardRef = ref(null);
+const step1Ref = ref(null);
+const step2Ref = ref(null);
+const step3Ref = ref(null);
+const step4Ref = ref(null);
+const step5Ref = ref(null);
+const step6Ref = ref(null);
+const step7Ref = ref(null);
 const currentTabIndex = ref(0);
 const isLoading = ref(false);
 const errorMessage = ref(null);
 
-// Step validations
 const stepValidations = reactive([
   true, // Step 1: Biodata
   true, // Step 2: Unit Kerja
@@ -200,15 +218,14 @@ const stepValidations = reactive([
   true, // Step 7: Prestasi
 ]);
 
-// Data from each step
 const stepData = reactive({
   biodata: {},
-  unitKerja: {},
-  jabatan: {},
-  pangkat: {},
-  pendidikan: {},
-  pelatihan: {},
-  prestasi: {},
+  unitKerja: { list: [] },
+  jabatan: { list: [] },
+  pangkat: { list: [] },
+  pendidikan: { list: [] },
+  pelatihan: { list: [] },
+  prestasi: { list: [] },
 });
 
 // === Computed ===
@@ -234,15 +251,49 @@ function updateStepValidation(stepIndex, isValid) {
 
 function onChangeCurrentTab(prevIndex, nextIndex) {
   currentTabIndex.value = nextIndex;
+
+  // Lazy Load Data for Steps
+  if (nextIndex === 1 && step2Ref.value) {
+    step2Ref.value.loadData();
+  } else if (nextIndex === 2 && step3Ref.value) {
+    step3Ref.value.loadData();
+  } else if (nextIndex === 3 && step4Ref.value) {
+    step4Ref.value.loadData();
+  } else if (nextIndex === 4 && step5Ref.value) {
+    step5Ref.value.loadData();
+  } else if (nextIndex === 6 && step7Ref.value) {
+    step7Ref.value.loadData();
+  }
 }
 
 function validateStep(stepIndex) {
-  // Return true directly to ensure navigation works
-  // Validation logic is handled by the component emitting validation-change
-  // But for wizard navigation, we check the stored validation state
   const isValid = stepValidations[stepIndex];
+
   if (!isValid) {
-    toast.warning("Mohon lengkapi data pada langkah ini sebelum melanjutkan.");
+    // Trigger UI validation
+    if (stepIndex === 0 && step1Ref.value) {
+      step1Ref.value.validate();
+    }
+    if (stepIndex === 1 && step2Ref.value) {
+      step2Ref.value.validate();
+    }
+    if (stepIndex === 2 && step3Ref.value) {
+      step3Ref.value.validate();
+    }
+    if (stepIndex === 3 && step4Ref.value) {
+      step4Ref.value.validate();
+    }
+    if (stepIndex === 4 && step5Ref.value) {
+      step5Ref.value.validate();
+    }
+    if (stepIndex === 5 && step6Ref.value) {
+      step6Ref.value.validate();
+    }
+    if (stepIndex === 6 && step7Ref.value) {
+      step7Ref.value.validate();
+    }
+
+    toast.warning("Mohon lengkapi data pada langkah ini sebelum melanjutkan");
   }
   return isValid;
 }
@@ -272,14 +323,13 @@ async function submitForm() {
 
   try {
     const biodataInfo = stepData.biodata;
+    let userId = null;
 
-    if (biodataInfo.isExisting) {
-      toast.info(
-        "Mode menggunakan data existing user - implementasi akan ditambahkan"
-      );
-      console.log("Selected User ID:", biodataInfo.userId);
-      console.log("All Step Data:", stepData);
-    } else {
+    if (
+      biodataInfo.mode === "edit" ||
+      (isEditMode.value && biodataInfo.mode === "new")
+    ) {
+      userId = biodataInfo.userId;
       const data = new FormData();
       const userData = biodataInfo.userData;
 
@@ -298,6 +348,13 @@ async function submitForm() {
       data.append("record[tanggallahir]", userData.tanggallahir || "");
       data.append("record[status]", userData.status || "Aktif");
 
+      data.append("record[idpenggunajenjang]", "");
+      data.append("record[idpenggunapangkat]", "");
+      data.append("record[idpenggunapelatihan]", "");
+      data.append("record[idpenggunapendidikan]", "");
+      data.append("record[idpenggunaprestasi]", "");
+      data.append("record[idpenggunaunitkerja]", "");
+
       if (biodataInfo.photoFile) {
         data.append(
           "upload_foto",
@@ -306,15 +363,173 @@ async function submitForm() {
         );
       }
 
-      await addUser(data);
-      toast.success("Data pegawai berhasil ditambahkan");
-      emit("save-successful");
-      closeModal();
+      await updateUser(userId, data);
+    } else if (biodataInfo.isExisting) {
+      userId = biodataInfo.userId;
+    } else {
+      const data = new FormData();
+      const userData = biodataInfo.userData;
+
+      data.append("record[idlevel]", userData.idlevel || "");
+      data.append("record[email]", userData.email || "");
+      data.append("record[nama]", userData.nama || "");
+      data.append("record[telp]", userData.telp || "");
+      data.append("record[nik]", userData.nik || "");
+      data.append("record[gelardepan]", userData.gelardepan || "");
+      data.append("record[gelarbelakang]", userData.gelarbelakang || "");
+      data.append("record[alamat]", userData.alamat || "");
+      data.append("record[kodekabupaten]", userData.kodekabupaten || "");
+      data.append("record[nip]", userData.nip || "");
+      data.append("record[no_karpeg]", userData.no_karpeg || "");
+      data.append("record[tempatlahir]", userData.tempatlahir || "");
+      data.append("record[tanggallahir]", userData.tanggallahir || "");
+      data.append("record[tanggallahir]", userData.tanggallahir || "");
+      data.append("record[status]", userData.status || "Aktif");
+
+      data.append("record[idpenggunajenjang]", "");
+      data.append("record[idpenggunapangkat]", "");
+      data.append("record[idpenggunapelatihan]", "");
+      data.append("record[idpenggunapendidikan]", "");
+      data.append("record[idpenggunaprestasi]", "");
+      data.append("record[idpenggunaunitkerja]", "");
+
+      if (biodataInfo.photoFile) {
+        data.append(
+          "upload_foto",
+          biodataInfo.photoFile,
+          biodataInfo.photoFile.name
+        );
+      }
+
+      const userResponse = await addUser(data);
+
+      if (
+        userResponse.data &&
+        userResponse.data.data &&
+        userResponse.data.data.idpengguna
+      ) {
+        userId = userResponse.data.data.idpengguna;
+      } else if (userResponse.data && userResponse.data.idpengguna) {
+        userId = userResponse.data.idpengguna;
+      } else {
+        throw new Error("Gagal mendapatkan ID pengguna baru.");
+      }
     }
+
+    if (!userId) {
+      throw new Error("ID Pengguna tidak valid.");
+    }
+
+    const promises = [];
+
+    // Save Unit Kerja
+    if (stepData.unitKerja.list && stepData.unitKerja.list.length > 0) {
+      stepData.unitKerja.list.forEach((item) => {
+        const formData = new FormData();
+        formData.append("record[idpengguna]", userId);
+        formData.append("record[idunitkerja]", item.idunitkerja);
+        formData.append("record[tglmulai]", item.tglmulai);
+        if (item.tglselesai)
+          formData.append("record[tglselesai]", item.tglselesai);
+        formData.append("record[status]", item.status);
+        if (item.filesk) formData.append("filesk", item.filesk);
+        promises.push(addUserWorkUnit(formData));
+      });
+    }
+
+    // Save Jabatan
+    if (stepData.jabatan.list && stepData.jabatan.list.length > 0) {
+      stepData.jabatan.list.forEach((item) => {
+        const formData = new FormData();
+        formData.append("record[idpengguna]", userId);
+        formData.append("record[idjenjang]", item.idjenjang);
+        formData.append("record[tglmulai]", item.tglmulai);
+        if (item.tglselesai)
+          formData.append("record[tglselesai]", item.tglselesai);
+        formData.append("record[status]", item.status);
+        if (item.filesk) formData.append("filesk", item.filesk);
+        promises.push(addUserLevel(formData));
+      });
+    }
+
+    // Save Pangkat
+    if (stepData.pangkat.list && stepData.pangkat.list.length > 0) {
+      stepData.pangkat.list.forEach((item) => {
+        const formData = new FormData();
+        formData.append("record[idpengguna]", userId);
+        formData.append("record[idpangkat]", item.idpangkat);
+        formData.append("record[tglmulai]", item.tglmulai);
+        if (item.tglselesai)
+          formData.append("record[tglselesai]", item.tglselesai);
+        formData.append("record[status]", item.status);
+        if (item.filesk) formData.append("filesk", item.filesk);
+        promises.push(addUserRank(formData));
+      });
+    }
+
+    // Save Pendidikan
+    if (stepData.pendidikan.list && stepData.pendidikan.list.length > 0) {
+      stepData.pendidikan.list.forEach((item) => {
+        const formData = new FormData();
+        formData.append("record[idpengguna]", userId);
+        formData.append(
+          "record[idjenjangpendidikan]",
+          item.idjenjangpendidikan
+        );
+        formData.append(
+          "record[namaperguruantinggi]",
+          item.namaperguruantinggi
+        );
+        formData.append("record[programstudi]", item.programstudi || "");
+        formData.append("record[tahunlulus]", item.tahunlulus);
+        if (item.fileijazah) formData.append("fileijazah", item.fileijazah);
+        promises.push(addUserEducation(formData));
+      });
+    }
+
+    // Save Pelatihan
+    if (stepData.pelatihan.list && stepData.pelatihan.list.length > 0) {
+      stepData.pelatihan.list.forEach((item) => {
+        const formData = new FormData();
+        formData.append("record[idpengguna]", userId);
+        formData.append("record[namapelatihan]", item.namapelatihan);
+        formData.append("record[namapenyelenggara]", item.namapenyelenggara);
+        formData.append("record[tglmulai]", item.tglmulai);
+        if (item.tglselesai)
+          formData.append("record[tglselesai]", item.tglselesai);
+        formData.append("record[status]", item.status);
+        if (item.filesertifikat)
+          formData.append("filesertifikat", item.filesertifikat);
+        promises.push(addUserTraining(formData));
+      });
+    }
+
+    // Save Prestasi
+    if (stepData.prestasi.list && stepData.prestasi.list.length > 0) {
+      stepData.prestasi.list.forEach((item) => {
+        const formData = new FormData();
+        formData.append("record[idpengguna]", userId);
+        formData.append("record[idskala]", item.idskala);
+        formData.append("record[namaprestasi]", item.namaprestasi);
+        formData.append("record[namapenyelenggara]", item.namapenyelenggara);
+        formData.append("record[status]", item.status); // Added status
+        if (item.filesertifikat)
+          formData.append("filesertifikat", item.filesertifikat);
+        promises.push(addUserAchievement(formData));
+      });
+    }
+
+    if (promises.length > 0) {
+      await Promise.all(promises);
+    }
+
+    toast.success("Data pegawai dan riwayat berhasil disimpan.");
+    emit("save-successful");
+    closeModal();
   } catch (error) {
     console.error("Error submitting form:", error);
     errorMessage.value =
-      error.response?.data?.message || "Gagal menyimpan data.";
+      error.response?.data?.message || error.message || "Gagal menyimpan data.";
     toast.error(errorMessage.value);
   } finally {
     isLoading.value = false;
@@ -329,7 +544,20 @@ watch(
       console.log("Edit mode - data:", newData);
     } else {
       Object.keys(stepData).forEach((key) => {
-        stepData[key] = {};
+        if (
+          [
+            "unitKerja",
+            "jabatan",
+            "pangkat",
+            "pendidikan",
+            "pelatihan",
+            "prestasi",
+          ].includes(key)
+        ) {
+          stepData[key] = { list: [] };
+        } else {
+          stepData[key] = {};
+        }
       });
       currentTabIndex.value = 0;
     }

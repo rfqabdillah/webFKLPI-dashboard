@@ -115,13 +115,6 @@
               <dd>{{ formatDate(item.created_at) || "-" }}</dd>
             </dl>
           </div>
-
-          <div class="col-md-6">
-            <dl class="detail-list">
-              <dt>Login Terakhir</dt>
-              <dd>{{ formatDate(item.lastlogin) || "-" }}</dd>
-            </dl>
-          </div>
         </div>
       </div>
     </template>

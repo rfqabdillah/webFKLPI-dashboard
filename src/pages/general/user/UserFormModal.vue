@@ -191,18 +191,18 @@
           <select
             class="form-select"
             v-model="formData.kodekabupaten"
-            :disabled="!formData.kodepropinsi || regionsLoading"
+            :disabled="!formData.kodepropinsi || kabupatenLoading"
           >
             <option value="" disabled>
               {{
-                regionsLoading
+                kabupatenLoading
                   ? "Memuat..."
                   : formData.kodepropinsi
                   ? "Pilih Kabupaten"
                   : "Silakan pilih Provinsi terlebih dahulu"
               }}
             </option>
-            <template v-if="!regionsLoading">
+            <template v-if="!kabupatenLoading">
               <option
                 v-for="kab in kabupatenOptions"
                 :key="kab.idwilayah"
@@ -307,8 +307,10 @@ const toast = useToast();
 // === State ===
 const roleOptions = ref([]);
 const rolesLoading = ref(false);
-const allRegions = ref([]);
+const provinceOptions = ref([]);
+const kabupatenOptions = ref([]);
 const regionsLoading = ref(false);
+const kabupatenLoading = ref(false);
 
 const formData = reactive({
   idlevel: "",
@@ -371,33 +373,10 @@ const modalTitle = computed(() => {
     : `Tambah Data ${props.entityName}`;
 });
 
-const provinceOptions = computed(() => {
-  return allRegions.value
-    .filter((r) => r.tipewilayah === "A")
-    .sort((a, b) =>
-      a.kodewilayah.localeCompare(b.kodewilayah, undefined, { numeric: true })
-    );
-});
-
-const kabupatenOptions = computed(() => {
-  if (!formData.kodepropinsi) return [];
-
-  return allRegions.value
-    .filter((r) => {
-      return (
-        r.tipewilayah === "B" &&
-        r.kodewilayah.startsWith(formData.kodepropinsi + ".")
-      );
-    })
-    .sort((a, b) =>
-      a.kodewilayah.localeCompare(b.kodewilayah, undefined, { numeric: true })
-    );
-});
-
 // === Lifecycle ===
 onMounted(() => {
   fetchRolesData();
-  fetchRegions();
+  fetchProvinces();
 });
 
 onUnmounted(() => {
@@ -442,7 +421,7 @@ async function fetchRolesData() {
   }
 }
 
-async function fetchRegions() {
+async function fetchProvinces() {
   regionsLoading.value = true;
   try {
     const params = {
@@ -450,44 +429,55 @@ async function fetchRegions() {
       limit: 100,
       sort: "kodewilayah",
       dir: "asc",
+      filter: "tipewilayah=A",
     };
 
     const response = await getRegions(params);
-
-    let accumulatedData = [];
-    let lastPage = 1;
-    if (Array.isArray(response.data) && response.data.length > 0) {
+    if (response.data && Array.isArray(response.data)) {
       const rootData = response.data[0];
-
       if (rootData.data) {
-        accumulatedData = rootData.data;
+        provinceOptions.value = rootData.data;
       }
-
-      if (rootData.meta && rootData.meta.pagination) {
-        lastPage = rootData.meta.pagination.last_page;
-      }
+    } else if (response.data && response.data.data) {
+      provinceOptions.value = response.data.data;
     }
-
-    if (lastPage > 1) {
-      const promises = [];
-      for (let i = 2; i <= lastPage; i++) {
-        promises.push(getRegions({ ...params, page: i }));
-      }
-
-      const results = await Promise.all(promises);
-
-      results.forEach((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          accumulatedData = accumulatedData.concat(res.data[0].data);
-        }
-      });
-    }
-    allRegions.value = accumulatedData;
   } catch (error) {
-    console.error("Gagal memuat data wilayah:", error);
-    toast.error("Gagal memuat daftar wilayah lengkap.");
+    console.error("Gagal memuat data provinsi:", error);
+    toast.error("Gagal memuat daftar provinsi.");
   } finally {
     regionsLoading.value = false;
+  }
+}
+
+async function fetchKabupaten(provCode) {
+  if (!provCode) {
+    kabupatenOptions.value = [];
+    return;
+  }
+  kabupatenLoading.value = true;
+  try {
+    const params = {
+      page: 1,
+      limit: 500,
+      sort: "kodewilayah",
+      dir: "asc",
+      filter: `tipewilayah=B,kodewilayah=${provCode}`,
+    };
+
+    const response = await getRegions(params);
+    if (response.data && Array.isArray(response.data)) {
+      const rootData = response.data[0];
+      if (rootData.data) {
+        kabupatenOptions.value = rootData.data;
+      }
+    } else if (response.data && response.data.data) {
+      kabupatenOptions.value = response.data.data;
+    }
+  } catch (error) {
+    console.error("Gagal memuat data kabupaten:", error);
+    toast.error("Gagal memuat daftar kabupaten.");
+  } finally {
+    kabupatenLoading.value = false;
   }
 }
 
@@ -540,11 +530,14 @@ watch(
   (newProv) => {
     if (!newProv) {
       formData.kodekabupaten = "";
+      kabupatenOptions.value = [];
       return;
     }
+    // Jika ganti provinsi, reset kabupaten
     if (formData.kodekabupaten && !formData.kodekabupaten.startsWith(newProv)) {
       formData.kodekabupaten = "";
     }
+    fetchKabupaten(newProv);
   }
 );
 

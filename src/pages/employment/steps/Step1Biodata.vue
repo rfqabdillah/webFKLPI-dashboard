@@ -1,19 +1,25 @@
 <template>
   <div class="step-biodata">
-    <div v-show="showCards" ref="cardsContainer" class="selection-cards">
-      <div class="row g-3 justify-content-center">
-        <div class="col-md-5">
-          <div
-            class="selection-card"
-            :class="{ active: hoveredCard === 'existing' }"
-            @mouseenter="hoveredCard = 'existing'"
-            @mouseleave="hoveredCard = null"
-            @click="selectMode('existing')"
-          >
+    <!-- Selection Cards (Only show if NOT in edit mode and selection not made) -->
+    <div
+      v-show="showCards && !isEditMode"
+      ref="cardsContainer"
+      class="selection-cards row g-4 justify-content-center mb-4"
+    >
+      <!-- Card: Existing User -->
+      <div class="col-md-5 col-lg-4">
+        <div
+          class="selection-card"
+          :class="{ active: hoveredCard === 'existing' }"
+          @mouseenter="hoveredCard = 'existing'"
+          @mouseleave="hoveredCard = null"
+          @click="selectMode('existing')"
+        >
+          <div class="card-content">
             <div class="card-icon">
               <i class="fa fa-users"></i>
             </div>
-            <h6 class="card-title">Gunakan Data Existing</h6>
+            <h6 class="card-title">Gunakan Data yang Ada</h6>
             <p class="card-description">
               Pilih dari daftar pengguna yang sudah terdaftar
             </p>
@@ -22,21 +28,24 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="col-md-5">
-          <div
-            class="selection-card"
-            :class="{ active: hoveredCard === 'new' }"
-            @mouseenter="hoveredCard = 'new'"
-            @mouseleave="hoveredCard = null"
-            @click="selectMode('new')"
-          >
+      <!-- Card: New User -->
+      <div class="col-md-5 col-lg-4">
+        <div
+          class="selection-card"
+          :class="{ active: hoveredCard === 'new' }"
+          @mouseenter="hoveredCard = 'new'"
+          @mouseleave="hoveredCard = null"
+          @click="selectMode('new')"
+        >
+          <div class="card-content">
             <div class="card-icon">
               <i class="fa fa-user-plus"></i>
             </div>
-            <h6 class="card-title">Buat Data Baru</h6>
+            <h6 class="card-title">Input Data Baru</h6>
             <p class="card-description">
-              Isi form biodata lengkap untuk pengguna baru
+              Isi formulir biodata untuk pengguna baru
             </p>
             <div class="card-action">
               <i class="fa fa-arrow-right"></i>
@@ -46,310 +55,291 @@
       </div>
     </div>
 
-    <div v-if="mode === 'existing'" class="existing-user-section">
+    <!-- Existing User Selection (Only if mode is existing AND not edit mode AND user not selected) -->
+    <div
+      v-if="mode === 'existing' && !isEditMode && !selectedUser"
+      class="existing-user-section"
+    >
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="mb-0">Pilih Pengguna Existing</h6>
+        <h6 class="mb-0">
+          <i class="fa fa-search me-2"></i>Pilih Pengguna Existing
+        </h6>
         <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
+          class="btn btn-outline-secondary btn-sm"
           @click="resetSelection"
         >
-          <i class="fa fa-arrow-left me-1"></i>Kembali
+          <i class="fa fa-arrow-left me-1"></i> Kembali
         </button>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold small">
-          Cari Pengguna <span class="text-danger">*</span>
-        </label>
-        <select
-          class="form-select form-select-sm"
-          v-model="selectedUserId"
-          :disabled="usersLoading"
-          @change="onUserSelected"
-        >
-          <option value="" disabled>
-            {{ usersLoading ? "Memuat data..." : "Pilih pengguna" }}
-          </option>
-          <option
-            v-for="user in userOptions"
-            :key="user.idpengguna || user.email"
-            :value="user.idpengguna || user.email"
-          >
-            {{ user.nama }} - {{ user.email }}
-          </option>
-        </select>
-      </div>
-
-      <div v-if="selectedUser" class="user-data-display">
-        <div class="row">
-          <div class="col-12 mb-3">
-            <div class="user-header-card">
-              <div class="row align-items-center">
-                <div class="col-auto">
-                  <img
-                    v-if="selectedUser.foto"
-                    :src="selectedUser.foto"
-                    alt="Foto"
-                    class="user-avatar-large"
-                  />
-                  <div v-else class="user-avatar-placeholder-large">
-                    <i class="fa fa-user"></i>
-                  </div>
-                </div>
-                <div class="col">
-                  <h6 class="mb-1">{{ selectedUser.nama }}</h6>
-                  <p class="mb-0 text-white-50 small">
-                    {{ selectedUser.email }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Gelar Depan</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.gelardepan || "-" }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Gelar Belakang</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.gelarbelakang || "-" }}
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small">NIK</label>
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.nik || "-" }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small">NIP</label>
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.nip || "-" }}
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >No. Telepon</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.telp || "-" }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >No. Karpeg</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.no_karpeg || "-" }}
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Level / Role</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ getLevelName(selectedUser.idlevel) }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Status</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              <span
-                :class="
-                  selectedUser.status === 'Aktif'
-                    ? 'badge bg-success'
-                    : 'badge bg-secondary'
-                "
-              >
-                {{ selectedUser.status || "-" }}
+      <!-- Search & Table Selection -->
+      <div class="user-selection-interface">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0">
+                <i class="fa fa-search text-muted"></i>
               </span>
+              <input
+                type="text"
+                class="form-control border-start-0 ps-0"
+                placeholder="Cari berdasarkan nama, NIP, atau email"
+                v-model="searchQuery"
+                @input="handleSearch"
+              />
             </div>
           </div>
+        </div>
 
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Tempat Lahir</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.tempatlahir || "-" }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Tanggal Lahir</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.tanggallahir || "-" }}
-            </div>
-          </div>
+        <div class="table-responsive border rounded">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th style="width: 50px" class="text-center">#</th>
+                <th>Nama Pegawai</th>
+                <th>NIP / NIK</th>
+                <th>Email</th>
+                <th style="width: 100px" class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="usersLoading">
+                <td colspan="5" class="text-center py-4">
+                  <div
+                    class="spinner-border text-primary spinner-border-sm"
+                    role="status"
+                  ></div>
+                  <span class="ms-2 text-muted">Memuat data...</span>
+                </td>
+              </tr>
+              <tr v-else-if="filteredUsers.length === 0">
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="fa fa-info-circle me-1"></i>
+                  {{
+                    searchQuery
+                      ? "Tidak ada pengguna yang cocok."
+                      : "Belum ada data pengguna."
+                  }}
+                </td>
+              </tr>
+              <tr
+                v-else
+                v-for="(user, index) in filteredUsers"
+                :key="user.idpengguna"
+              >
+                <td class="text-center">{{ index + 1 }}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div v-if="user.foto" class="me-2">
+                      <img
+                        :src="user.foto"
+                        class="rounded-circle"
+                        style="width: 32px; height: 32px; object-fit: cover"
+                        alt="Foto"
+                      />
+                    </div>
+                    <div
+                      v-else
+                      class="avatar-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center rounded-circle"
+                      style="width: 32px; height: 32px; font-size: 12px"
+                    >
+                      {{ user.nama ? user.nama.charAt(0).toUpperCase() : "?" }}
+                    </div>
+                    <div>
+                      <div class="fw-bold">{{ user.nama }}</div>
+                      <div class="small text-muted">
+                        {{ user.jabatan || "-" }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="small">{{ user.nip || "-" }}</div>
+                  <div class="small text-muted">{{ user.nik || "-" }}</div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td class="text-center">
+                  <button
+                    class="btn btn-primary btn-sm"
+                    @click="selectUser(user)"
+                  >
+                    Pilih
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div class="col-12 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Alamat</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ selectedUser.alamat || "-" }}
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Provinsi</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ getProvinceName(selectedUser.kodekabupaten) }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="form-label fw-semibold text-muted small"
-              >Kabupaten</label
-            >
-            <div class="form-control-plaintext py-0 small">
-              {{ getKabupatenName(selectedUser.kodekabupaten) }}
-            </div>
-          </div>
+        <div
+          class="d-flex justify-content-between align-items-center mt-2 text-muted small"
+        >
+          <div>Menampilkan {{ filteredUsers.length }} data</div>
         </div>
       </div>
     </div>
 
-    <div v-if="mode === 'new'" class="new-user-section">
+    <!-- Form Input Section (Shown for New User, Edit Mode, OR Selected Existing User) -->
+    <div
+      v-if="
+        mode === 'new' || isEditMode || (mode === 'existing' && selectedUser)
+      "
+      class="user-form-section"
+    >
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="mb-0">Form Biodata Baru</h6>
+        <h6 class="mb-0">
+          <i
+            class="fa"
+            :class="
+              isEditMode
+                ? 'fa-edit'
+                : mode === 'existing'
+                ? 'fa-user-check'
+                : 'fa-user-plus'
+            "
+          ></i>
+          {{
+            isEditMode
+              ? "Edit Biodata"
+              : mode === "existing"
+              ? "Konfirmasi Data Pengguna"
+              : "Input Biodata Baru"
+          }}
+        </h6>
         <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
+          v-if="!isEditMode"
+          class="btn btn-outline-secondary btn-sm"
           @click="resetSelection"
         >
-          <i class="fa fa-arrow-left me-1"></i>Kembali
+          <i class="fa fa-arrow-left me-1"></i> Kembali
         </button>
       </div>
 
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="form-label fw-semibold small">
-            Nama Lengkap <span class="text-danger">*</span>
-          </label>
+      <div class="row">
+        <!-- Nama Lengkap -->
+        <div class="col-12 mb-3">
+          <label class="form-label fw-semibold"
+            >Nama Lengkap <span class="text-danger">*</span></label
+          >
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.nama"
-            placeholder="Nama lengkap pegawai"
-            required
+            :class="{ 'is-invalid': formErrors.nama }"
+            placeholder="Nama lengkap"
+            @blur="validateField('nama')"
           />
+          <div class="invalid-feedback">{{ formErrors.nama }}</div>
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Gelar Depan</label>
+        <!-- Gelar Depan & Belakang -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Gelar Depan</label>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.gelardepan"
-            placeholder="Contoh: Dr., Ir."
+            placeholder="Dr."
           />
         </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Gelar Belakang</label>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Gelar Belakang</label>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.gelarbelakang"
-            placeholder="Contoh: S.Kom, M.M."
+            placeholder="S.Kom"
           />
         </div>
 
-        <div class="col-12">
-          <label class="form-label fw-semibold small">NIK</label>
+        <!-- NIK -->
+        <div class="col-12 mb-3">
+          <label class="form-label fw-semibold">NIK</label>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.nik"
             placeholder="Nomor Induk Kependudukan"
           />
         </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">NIP</label>
-          <input
-            type="text"
-            class="form-control form-control-sm"
-            v-model="formData.nip"
-            placeholder="Nomor Induk Pegawai"
-          />
-        </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">
-            Email <span class="text-danger">*</span>
-          </label>
+        <!-- Email -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold"
+            >Email <span class="text-danger">*</span></label
+          >
           <input
             type="email"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.email"
+            :class="{ 'is-invalid': formErrors.email }"
             placeholder="email@instansi.go.id"
-            required
+            @blur="validateField('email')"
           />
+          <div class="invalid-feedback">{{ formErrors.email }}</div>
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">No. Telepon</label>
+        <!-- No Telepon -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">No. Telepon</label>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.telp"
             placeholder="08xxxxxxxx"
           />
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">No. Karpeg</label>
+        <!-- NIP -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">NIP</label>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
+            v-model="formData.nip"
+            placeholder="NIP"
+          />
+        </div>
+
+        <!-- No Karpeg -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">No. Karpeg</label>
+          <input
+            type="text"
+            class="form-control"
             v-model="formData.no_karpeg"
             placeholder="Kartu Pegawai"
           />
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">
-            Level / Role <span class="text-danger">*</span>
-          </label>
-          <select
-            class="form-select form-select-sm"
-            v-model="formData.idlevel"
-            :disabled="rolesLoading"
-            required
+        <!-- Level / Role -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold"
+            >Level / Role <span class="text-danger">*</span></label
           >
-            <option value="" disabled>
-              {{ rolesLoading ? "Memuat..." : "Pilih Level" }}
-            </option>
+          <select
+            class="form-select"
+            v-model="formData.idlevel"
+            :class="{ 'is-invalid': formErrors.idlevel }"
+            @blur="validateField('idlevel')"
+            :disabled="rolesLoading"
+          >
+            <option value="" disabled>Pilih Level</option>
             <option
               v-for="role in roleOptions"
               :key="role.idlevel"
-              :value="role.idlevel"
+              :value="String(role.idlevel)"
             >
               {{ role.namalevel }}
             </option>
           </select>
+          <div class="invalid-feedback">{{ formErrors.idlevel }}</div>
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold d-block small"
-            >Status Akun</label
-          >
-          <div class="form-check form-switch mt-1">
+        <!-- Status -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold d-block">Status Akun</label>
+          <div class="form-check form-switch mt-2">
             <input
               class="form-check-input"
               type="checkbox"
@@ -359,44 +349,51 @@
               true-value="Aktif"
               false-value="Tidak Aktif"
             />
-            <label class="form-check-label small" for="statusSwitch">
+            <label class="form-check-label" for="statusSwitch">
               {{ formData.status || "Tidak Aktif" }}
             </label>
           </div>
+          <div class="invalid-feedback d-block" v-if="formErrors.status">
+            {{ formErrors.status }}
+          </div>
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Tempat Lahir</label>
+        <!-- Tempat Lahir -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Tempat Lahir</label>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.tempatlahir"
             placeholder="Kota kelahiran"
           />
         </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Tanggal Lahir</label>
+
+        <!-- Tanggal Lahir -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Tanggal Lahir</label>
           <input
             type="date"
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.tanggallahir"
           />
         </div>
 
-        <div class="col-12">
-          <label class="form-label fw-semibold small">Alamat Lengkap</label>
+        <!-- Alamat -->
+        <div class="col-12 mb-3">
+          <label class="form-label fw-semibold">Alamat Lengkap</label>
           <textarea
-            class="form-control form-control-sm"
+            class="form-control"
             v-model="formData.alamat"
-            placeholder="Jalan, RT/RW, Dusun..."
-            rows="2"
+            placeholder="Alamat domisili"
           ></textarea>
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Provinsi</label>
+        <!-- Provinsi -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Provinsi</label>
           <select
-            class="form-select form-select-sm"
+            class="form-select"
             v-model="formData.kodepropinsi"
             :disabled="regionsLoading"
           >
@@ -415,10 +412,11 @@
           </select>
         </div>
 
-        <div class="col-md-6">
-          <label class="form-label fw-semibold small">Kabupaten</label>
+        <!-- Kabupaten -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Kabupaten</label>
           <select
-            class="form-select form-select-sm"
+            class="form-select"
             v-model="formData.kodekabupaten"
             :disabled="!formData.kodepropinsi || regionsLoading"
           >
@@ -443,46 +441,84 @@
           </select>
         </div>
 
-        <div class="col-12">
-          <label class="form-label fw-semibold small">Upload Foto</label>
+        <!-- Foto Upload -->
+        <div class="col-12 mb-3">
+          <label class="form-label fw-semibold">Upload Foto</label>
           <input
             type="file"
-            class="form-control form-control-sm"
+            class="form-control"
             @change="handlePhotoUpload"
             accept="image/*"
+            :class="{ 'is-invalid': formErrors.foto }"
             ref="fileInput"
           />
+          <div class="invalid-feedback">{{ formErrors.foto }}</div>
+          <small
+            v-if="isEditMode || (mode === 'existing' && selectedUser)"
+            class="form-text text-muted"
+          >
+            Kosongkan jika tidak ingin mengubah foto.
+          </small>
 
-          <div class="mt-2" v-if="photoPreviewUrl">
+          <div
+            class="mt-3"
+            v-if="
+              photoPreviewUrl ||
+              ((isEditMode || mode === 'existing') && formData.foto)
+            "
+          >
             <div class="position-relative d-inline-block">
-              <img
-                :src="photoPreviewUrl"
-                alt="Preview Foto"
-                class="img-thumbnail shadow-sm"
-                style="
-                  width: 100px;
-                  height: 100px;
-                  object-fit: cover;
-                  background-color: #f8f9fa;
-                "
-              />
+              <div v-if="photoPreviewUrl">
+                <img
+                  :src="photoPreviewUrl"
+                  alt="Preview Foto Baru"
+                  class="img-thumbnail shadow-sm"
+                  style="
+                    width: 120px;
+                    height: 120px;
+                    object-fit: cover;
+                    background-color: #f8f9fa;
+                  "
+                />
+              </div>
+              <div
+                v-else-if="(isEditMode || mode === 'existing') && formData.foto"
+              >
+                <img
+                  :src="formData.foto"
+                  alt="Foto Saat Ini"
+                  class="img-thumbnail shadow-sm"
+                  style="
+                    width: 120px;
+                    height: 120px;
+                    object-fit: cover;
+                    background-color: #f8f9fa;
+                  "
+                />
+              </div>
+
               <button
                 type="button"
                 class="btn btn-danger position-absolute top-0 start-100 translate-middle rounded-circle shadow-sm d-flex align-items-center justify-content-center"
                 style="
-                  width: 20px;
-                  height: 20px;
+                  width: 24px;
+                  height: 24px;
                   padding: 0;
                   border: 2px solid white;
                 "
                 @click="removePhoto"
                 title="Hapus Foto"
               >
-                <i class="fa fa-times" style="font-size: 10px"></i>
+                <i class="fa fa-times" style="font-size: 12px"></i>
               </button>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Global Error Alert -->
+      <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
+        {{ errorMessage }}
       </div>
     </div>
   </div>
@@ -499,6 +535,7 @@ import {
   nextTick,
 } from "vue";
 import { useToast } from "vue-toastification";
+import * as yup from "yup";
 import { getUsers } from "@/services/referensi/users";
 import { getRoles } from "@/services/referensi/roles";
 import { getRegions } from "@/services/referensi/regions";
@@ -509,6 +546,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  fieldToEdit: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
@@ -516,7 +557,7 @@ const toast = useToast();
 
 // === Selection State ===
 const selectionMade = ref(false);
-const mode = ref(""); // 'existing' or 'new'
+const mode = ref("");
 const hoveredCard = ref(null);
 const cardsContainer = ref(null);
 
@@ -525,12 +566,14 @@ const userOptions = ref([]);
 const usersLoading = ref(false);
 const selectedUserId = ref("");
 const selectedUser = ref(null);
+const searchQuery = ref("");
 
-// === New User State ===
+// === Form State ===
 const roleOptions = ref([]);
 const rolesLoading = ref(false);
 const allRegions = ref([]);
 const regionsLoading = ref(false);
+const errorMessage = ref(null);
 
 const formData = reactive({
   idlevel: "",
@@ -551,11 +594,38 @@ const formData = reactive({
   foto: null,
 });
 
+const formErrors = reactive({
+  idlevel: "",
+  email: "",
+  nama: "",
+  foto: "",
+  status: "",
+});
+
 const selectedPhotoFile = ref(null);
 const photoPreviewUrl = ref(null);
 const fileInput = ref(null);
+const isPhotoRemoved = ref(false);
+const isUpdatingFromParent = ref(false);
 
-// === Computed ===
+// === Validation Schema (Sama seperti UserFormModal) ===
+const validationSchema = yup.object().shape({
+  nama: yup.string().required("Nama wajib diisi."),
+  email: yup
+    .string()
+    .email("Format email salah")
+    .required("Email wajib diisi."),
+  idlevel: yup.string().required("Level wajib dipilih."),
+  status: yup.string().required("Status wajib dipilih."),
+});
+
+// === Computed Properties ===
+const isEditMode = computed(() => !!props.fieldToEdit);
+
+const showCards = computed(() => {
+  return !selectionMade.value && !isEditMode.value;
+});
+
 const provinceOptions = computed(() => {
   return allRegions.value
     .filter((r) => r.tipewilayah === "A")
@@ -578,30 +648,30 @@ const kabupatenOptions = computed(() => {
     );
 });
 
-const isValid = computed(() => {
-  if (mode.value === "existing") {
-    return !!selectedUserId.value;
-  } else if (mode.value === "new") {
-    return !!(formData.nama && formData.email && formData.idlevel);
-  }
-  return false;
-});
-
-const showCards = computed(() => {
-  // Show cards if selection not made OR mode is invalid/empty
-  return !selectionMade.value || !mode.value;
+const filteredUsers = computed(() => {
+  if (!searchQuery.value) return userOptions.value;
+  const query = searchQuery.value.toLowerCase();
+  return userOptions.value.filter(
+    (user) =>
+      (user.nama && user.nama.toLowerCase().includes(query)) ||
+      (user.nip && user.nip.toLowerCase().includes(query)) ||
+      (user.nik && user.nik.toLowerCase().includes(query)) ||
+      (user.email && user.email.toLowerCase().includes(query))
+  );
 });
 
 // === Lifecycle ===
 onMounted(async () => {
-  // FIX: Ensure selectionMade is false if mode is empty
-  if (!mode.value) {
-    selectionMade.value = false;
-  }
+  await Promise.all([fetchRolesData(), fetchRegions()]);
 
-  fetchUsers();
-  fetchRolesData();
-  fetchRegions();
+  if (isEditMode.value) {
+    populateFormData(props.fieldToEdit);
+    mode.value = "new"; // Treat edit as new form mode
+    selectionMade.value = true;
+  } else if (!mode.value) {
+    selectionMade.value = false;
+    fetchUsers();
+  }
 });
 
 onUnmounted(() => {
@@ -611,29 +681,32 @@ onUnmounted(() => {
 });
 
 // === Watchers ===
-
-// WATCHER: Sync state with props
 watch(
   () => props.modelValue,
   (newVal) => {
-    if (!newVal || Object.keys(newVal).length === 0) {
-      // If data is empty, ensure we are in selection mode
-      if (mode.value !== "") {
-        resetSelection();
-      }
-    } else {
-      // If data exists (e.g. edit mode or restored state), sync it
-      if (newVal.mode && newVal.mode !== mode.value) {
+    if (newVal) {
+      isUpdatingFromParent.value = true;
+      if (newVal.mode) {
         mode.value = newVal.mode;
         selectionMade.value = true;
 
         if (newVal.mode === "existing") {
           selectedUserId.value = newVal.userId;
-          // Note: selectedUser might need to be fetched or set if available
+          // Jika ada userData dari parent (misal saat back/next), populate
+          if (newVal.userData) {
+            Object.assign(formData, newVal.userData);
+          }
         } else if (newVal.mode === "new" && newVal.userData) {
-          Object.assign(formData, newVal.userData);
+          if (!isEditMode.value) {
+            Object.assign(formData, newVal.userData);
+          }
         }
+      } else if (!isEditMode.value) {
+        resetSelection();
       }
+      nextTick(() => {
+        isUpdatingFromParent.value = false;
+      });
     }
   },
   { deep: true, immediate: true }
@@ -653,31 +726,32 @@ watch(
 );
 
 watch(
-  selectionMade,
-  (made) => {
-    // When showing card selection (selectionMade = false), emit false validation
-    // This prevents user from proceeding without selecting a mode
-    if (!made) {
-      emit("validation-change", false);
+  [mode, selectedUserId, formData],
+  async () => {
+    if (isUpdatingFromParent.value) return;
+
+    let isValid = false;
+    // Validate form data for both new and existing mode (since existing now shows form)
+    if (selectionMade.value) {
+      try {
+        await validationSchema.validate(formData);
+        isValid = true;
+      } catch (err) {
+        isValid = false;
+      }
     }
-  },
-  { immediate: true }
-);
 
-watch(isValid, (valid) => {
-  emit("validation-change", valid);
-});
+    emit("validation-change", isValid);
 
-watch(
-  [mode, selectedUser, formData],
-  () => {
     const data = {
-      mode: mode.value,
-      isExisting: mode.value === "existing",
-      userId: selectedUserId.value,
-      userData:
-        mode.value === "existing" ? selectedUser.value : { ...formData },
+      mode: isEditMode.value ? "edit" : mode.value,
+      isExisting: mode.value === "existing" && !isEditMode.value,
+      userId: isEditMode.value
+        ? props.fieldToEdit.idpengguna
+        : selectedUserId.value,
+      userData: { ...formData }, // Always send formData
       photoFile: selectedPhotoFile.value,
+      isPhotoRemoved: isPhotoRemoved.value,
     };
     emit("update:modelValue", data);
   },
@@ -685,9 +759,64 @@ watch(
 );
 
 // === Methods ===
+function populateFormData(data) {
+  if (!data) return;
+
+  formData.idlevel = data.idlevel ? String(data.idlevel) : "";
+  formData.email = data.email || "";
+  formData.nama = data.nama || "";
+  formData.gelardepan = data.gelardepan || "";
+  formData.gelarbelakang = data.gelarbelakang || "";
+  formData.nik = data.nik || "";
+  formData.telp = data.telp || "";
+  formData.nip = data.nip || "";
+  formData.no_karpeg = data.no_karpeg || "";
+  formData.status = data.status || "Aktif";
+  formData.tempatlahir = data.tempatlahir || "";
+  formData.tanggallahir = data.tanggallahir || "";
+  formData.alamat = data.alamat || "";
+
+  formData.kodekabupaten = data.kodekabupaten || "";
+  formData.kodepropinsi = data.kodekabupaten
+    ? data.kodekabupaten.split(".")[0]
+    : "";
+
+  formData.foto = data.foto;
+  if (data.foto) {
+    // photoPreviewUrl.value = data.foto; // UserFormModal logic handles this in template
+  }
+}
+
+async function validate() {
+  if (selectionMade.value) {
+    try {
+      await validationSchema.validate(formData, { abortEarly: false });
+      return true;
+    } catch (err) {
+      err.inner.forEach((error) => {
+        formErrors[error.path] = error.message;
+      });
+      return false;
+    }
+  }
+  return false;
+}
+
+async function validateField(field) {
+  try {
+    await validationSchema.validateAt(field, formData);
+    formErrors[field] = "";
+  } catch (err) {
+    formErrors[field] = err.message;
+  }
+}
+
 function selectMode(selectedMode) {
   mode.value = selectedMode;
   selectionMade.value = true;
+  if (selectedMode === "existing") {
+    fetchUsers();
+  }
 }
 
 function resetSelection() {
@@ -695,6 +824,8 @@ function resetSelection() {
   mode.value = "";
   selectedUserId.value = "";
   selectedUser.value = null;
+
+  // Reset Form
   Object.keys(formData).forEach((key) => (formData[key] = ""));
   formData.status = "Aktif";
   formData.foto = null;
@@ -704,6 +835,11 @@ function resetSelection() {
   }
   photoPreviewUrl.value = null;
   if (fileInput.value) fileInput.value.value = null;
+  isPhotoRemoved.value = false;
+
+  // Reset errors
+  Object.keys(formErrors).forEach((key) => (formErrors[key] = ""));
+  errorMessage.value = null;
 }
 
 async function fetchUsers() {
@@ -712,53 +848,58 @@ async function fetchUsers() {
     const params = { page: 1, limit: 999, sort: "nama", dir: "asc" };
     const response = await getUsers(params);
 
+    console.log("Fetch Users Response:", response);
+
     if (response.data && Array.isArray(response.data)) {
-      if (response.data[0] && response.data[0].data) {
+      if (
+        response.data.length > 0 &&
+        response.data[0].data &&
+        Array.isArray(response.data[0].data)
+      ) {
         userOptions.value = response.data[0].data;
       } else {
         userOptions.value = response.data;
       }
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
+    } else if (
+      response.data &&
+      response.data.data &&
+      Array.isArray(response.data.data)
+    ) {
       userOptions.value = response.data.data;
     } else {
       userOptions.value = [];
     }
   } catch (error) {
+    console.error("Error fetching users:", error);
     toast.error("Gagal memuat daftar pengguna.");
+    userOptions.value = [];
   } finally {
     usersLoading.value = false;
   }
 }
 
-function onUserSelected() {
-  selectedUser.value =
-    userOptions.value.find(
-      (u) => (u.idpengguna || u.email) === selectedUserId.value
-    ) || null;
+function selectUser(user) {
+  selectedUser.value = user;
+  selectedUserId.value = user.idpengguna || user.email;
+  nextTick(() => {
+    populateFormData(user);
+  });
 }
 
-function getLevelName(idlevel) {
-  const role = roleOptions.value.find((r) => r.idlevel === idlevel);
-  return role ? role.namalevel : "-";
-}
-
-function getProvinceName(kodekabupaten) {
-  if (!kodekabupaten) return "-";
-  const kodeprov = kodekabupaten.split(".")[0];
-  const prov = allRegions.value.find((r) => r.kodewilayah === kodeprov);
-  return prov ? prov.namawilayah : "-";
-}
-
-function getKabupatenName(kodekabupaten) {
-  if (!kodekabupaten) return "-";
-  const kab = allRegions.value.find((r) => r.kodewilayah === kodekabupaten);
-  return kab ? kab.namawilayah : "-";
+function handleSearch() {
+  // Client-side filtering handled by computed property
 }
 
 async function fetchRolesData() {
   rolesLoading.value = true;
   try {
-    const params = { page: 1, limit: 999, sort: "namalevel", dir: "asc" };
+    const params = {
+      page: 1,
+      limit: 999,
+      sort: "namalevel",
+      dir: "asc",
+    };
+
     const response = await getRoles(params);
 
     if (response.data && Array.isArray(response.data)) {
@@ -767,12 +908,18 @@ async function fetchRolesData() {
       } else {
         roleOptions.value = response.data;
       }
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
+    } else if (
+      response.data &&
+      response.data.data &&
+      Array.isArray(response.data.data)
+    ) {
       roleOptions.value = response.data.data;
     } else {
+      console.warn("Struktur data role tidak terduga:", response.data);
       roleOptions.value = [];
     }
   } catch (error) {
+    console.error("Gagal memuat data roles:", error);
     toast.error("Gagal memuat daftar level/role.");
   } finally {
     rolesLoading.value = false;
@@ -782,17 +929,27 @@ async function fetchRolesData() {
 async function fetchRegions() {
   regionsLoading.value = true;
   try {
-    const params = { page: 1, limit: 100, sort: "kodewilayah", dir: "asc" };
+    const params = {
+      page: 1,
+      limit: 100,
+      sort: "kodewilayah",
+      dir: "asc",
+    };
+
     const response = await getRegions(params);
 
     let accumulatedData = [];
     let lastPage = 1;
-
     if (Array.isArray(response.data) && response.data.length > 0) {
       const rootData = response.data[0];
-      if (rootData.data) accumulatedData = rootData.data;
-      if (rootData.meta?.pagination)
+
+      if (rootData.data) {
+        accumulatedData = rootData.data;
+      }
+
+      if (rootData.meta && rootData.meta.pagination) {
         lastPage = rootData.meta.pagination.last_page;
+      }
     }
 
     if (lastPage > 1) {
@@ -800,7 +957,9 @@ async function fetchRegions() {
       for (let i = 2; i <= lastPage; i++) {
         promises.push(getRegions({ ...params, page: i }));
       }
+
       const results = await Promise.all(promises);
+
       results.forEach((res) => {
         if (Array.isArray(res.data) && res.data.length > 0) {
           accumulatedData = accumulatedData.concat(res.data[0].data);
@@ -809,7 +968,8 @@ async function fetchRegions() {
     }
     allRegions.value = accumulatedData;
   } catch (error) {
-    toast.error("Gagal memuat daftar wilayah.");
+    console.error("Gagal memuat data wilayah:", error);
+    toast.error("Gagal memuat daftar wilayah lengkap.");
   } finally {
     regionsLoading.value = false;
   }
@@ -823,180 +983,161 @@ async function handlePhotoUpload(event) {
     URL.revokeObjectURL(photoPreviewUrl.value);
   }
 
-  if (!file) {
+  const resetToOriginal = () => {
     selectedPhotoFile.value = null;
-    photoPreviewUrl.value = null;
+    photoPreviewUrl.value =
+      isEditMode.value || mode.value === "existing" ? formData.foto : null;
     if (input) input.value = null;
+  };
+
+  if (!file) {
+    resetToOriginal();
+    formErrors.foto = "";
     return;
   }
 
   if (!file.type.startsWith("image/")) {
     toast.error("File yang diupload harus berupa gambar.");
-    selectedPhotoFile.value = null;
-    photoPreviewUrl.value = null;
-    if (input) input.value = null;
+    resetToOriginal();
+    formErrors.foto = "Format file tidak didukung.";
     return;
   }
 
+  // REMOVED MANUAL SIZE VALIDATION
+
+  toast.info("Sedang mengompres gambar...", { timeout: 2000 });
+
   try {
-    toast.info("Sedang mengompres gambar...", { timeout: 2000 });
+    // Compress Image using default options
     const compressedFile = await compressImage(file);
+
     selectedPhotoFile.value = compressedFile;
     photoPreviewUrl.value = URL.createObjectURL(compressedFile);
+    formErrors.foto = "";
+    isPhotoRemoved.value = false;
   } catch (error) {
-    toast.error("Gagal memproses gambar: " + error.message);
-    selectedPhotoFile.value = null;
-    photoPreviewUrl.value = null;
-    if (input) input.value = null;
+    console.error("Error compressing image:", error);
+    toast.error("Gagal memproses gambar.");
+    resetToOriginal();
   }
 }
 
 function removePhoto() {
-  if (photoPreviewUrl.value && photoPreviewUrl.value.startsWith("blob:")) {
+  const isBlobPreview =
+    photoPreviewUrl.value && photoPreviewUrl.value.startsWith("blob:");
+
+  if (isBlobPreview) {
     URL.revokeObjectURL(photoPreviewUrl.value);
   }
-  if (fileInput.value) fileInput.value.value = null;
+
+  if (fileInput.value) {
+    fileInput.value.value = null;
+  }
   selectedPhotoFile.value = null;
-  photoPreviewUrl.value = null;
+
+  if ((isEditMode.value || mode.value === "existing") && formData.foto) {
+    if (!isBlobPreview) {
+      photoPreviewUrl.value = null;
+      formData.foto = null;
+      isPhotoRemoved.value = true;
+    } else {
+      photoPreviewUrl.value = null;
+      isPhotoRemoved.value = false;
+    }
+  } else {
+    photoPreviewUrl.value = null;
+    isPhotoRemoved.value = false;
+  }
 }
+
+defineExpose({ validate });
 </script>
 
 <style scoped>
 .step-biodata {
-  padding: 0.5rem 0;
+  padding: 0;
 }
 
 /* Selection Cards */
 .selection-cards {
-  padding: 0.5rem 0;
-  min-height: 150px;
+  padding: 0.5 rem 0;
 }
 
 .selection-card {
   background: #fff;
   border: 2px solid #e9ecef;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 1rem;
+  text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.selection-card:hover,
+.selection-card:hover {
+  border-color: #0d6efd;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(13, 110, 253, 0.1);
+}
+
 .selection-card.active {
   border-color: #0d6efd;
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
-  transform: translateY(-2px);
+  background-color: #f8fbff;
 }
 
 .card-icon {
-  width: 45px;
-  height: 45px;
+  width: 60px;
+  height: 60px;
+  background: #e7f1ff;
+  color: #0d6efd;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.75rem;
+  font-size: 24px;
+  margin: 0 auto 1.5rem;
   transition: all 0.3s ease;
 }
 
-.selection-card:hover .card-icon,
-.selection-card.active .card-icon {
-  transform: scale(1.05);
-}
-
-.card-icon i {
-  font-size: 1.2rem;
-  color: white;
+.selection-card:hover .card-icon {
+  background: #0d6efd;
+  color: #fff;
+  transform: scale(1.1);
 }
 
 .card-title {
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.25rem;
-  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #343a40;
 }
 
 .card-description {
   color: #6c757d;
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
 }
 
 .card-action {
-  margin-top: auto;
-  color: #0d6efd;
-  font-size: 1rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.selection-card:hover .card-action,
-.selection-card.active .card-action {
-  opacity: 1;
-}
-
-/* User Data Display */
-.user-data-display {
-  animation: fadeIn 0.3s ease;
-}
-
-.user-header-card {
-  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-  border-radius: 10px;
-  padding: 1rem;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.user-avatar-large {
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.user-avatar-placeholder-large {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e9ecef;
+  color: #495057;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  margin: 0 auto;
+  transition: all 0.3s ease;
 }
 
-.form-control-plaintext {
-  padding: 0.25rem 0;
-  font-weight: 500;
-  color: #212529;
+.selection-card:hover .card-action {
+  background: #0d6efd;
+  color: #fff;
 }
 
-/* Sections */
-.existing-user-section,
-.new-user-section {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.invalid-feedback {
+  display: block;
 }
 </style>
