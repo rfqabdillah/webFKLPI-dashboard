@@ -3,6 +3,7 @@ import Body from '../components/body';
 
 import Default from '@/pages/dashboard/defaultPage.vue';
 import Login from '@/auth/login.vue';
+import Register from '@/auth/register.vue';
 
 import IndexEmployments from "@/pages/employment/index.vue";
 
@@ -54,6 +55,19 @@ const routes =[
             }
           },
         ]
+    },
+    {
+      path: '/register',
+      children: [
+        {
+          path: '',
+          name: 'Register',
+          component: Register,
+          meta: {
+            title: 'Register',
+          }
+        },
+      ]
     },
     {
         path: '/',
