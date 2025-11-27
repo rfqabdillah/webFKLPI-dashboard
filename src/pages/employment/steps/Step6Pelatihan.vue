@@ -1,318 +1,242 @@
 <template>
-  <div class="step-pelatihan">
+  <div class="step-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <h6 class="mb-1">
-          <i class="fa fa-certificate me-2"></i>Riwayat Pelatihan / Kursus
-        </h6>
-        <p class="text-muted small mb-0">
-          Tambahkan riwayat pelatihan atau kursus yang pernah diikuti.
-        </p>
-      </div>
-      <button class="btn btn-primary btn-sm" @click="addPelatihan">
-        <i class="fa fa-plus me-1"></i> Tambah Data
-      </button>
-    </div>
-
-    <!-- Empty State -->
-    <div
-      v-if="pelatihanList.length === 0"
-      class="text-center py-4 border rounded bg-light mb-3"
-    >
-      <i class="fa fa-certificate text-muted fa-2x mb-2"></i>
-      <p class="text-muted mb-2 small">Belum ada data pelatihan.</p>
-      <button class="btn btn-outline-primary btn-sm" @click="addPelatihan">
+      <h6 class="mb-0 text-primary">Riwayat Pelatihan</h6>
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm"
+        @click="addItem"
+      >
         <i class="fa fa-plus me-1"></i> Tambah Pelatihan
       </button>
     </div>
 
-    <transition-group name="list" tag="div">
+    <div
+      v-if="modelValue.length === 0"
+      class="text-center p-5 border rounded bg-light text-muted"
+    >
+      <i class="fa fa-certificate fs-3 mb-2 d-block"></i>
+      <span>Belum ada data pelatihan.</span>
+    </div>
+
+    <div v-else class="accordion">
       <div
-        v-for="(item, index) in pelatihanList"
-        :key="item._tempId"
-        class="card mb-3 shadow-sm border-0"
+        v-for="(item, index) in modelValue"
+        :key="index"
+        class="accordion-item mb-3 border shadow-sm"
       >
-        <div
-          class="card-header bg-white d-flex justify-content-between align-items-center py-3"
-        >
-          <h6 class="mb-0 fw-bold text-primary">
-            <span class="badge bg-primary me-2">{{ index + 1 }}</span>
-            Data Pelatihan
-          </h6>
+        <h2 class="accordion-header">
           <button
-            class="btn btn-outline-danger btn-sm"
-            @click="removePelatihan(index)"
-            title="Hapus data ini"
+            class="accordion-button"
+            :class="{ collapsed: !item.isOpen }"
+            type="button"
+            @click="toggleItem(index)"
           >
-            <i class="fa fa-trash"></i>
+            <span class="badge bg-secondary me-2">#{{ index + 1 }}</span>
+            <span class="fw-semibold">{{
+              item.namapelatihan || "Pelatihan Baru"
+            }}</span>
           </button>
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <!-- Nama Pelatihan -->
-            <div class="col-12">
-              <label class="form-label fw-semibold">
-                Nama Pelatihan <span class="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="item.namapelatihan"
-                placeholder="Contoh: Pelatihan Kepemimpinan"
-                :class="{ 'is-invalid': getError(index, 'namapelatihan') }"
-                required
-                @blur="validateField(index, 'namapelatihan')"
-              />
-              <div class="invalid-feedback">
-                {{ getError(index, "namapelatihan") }}
+        </h2>
+        <div class="accordion-collapse collapse" :class="{ show: item.isOpen }">
+          <div class="accordion-body bg-white">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold"
+                  >Nama Pelatihan <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="item.namapelatihan"
+                  :class="{ 'is-invalid': errors[index]?.namapelatihan }"
+                />
+                <div class="invalid-feedback">
+                  {{ errors[index]?.namapelatihan }}
+                </div>
               </div>
-            </div>
 
-            <!-- Nama Penyelenggara -->
-            <div class="col-md-12">
-              <label class="form-label fw-semibold">
-                Penyelenggara <span class="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="item.namapenyelenggara"
-                placeholder="Contoh: BKN, Lembaga Sertifikasi"
-                :class="{ 'is-invalid': getError(index, 'namapenyelenggara') }"
-                required
-                @blur="validateField(index, 'namapenyelenggara')"
-              />
-              <div class="invalid-feedback">
-                {{ getError(index, "namapenyelenggara") }}
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold"
+                  >Penyelenggara <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="item.namapenyelenggara"
+                  :class="{ 'is-invalid': errors[index]?.namapenyelenggara }"
+                />
+                <div class="invalid-feedback">
+                  {{ errors[index]?.namapenyelenggara }}
+                </div>
               </div>
-            </div>
 
-            <!-- Tanggal Mulai & Selesai -->
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">
-                Tanggal Mulai <span class="text-danger">*</span>
-              </label>
-              <input
-                type="date"
-                class="form-control"
-                v-model="item.tglmulai"
-                :class="{ 'is-invalid': getError(index, 'tglmulai') }"
-                required
-                @blur="validateField(index, 'tglmulai')"
-              />
-              <div class="invalid-feedback">
-                {{ getError(index, "tglmulai") }}
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold"
+                  >Tgl Mulai <span class="text-danger">*</span></label
+                >
+                <input
+                  type="date"
+                  class="form-control form-control-sm"
+                  v-model="item.tglmulai"
+                  :class="{ 'is-invalid': errors[index]?.tglmulai }"
+                />
+                <div class="invalid-feedback">
+                  {{ errors[index]?.tglmulai }}
+                </div>
               </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Tanggal Selesai</label>
-              <input
-                type="date"
-                class="form-control"
-                v-model="item.tglselesai"
-              />
-            </div>
 
-            <!-- Status (Ditambahkan Kembali) -->
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Status</label>
-              <select class="form-select" v-model="item.status">
-                <option value="Selesai">Selesai</option>
-                <option value="Sedang Berjalan">Sedang Berjalan</option>
-              </select>
-            </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Tgl Selesai</label>
+                <input
+                  type="date"
+                  class="form-control form-control-sm"
+                  v-model="item.tglselesai"
+                />
+              </div>
 
-            <!-- File Sertifikat -->
-            <div class="col-12">
-              <label class="form-label fw-semibold">File Sertifikat</label>
-              <input
-                type="file"
-                class="form-control"
-                @change="(e) => handleFileUpload(index, e)"
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-              <div
-                v-if="item.filesertifikat_preview"
-                class="mt-2 small text-success"
-              >
-                <i class="fa fa-check-circle me-1"></i> File terpilih:
-                {{ item.filesertifikat_preview }}
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Status</label>
+                <select
+                  class="form-select form-select-sm"
+                  v-model="item.status"
+                >
+                  <option value="Lulus">Lulus</option>
+                  <option value="Sedang Berlangsung">Sedang Berlangsung</option>
+                  <option value="Tidak Lulus">Tidak Lulus</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Sertifikat</label>
+                <input
+                  type="file"
+                  class="form-control form-control-sm"
+                  @change="(e) => handleFile(e, index)"
+                  accept=".pdf,.jpg"
+                />
+                <div v-if="item.filesertifikat && !item.fileRaw" class="mt-1">
+                  <small class="text-success">File tersimpan.</small>
+                </div>
+              </div>
+
+              <div class="col-12 text-end mt-2 pt-2 border-top">
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  @click="removeItem(index)"
+                >
+                  Hapus
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </transition-group>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useToast } from "vue-toastification";
+import { ref, onMounted } from "vue";
+import * as yup from "yup";
+import { getUserTrainings } from "@/services/general/personnel/userTrainings";
 
 const props = defineProps({
-  modelValue: {
-    type: Object, // Expecting { list: [] }
-    default: () => ({ list: [] }),
-  },
+  modelValue: { type: Array, default: () => [] },
+  currentUserId: { type: String, default: "" },
+});
+const emit = defineEmits(["update:modelValue"]);
+const errors = ref([]);
+const isLoaded = ref(false);
+
+const itemSchema = yup.object().shape({
+  namapelatihan: yup.string().required("Nama pelatihan wajib diisi"),
+  namapenyelenggara: yup.string().required("Penyelenggara wajib diisi"),
+  tglmulai: yup.string().required("Tanggal mulai wajib diisi"),
 });
 
-const emit = defineEmits(["update:modelValue", "validation-change"]);
-const toast = useToast();
-
-const pelatihanList = ref([]);
-const formErrors = ref([]);
-
-// === Lifecycle ===
 onMounted(() => {
-  // Initialize from props
-  if (props.modelValue && Array.isArray(props.modelValue.list)) {
-    pelatihanList.value = props.modelValue.list.map((item) => ({
-      ...item,
-      _tempId: Date.now() + Math.random(),
-    }));
-    formErrors.value = pelatihanList.value.map(() => ({}));
-  } else {
-    pelatihanList.value = [];
-    formErrors.value = [];
-  }
-
-  emit("validation-change", true);
+  if (props.currentUserId) loadData(props.currentUserId);
 });
 
-// === Methods ===
-function addPelatihan() {
-  pelatihanList.value.push({
-    _tempId: Date.now(),
-    namapelatihan: "",
-    namapenyelenggara: "",
-    tglmulai: "",
-    tglselesai: "",
-    status: "Selesai", // Default status
-    filesertifikat: null,
-    filesertifikat_preview: "",
-  });
-
-  formErrors.value.push({});
-}
-
-function removePelatihan(index) {
-  pelatihanList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
-}
-
-function handleFileUpload(index, event) {
-  const file = event.target.files[0];
-  if (file) {
-    if (file.size > 5 * 1024 * 1024) {
-      toast.warning("Ukuran file maksimal 5MB");
-      event.target.value = "";
-      return;
-    }
-    pelatihanList.value[index].filesertifikat = file;
-    pelatihanList.value[index].filesertifikat_preview = file.name;
+const loadData = async (userId) => {
+  if (!userId || isLoaded.value) return;
+  try {
+    const res = await getUserTrainings({ id_pengguna: userId });
+    const apiData = (
+      Array.isArray(res.data) ? res.data : res.data.data || []
+    ).map((d) => ({
+      idpenggunalatihan: d.idpenggunalatihan,
+      namapelatihan: d.namapelatihan,
+      namapenyelenggara: d.namapenyelenggara,
+      tglmulai: d.tglmulai,
+      tglselesai: d.tglselesai,
+      status: d.status,
+      filesertifikat: d.filesertifikat,
+      isOpen: false,
+      fileRaw: null,
+    }));
+    emit("update:modelValue", [...apiData, ...props.modelValue]);
+    isLoaded.value = true;
+  } catch (e) {
+    console.error(e);
   }
+};
+
+function addItem() {
+  emit("update:modelValue", [
+    ...props.modelValue,
+    {
+      namapelatihan: "",
+      namapenyelenggara: "",
+      tglmulai: "",
+      status: "Lulus",
+      fileRaw: null,
+      isOpen: true,
+    },
+  ]);
 }
 
-// === Validation ===
-function getError(index, field) {
-  return formErrors.value[index] ? formErrors.value[index][field] : "";
+function removeItem(index) {
+  const l = [...props.modelValue];
+  l.splice(index, 1);
+  emit("update:modelValue", l);
+  errors.value.splice(index, 1);
+}
+function toggleItem(i) {
+  props.modelValue[i].isOpen = !props.modelValue[i].isOpen;
+}
+function handleFile(e, i) {
+  props.modelValue[i].fileRaw = e.target.files[0];
+}
+async function validate() {
+  errors.value = [];
+  let valid = true;
+  for (let i = 0; i < props.modelValue.length; i++) {
+    try {
+      await itemSchema.validate(props.modelValue[i], { abortEarly: false });
+      errors.value[i] = {};
+    } catch (err) {
+      valid = false;
+      const o = {};
+      err.inner.forEach((e) => (o[e.path] = e.message));
+      errors.value[i] = o;
+      props.modelValue[i].isOpen = true;
+    }
+  }
+  return valid;
 }
 
-function validateField(index, field) {
-  const item = pelatihanList.value[index];
-  if (!formErrors.value[index]) formErrors.value[index] = {};
-
-  if (field === "namapelatihan") {
-    if (!item.namapelatihan)
-      formErrors.value[index].namapelatihan = "Nama Pelatihan wajib diisi.";
-    else formErrors.value[index].namapelatihan = "";
-  }
-
-  if (field === "namapenyelenggara") {
-    if (!item.namapenyelenggara)
-      formErrors.value[index].namapenyelenggara = "Penyelenggara wajib diisi.";
-    else formErrors.value[index].namapenyelenggara = "";
-  }
-
-  if (field === "tglmulai") {
-    if (!item.tglmulai)
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-    else formErrors.value[index].tglmulai = "";
-  }
-}
-
-function validate() {
-  let isValid = true;
-
-  if (pelatihanList.value.length === 0) {
-    return true;
-  }
-
-  pelatihanList.value.forEach((item, index) => {
-    if (!formErrors.value[index]) formErrors.value[index] = {};
-
-    if (!item.namapelatihan) {
-      formErrors.value[index].namapelatihan = "Nama Pelatihan wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].namapelatihan = "";
-    }
-
-    if (!item.namapenyelenggara) {
-      formErrors.value[index].namapenyelenggara = "Penyelenggara wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].namapenyelenggara = "";
-    }
-
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
-  });
-
-  return isValid;
-}
-
-// === Watchers ===
-watch(
-  pelatihanList,
-  (newList) => {
-    emit("update:modelValue", { list: newList });
-
-    let isValid = true;
-    if (newList.length > 0) {
-      isValid = newList.every(
-        (item) => item.namapelatihan && item.namapenyelenggara && item.tglmulai
-      );
-    }
-    emit("validation-change", isValid);
-  },
-  { deep: true }
-);
-
-defineExpose({ validate });
+defineExpose({ validate, loadData });
 </script>
 
 <style scoped>
-.step-pelatihan {
-  padding: 0;
+.step-wrapper {
+  min-height: 300px;
 }
-
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.3s ease;
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.invalid-feedback {
-  display: block;
+.accordion-button:not(.collapsed) {
+  background-color: #e7f1ff;
+  color: #0d6efd;
 }
 </style>
