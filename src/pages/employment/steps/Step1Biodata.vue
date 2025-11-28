@@ -536,7 +536,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:modelValue", "validation-change"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "validation-change",
+  "user-selected",
+]);
 const toast = useToast();
 
 // === State ===
@@ -889,6 +893,8 @@ function selectUser(user) {
   selectedUserId.value = user.idpengguna || user.email;
   nextTick(() => {
     populateFormData(user);
+    // Emit to parent that user has been selected
+    emit("user-selected", user.idpengguna);
   });
 }
 
