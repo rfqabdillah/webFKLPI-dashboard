@@ -123,6 +123,7 @@
                       </button>
                     </div>
                   </div>
+                  <p class="mt-4 mb-0 text-center">Belum punya akun?<router-link to="/register" class="ms-2">Buat Akun</router-link></p>
                 </Form>
               </div>
             </div>

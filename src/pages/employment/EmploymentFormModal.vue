@@ -44,7 +44,7 @@
           >
             <Step2UnitKerja
               ref="step2Ref"
-              v-model="stepData.unitKerja.list"
+              v-model="stepData.unitKerja"
               :currentUserId="currentUserId"
             />
           </tab-content>
@@ -56,7 +56,7 @@
           >
             <Step3Jabatan
               ref="step3Ref"
-              v-model="stepData.jabatan.list"
+              v-model="stepData.jabatan"
               :currentUserId="currentUserId"
             />
           </tab-content>
@@ -68,7 +68,7 @@
           >
             <Step4Pangkat
               ref="step4Ref"
-              v-model="stepData.pangkat.list"
+              v-model="stepData.pangkat"
               :currentUserId="currentUserId"
             />
           </tab-content>
@@ -80,7 +80,7 @@
           >
             <Step5Pendidikan
               ref="step5Ref"
-              v-model="stepData.pendidikan.list"
+              v-model="stepData.pendidikan"
               :currentUserId="currentUserId"
             />
           </tab-content>
@@ -92,7 +92,7 @@
           >
             <Step6Pelatihan
               ref="step6Ref"
-              v-model="stepData.pelatihan.list"
+              v-model="stepData.pelatihan"
               :currentUserId="currentUserId"
             />
           </tab-content>
@@ -104,7 +104,7 @@
           >
             <Step7Prestasi
               ref="step7Ref"
-              v-model="stepData.prestasi.list"
+              v-model="stepData.prestasi"
               :currentUserId="currentUserId"
             />
           </tab-content>

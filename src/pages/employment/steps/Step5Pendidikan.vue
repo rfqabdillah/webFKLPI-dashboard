@@ -1,67 +1,73 @@
 <template>
-  <div class="step-wrapper">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h6 class="mb-0 text-primary">Riwayat Pendidikan</h6>
-      <button
-        type="button"
-        class="btn btn-outline-primary btn-sm"
-        @click="addItem"
-      >
-        <i class="fa fa-plus me-1"></i> Tambah Data
-      </button>
+  <div class="step-pendidikan">
+    <div v-if="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">Memuat data referensi...</p>
     </div>
 
-    <div
-      v-if="modelValue.length === 0"
-      class="text-center p-5 border rounded bg-light text-muted"
-    >
-      <i class="fa fa-graduation-cap fs-3 mb-2 d-block"></i>
-      <span
-        >Belum ada data pendidikan. Klik tombol <b>Tambah Data</b> untuk
-        mengisi.</span
-      >
-    </div>
+    <div v-else>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h6 class="mb-1">
+            <i class="fa fa-graduation-cap me-2"></i>Riwayat Pendidikan
+          </h6>
+          <p class="text-muted small mb-0">
+            Tambahkan riwayat pendidikan formal pegawai.
+          </p>
+        </div>
+        <button class="btn btn-primary btn-sm" @click="addPendidikan">
+          <i class="fa fa-plus me-1"></i> Tambah Data
+        </button>
+      </div>
 
-    <div v-else class="accordion" id="accordionPendidikan">
       <div
-        v-for="(item, index) in modelValue"
-        :key="index"
-        class="accordion-item mb-3 border shadow-sm"
+        v-if="pendidikanList.length === 0"
+        class="text-center py-4 border rounded bg-light mb-3"
       >
-        <h2 class="accordion-header">
-          <button
-            class="accordion-button"
-            :class="{ collapsed: !item.isOpen }"
-            type="button"
-            @click="toggleItem(index)"
-          >
-            <div
-              class="d-flex w-100 justify-content-between align-items-center pe-3"
-            >
-              <span>
-                <span class="badge bg-secondary me-2">#{{ index + 1 }}</span>
-                <span class="fw-semibold">{{
-                  item.namaperguruantinggi || "Pendidikan Baru"
-                }}</span>
-                <span v-if="item.tahunlulus" class="text-muted small ms-2"
-                  >({{ item.tahunlulus }})</span
-                >
-              </span>
-            </div>
-          </button>
-        </h2>
+        <i class="fa fa-graduation-cap text-muted fa-2x mb-2"></i>
+        <p class="text-muted mb-2 small">Belum ada data pendidikan.</p>
+        <button class="btn btn-outline-primary btn-sm" @click="addPendidikan">
+          <i class="fa fa-plus me-1"></i> Tambah Pendidikan
+        </button>
+      </div>
 
-        <div class="accordion-collapse collapse" :class="{ show: item.isOpen }">
-          <div class="accordion-body bg-white">
+      <transition-group name="list" tag="div">
+        <div
+          v-for="(item, index) in pendidikanList"
+          :key="item._tempId"
+          class="card mb-3 shadow-sm border-0"
+        >
+          <div
+            class="card-header bg-white d-flex justify-content-between align-items-center py-3"
+          >
+            <h6 class="mb-0 fw-bold text-primary">
+              <span class="badge bg-primary me-2">{{ index + 1 }}</span>
+              Data Pendidikan
+            </h6>
+            <button
+              class="btn btn-outline-danger btn-sm"
+              @click="removePendidikan(index)"
+              title="Hapus data ini"
+            >
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <div class="card-body">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label small fw-semibold"
-                  >Jenjang Pendidikan <span class="text-danger">*</span></label
-                >
+                <label class="form-label fw-semibold">
+                  Jenjang Pendidikan <span class="text-danger">*</span>
+                </label>
                 <select
-                  class="form-select form-select-sm"
+                  class="form-select"
                   v-model="item.idjenjangpendidikan"
-                  :class="{ 'is-invalid': errors[index]?.idjenjangpendidikan }"
+                  :class="{
+                    'is-invalid': getError(index, 'idjenjangpendidikan'),
+                  }"
+                  required
+                  @blur="validateField(index, 'idjenjangpendidikan')"
                 >
                   <option value="" disabled>Pilih Jenjang</option>
                   <option
@@ -73,248 +79,325 @@
                   </option>
                 </select>
                 <div class="invalid-feedback">
-                  {{ errors[index]?.idjenjangpendidikan }}
+                  {{ getError(index, "idjenjangpendidikan") }}
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label small fw-semibold"
-                  >Nama Sekolah / Universitas
-                  <span class="text-danger">*</span></label
-                >
+                <label class="form-label fw-semibold">
+                  Tahun Lulus <span class="text-danger">*</span>
+                </label>
                 <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  v-model="item.namaperguruantinggi"
-                  :class="{ 'is-invalid': errors[index]?.namaperguruantinggi }"
-                  placeholder="Contoh: Universitas Gadjah Mada"
+                  type="number"
+                  class="form-control"
+                  v-model="item.tahunlulus"
+                  placeholder="YYYY"
+                  :class="{ 'is-invalid': getError(index, 'tahunlulus') }"
+                  required
+                  @blur="validateField(index, 'tahunlulus')"
                 />
                 <div class="invalid-feedback">
-                  {{ errors[index]?.namaperguruantinggi }}
+                  {{ getError(index, "tahunlulus") }}
                 </div>
               </div>
 
-              <div class="col-md-8">
-                <label class="form-label small fw-semibold"
-                  >Program Studi / Jurusan</label
-                >
+              <div class="col-12">
+                <label class="form-label fw-semibold">
+                  Nama Perguruan Tinggi / Sekolah
+                  <span class="text-danger">*</span>
+                </label>
                 <input
                   type="text"
-                  class="form-control form-control-sm"
+                  class="form-control"
+                  v-model="item.namaperguruantinggi"
+                  :class="{
+                    'is-invalid': getError(index, 'namaperguruantinggi'),
+                  }"
+                  placeholder="Contoh: Universitas Gadjah Mada"
+                  required
+                  @blur="validateField(index, 'namaperguruantinggi')"
+                />
+                <div class="invalid-feedback">
+                  {{ getError(index, "namaperguruantinggi") }}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Program Studi</label>
+                <input
+                  type="text"
+                  class="form-control"
                   v-model="item.programstudi"
                   placeholder="Contoh: Teknik Informatika"
                 />
               </div>
 
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold"
-                  >Tahun Lulus <span class="text-danger">*</span></label
-                >
-                <input
-                  type="number"
-                  class="form-control form-control-sm"
-                  v-model="item.tahunlulus"
-                  placeholder="YYYY"
-                  :class="{ 'is-invalid': errors[index]?.tahunlulus }"
-                />
-                <div class="invalid-feedback">
-                  {{ errors[index]?.tahunlulus }}
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label small fw-semibold"
-                  >Upload Ijazah (PDF/Image)</label
-                >
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">File Ijazah</label>
                 <input
                   type="file"
-                  class="form-control form-control-sm"
-                  @change="(e) => handleFile(e, index)"
+                  class="form-control"
+                  @change="(e) => handleFileUpload(index, e)"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
-                <div v-if="item.filesk || item.fileijazah" class="mt-1">
-                  <small class="text-success">
-                    <i class="fa fa-check-circle me-1"></i>File tersimpan.
-                    <a href="#" class="text-decoration-none ms-1">Lihat File</a>
-                  </small>
-                </div>
-              </div>
-
-              <div class="col-12 text-end mt-3 pt-3 border-top">
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  @click="removeItem(index)"
+                <div
+                  v-if="item.fileijazah_preview"
+                  class="mt-2 small text-success"
                 >
-                  <i class="fa fa-trash me-1"></i> Hapus Data Ini
-                </button>
+                  <i class="fa fa-check-circle me-1"></i> File terpilih:
+                  {{ item.fileijazah_preview }}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </transition-group>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import * as yup from "yup";
+import { useToast } from "vue-toastification";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
-import { getUserEducation } from "@/services/general/personnel/userEducation"; // Asumsi service GET list by user ID
+import { getUserEducation } from "@/services/general/personnel/userEducation";
 
 const props = defineProps({
-  modelValue: { type: Array, default: () => [] },
-  currentUserId: { type: String, default: "" }, // Menerima ID User dari Parent
+  modelValue: {
+    type: Object,
+    default: () => ({ list: [] }),
+  },
+  currentUserId: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "validation-change"]);
+const toast = useToast();
 
-// State
+const isLoading = ref(false);
+const isDataLoaded = ref(false);
 const educationOptions = ref([]);
-const errors = ref([]);
-const isLoaded = ref(false);
+const pendidikanList = ref([]);
+const formErrors = ref([]);
 
-// Schema Validasi (Yup)
-const itemSchema = yup.object().shape({
-  idjenjangpendidikan: yup.string().required("Jenjang wajib dipilih"),
-  namaperguruantinggi: yup.string().required("Nama sekolah/PT wajib diisi"),
-  tahunlulus: yup
-    .number()
-    .typeError("Tahun harus berupa angka")
-    .required("Tahun lulus wajib diisi")
-    .min(1900, "Tahun tidak valid")
-    .max(new Date().getFullYear() + 5, "Tahun tidak valid"),
-});
-
-// Lifecycle
+// === Lifecycle ===
 onMounted(() => {
-  fetchOptions();
-  // Jika mode Edit User langsung, load data
-  if (props.currentUserId) {
-    loadData(props.currentUserId);
+  if (props.modelValue && Array.isArray(props.modelValue.list)) {
+    pendidikanList.value = props.modelValue.list.map((item) => ({
+      ...item,
+      _tempId: Date.now() + Math.random(),
+    }));
+    formErrors.value = pendidikanList.value.map(() => ({}));
+  } else {
+    pendidikanList.value = [];
+    formErrors.value = [];
   }
+
+  emit("validation-change", true);
 });
 
-// Methods
-async function fetchOptions() {
+// === Methods ===
+async function loadData(userId) {
+  if (isDataLoaded.value) return;
+
+  isLoading.value = true;
   try {
-    // Sesuaikan dengan response API referensi Anda
-    const res = await getEducationLevels({ limit: 100 });
-    // Asumsi response: { data: [...] } atau { data: { data: [...] } }
-    educationOptions.value = Array.isArray(res.data)
-      ? res.data
-      : res.data.data || [];
-  } catch (e) {
-    console.error("Gagal load referensi pendidikan", e);
+    await fetchEducationLevels();
+
+    if (userId) {
+      const res = await getUserEducation({ id_pengguna: userId });
+      const apiData = (
+        Array.isArray(res.data) ? res.data : res.data.data || []
+      ).map((d) => ({
+        idpenggunapendidikan: d.idpenggunapendidikan,
+        idjenjangpendidikan: d.idjenjangpendidikan,
+        namaperguruantinggi: d.namaperguruantinggi,
+        programstudi: d.programstudi,
+        tahunlulus: d.tahunlulus,
+        fileijazah: d.fileijazah,
+        fileijazah_preview: d.fileijazah ? d.fileijazah.split("/").pop() : "",
+        _tempId: Date.now() + Math.random(),
+      }));
+
+      pendidikanList.value = apiData;
+      formErrors.value = pendidikanList.value.map(() => ({}));
+      emit("update:modelValue", { list: pendidikanList.value });
+    }
+
+    isDataLoaded.value = true;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  } finally {
+    isLoading.value = false;
   }
 }
 
-// Exposed Method: Dipanggil Parent saat Tab Aktif
-const loadData = async (userId) => {
-  if (!userId || isLoaded.value) return; // Prevent double fetch
-
+async function fetchEducationLevels() {
   try {
-    const res = await getUserEducation({ id_pengguna: userId });
-    // Mapping response API ke format local item
-    const apiData = (
-      Array.isArray(res.data) ? res.data : res.data.data || []
-    ).map((d) => ({
-      // Mapping field API -> V-Model
-      idpenggunapendidikan: d.idpenggunapendidikan, // ID Primary Key (jika edit)
-      idjenjangpendidikan: d.idjenjangpendidikan,
-      namaperguruantinggi: d.namaperguruantinggi,
-      programstudi: d.programstudi,
-      tahunlulus: d.tahunlulus,
-      fileijazah: d.fileijazah, // URL file lama
+    const params = { limit: 100, sort: "namajenjangpendidikan", dir: "asc" };
+    const res = await getEducationLevels(params);
+    educationOptions.value = Array.isArray(res.data)
+      ? res.data
+      : res.data.data || [];
 
-      // Internal state
-      isOpen: false,
-      fileRaw: null,
-    }));
-
-    // Gabungkan dengan data yang mungkin sudah diinput user (jika ada)
-    const merged = [...apiData, ...props.modelValue];
-    emit("update:modelValue", merged);
-    isLoaded.value = true;
-  } catch (e) {
-    console.error("Gagal load riwayat pendidikan", e);
+    if (
+      educationOptions.value.length === 0 &&
+      res.data &&
+      Array.isArray(res.data[0]?.data)
+    ) {
+      educationOptions.value = res.data[0].data;
+    }
+  } catch (error) {
+    console.error("Error fetching education levels:", error);
+    toast.error("Gagal memuat data jenjang pendidikan.");
   }
-};
+}
 
-function addItem() {
-  const newItem = {
+function addPendidikan() {
+  pendidikanList.value.push({
+    _tempId: Date.now(),
     idjenjangpendidikan: "",
     namaperguruantinggi: "",
     programstudi: "",
     tahunlulus: "",
-    fileRaw: null,
-    isOpen: true, // Auto open item baru
-  };
-  // Emit immutable update
-  emit("update:modelValue", [...props.modelValue, newItem]);
+    fileijazah: null,
+    fileijazah_preview: "",
+  });
+
+  formErrors.value.push({});
 }
 
-function removeItem(index) {
-  const newList = [...props.modelValue];
-  newList.splice(index, 1);
-  emit("update:modelValue", newList);
-  // Hapus error terkait index tersebut agar tidak bergeser
-  errors.value.splice(index, 1);
+function removePendidikan(index) {
+  pendidikanList.value.splice(index, 1);
+  formErrors.value.splice(index, 1);
 }
 
-function toggleItem(index) {
-  const item = props.modelValue[index];
-  // Mutasi langsung object di dalam array diperbolehkan di Vue Reactivity (selama arraynya reaktif)
-  // Tapi lebih aman emit full array update jika strict mode
-  item.isOpen = !item.isOpen;
-}
-
-function handleFile(event, index) {
+function handleFileUpload(index, event) {
   const file = event.target.files[0];
   if (file) {
-    props.modelValue[index].fileRaw = file;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.warning("Ukuran file maksimal 5MB");
+      event.target.value = "";
+      return;
+    }
+
+    pendidikanList.value[index].fileijazah = file;
+    pendidikanList.value[index].fileijazah_preview = file.name;
   }
 }
 
-// Exposed Method: Validasi
-async function validate() {
-  errors.value = [];
-  let isAllValid = true;
+// === Validation Logic ===
+function getError(index, field) {
+  return formErrors.value[index] ? formErrors.value[index][field] : "";
+}
 
-  if (props.modelValue.length === 0) return true; // Kosong boleh (skip)? Atau wajib minimal 1? Sesuaikan.
+function validateField(index, field) {
+  const item = pendidikanList.value[index];
+  if (!formErrors.value[index]) formErrors.value[index] = {};
 
-  for (let i = 0; i < props.modelValue.length; i++) {
-    try {
-      await itemSchema.validate(props.modelValue[i], { abortEarly: false });
-      errors.value[i] = {};
-    } catch (err) {
-      isAllValid = false;
-      const errObj = {};
-      err.inner.forEach((e) => {
-        errObj[e.path] = e.message;
-      });
-      errors.value[i] = errObj;
-      props.modelValue[i].isOpen = true; // Buka accordion yang error
+  if (field === "idjenjangpendidikan") {
+    if (!item.idjenjangpendidikan) {
+      formErrors.value[index].idjenjangpendidikan = "Jenjang wajib dipilih.";
+    } else {
+      formErrors.value[index].idjenjangpendidikan = "";
     }
   }
-  return isAllValid;
+
+  if (field === "namaperguruantinggi") {
+    if (!item.namaperguruantinggi) {
+      formErrors.value[index].namaperguruantinggi =
+        "Nama Perguruan Tinggi wajib diisi.";
+    } else {
+      formErrors.value[index].namaperguruantinggi = "";
+    }
+  }
+
+  if (field === "tahunlulus") {
+    if (!item.tahunlulus) {
+      formErrors.value[index].tahunlulus = "Tahun Lulus wajib diisi.";
+    } else {
+      formErrors.value[index].tahunlulus = "";
+    }
+  }
 }
 
-// Expose method ke Parent
+function validate() {
+  let isValid = true;
+
+  if (pendidikanList.value.length === 0) {
+    return true;
+  }
+
+  pendidikanList.value.forEach((item, index) => {
+    if (!formErrors.value[index]) formErrors.value[index] = {};
+
+    if (!item.idjenjangpendidikan) {
+      formErrors.value[index].idjenjangpendidikan = "Jenjang wajib dipilih.";
+      isValid = false;
+    } else {
+      formErrors.value[index].idjenjangpendidikan = "";
+    }
+
+    if (!item.namaperguruantinggi) {
+      formErrors.value[index].namaperguruantinggi =
+        "Nama Perguruan Tinggi wajib diisi.";
+      isValid = false;
+    } else {
+      formErrors.value[index].namaperguruantinggi = "";
+    }
+
+    if (!item.tahunlulus) {
+      formErrors.value[index].tahunlulus = "Tahun Lulus wajib diisi.";
+      isValid = false;
+    } else {
+      formErrors.value[index].tahunlulus = "";
+    }
+  });
+
+  return isValid;
+}
+
+// === Sync & Watch ===
+watch(
+  pendidikanList,
+  (newList) => {
+    emit("update:modelValue", { list: newList });
+    let isValid = true;
+    if (newList.length > 0) {
+      isValid = newList.every(
+        (item) =>
+          item.idjenjangpendidikan &&
+          item.namaperguruantinggi &&
+          item.tahunlulus
+      );
+    }
+
+    emit("validation-change", isValid);
+  },
+  { deep: true }
+);
+
 defineExpose({ validate, loadData });
 </script>
 
 <style scoped>
-.step-wrapper {
-  min-height: 300px;
+.step-pendidikan {
+  padding: 0;
 }
-.accordion-button:not(.collapsed) {
-  background-color: #e7f1ff;
-  color: #0d6efd;
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
 }
-.accordion-button:focus {
-  box-shadow: none;
-  border-color: rgba(0, 0, 0, 0.125);
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.invalid-feedback {
+  display: block;
 }
 </style>

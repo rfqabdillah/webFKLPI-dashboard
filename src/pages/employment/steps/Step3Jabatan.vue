@@ -1,56 +1,71 @@
 <template>
-  <div class="step-wrapper">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h6 class="mb-0 text-primary">Riwayat Jabatan</h6>
-      <button
-        type="button"
-        class="btn btn-outline-primary btn-sm"
-        @click="addItem"
-      >
-        <i class="fa fa-plus me-1"></i> Tambah Jabatan
-      </button>
+  <div class="step-jabatan">
+    <div v-if="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">Memuat data referensi...</p>
     </div>
 
-    <div
-      v-if="modelValue.length === 0"
-      class="text-center p-5 border rounded bg-light text-muted"
-    >
-      <i class="fa fa-briefcase fs-3 mb-2 d-block"></i>
-      <span
-        >Belum ada data jabatan. Klik tombol <b>Tambah</b> untuk mengisi.</span
-      >
-    </div>
+    <div v-else>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h6 class="mb-1">
+            <i class="fa fa-briefcase me-2"></i>Riwayat Jabatan
+          </h6>
+          <p class="text-muted small mb-0">
+            Tambahkan riwayat jabatan pegawai jika ada.
+          </p>
+        </div>
+        <button class="btn btn-primary btn-sm" @click="addJabatan">
+          <i class="fa fa-plus me-1"></i> Tambah Data
+        </button>
+      </div>
 
-    <div v-else class="accordion">
       <div
-        v-for="(item, index) in modelValue"
-        :key="index"
-        class="accordion-item mb-3 border shadow-sm"
+        v-if="jabatanList.length === 0"
+        class="text-center py-4 border rounded bg-light mb-3"
       >
-        <h2 class="accordion-header">
-          <button
-            class="accordion-button"
-            :class="{ collapsed: !item.isOpen }"
-            type="button"
-            @click="toggleItem(index)"
+        <i class="fa fa-briefcase text-muted fa-2x mb-2"></i>
+        <p class="text-muted mb-2 small">Belum ada data jabatan.</p>
+        <button class="btn btn-outline-primary btn-sm" @click="addJabatan">
+          <i class="fa fa-plus me-1"></i> Tambah Jabatan
+        </button>
+      </div>
+
+      <transition-group name="list" tag="div">
+        <div
+          v-for="(item, index) in jabatanList"
+          :key="item._tempId"
+          class="card mb-3 shadow-sm border-0"
+        >
+          <div
+            class="card-header bg-white d-flex justify-content-between align-items-center py-3"
           >
-            <span class="badge bg-secondary me-2">#{{ index + 1 }}</span>
-            <span class="fw-semibold">{{
-              getJabatanName(item.idjenjang) || "Jabatan Baru"
-            }}</span>
-          </button>
-        </h2>
-        <div class="accordion-collapse collapse" :class="{ show: item.isOpen }">
-          <div class="accordion-body bg-white">
+            <h6 class="mb-0 fw-bold text-primary">
+              <span class="badge bg-primary me-2">{{ index + 1 }}</span>
+              Data Jabatan
+            </h6>
+            <button
+              class="btn btn-outline-danger btn-sm"
+              @click="removeJabatan(index)"
+              title="Hapus data ini"
+            >
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <div class="card-body">
             <div class="row g-3">
               <div class="col-md-12">
-                <label class="form-label small fw-semibold"
-                  >Nama Jabatan <span class="text-danger">*</span></label
-                >
+                <label class="form-label fw-semibold">
+                  Nama Jabatan <span class="text-danger">*</span>
+                </label>
                 <select
-                  class="form-select form-select-sm"
+                  class="form-select"
                   v-model="item.idjenjang"
-                  :class="{ 'is-invalid': errors[index]?.idjenjang }"
+                  :class="{ 'is-invalid': getError(index, 'idjenjang') }"
+                  required
+                  @blur="validateField(index, 'idjenjang')"
                 >
                   <option value="" disabled>Pilih Jabatan</option>
                   <option
@@ -62,199 +77,305 @@
                   </option>
                 </select>
                 <div class="invalid-feedback">
-                  {{ errors[index]?.idjenjang }}
+                  {{ getError(index, "idjenjang") }}
                 </div>
               </div>
 
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold"
-                  >Tgl Mulai <span class="text-danger">*</span></label
-                >
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  Tanggal Mulai <span class="text-danger">*</span>
+                </label>
                 <input
                   type="date"
-                  class="form-control form-control-sm"
+                  class="form-control"
                   v-model="item.tglmulai"
-                  :class="{ 'is-invalid': errors[index]?.tglmulai }"
+                  :class="{ 'is-invalid': getError(index, 'tglmulai') }"
+                  required
+                  @blur="validateField(index, 'tglmulai')"
                 />
                 <div class="invalid-feedback">
-                  {{ errors[index]?.tglmulai }}
+                  {{ getError(index, "tglmulai") }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Tanggal Selesai</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  v-model="item.tglselesai"
+                />
+                <div class="form-text small">
+                  Kosongkan jika masih aktif menjabat.
                 </div>
               </div>
 
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold">Tgl Selesai</label>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">File SK</label>
                 <input
-                  type="date"
-                  class="form-control form-control-sm"
-                  v-model="item.tglselesai"
-                  :disabled="item.status === 'Aktif'"
+                  type="file"
+                  class="form-control"
+                  @change="(e) => handleFileUpload(index, e)"
+                  accept=".pdf,.jpg,.jpeg,.png"
                 />
+                <div v-if="item.filesk_preview" class="mt-2 small text-success">
+                  <i class="fa fa-check-circle me-1"></i> File terpilih:
+                  {{ item.filesk_preview }}
+                </div>
               </div>
 
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold">Status</label>
-                <div class="form-check form-switch">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold d-block">Status</label>
+                <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    v-model="item.status"
-                    true-value="Aktif"
-                    false-value="Tidak Aktif"
+                    role="switch"
+                    :id="'statusSwitch-' + index"
+                    :checked="item.status === 'Aktif'"
+                    @change="(e) => handleStatusChange(index, e.target.checked)"
                   />
-                  <label class="form-check-label">{{ item.status }}</label>
+                  <label
+                    class="form-check-label"
+                    :for="'statusSwitch-' + index"
+                  >
+                    {{ item.status || "Tidak Aktif" }}
+                  </label>
                 </div>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label small fw-semibold">File SK</label>
-                <input
-                  type="file"
-                  class="form-control form-control-sm"
-                  @change="(e) => handleFile(e, index)"
-                  accept=".pdf,.jpg,.jpeg"
-                />
-                <div v-if="item.filesk && !item.fileRaw" class="mt-1">
-                  <small class="text-success">File tersimpan.</small>
-                </div>
-              </div>
-
-              <div class="col-12 text-end mt-2 pt-2 border-top">
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  @click="removeItem(index)"
-                >
-                  Hapus
-                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </transition-group>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import * as yup from "yup";
-import { getPositionLevels } from "@/services/referensi/positionLevels"; // Asumsi service ref jabatan
+import { ref, onMounted, watch } from "vue";
+import { useToast } from "vue-toastification";
+import { getPositionLevels } from "@/services/referensi/positionLevels";
 import { getUserLevels } from "@/services/general/personnel/userLevels";
 
 const props = defineProps({
-  modelValue: { type: Array, default: () => [] },
-  currentUserId: { type: String, default: "" },
+  modelValue: {
+    type: Object,
+    default: () => ({ list: [] }),
+  },
+  currentUserId: {
+    type: String,
+    default: "",
+  },
 });
-const emit = defineEmits(["update:modelValue"]);
 
+const emit = defineEmits(["update:modelValue", "validation-change"]);
+const toast = useToast();
+
+const isLoading = ref(false);
+const isDataLoaded = ref(false);
 const jabatanOptions = ref([]);
-const errors = ref([]);
-const isLoaded = ref(false);
+const jabatanList = ref([]);
+const formErrors = ref([]);
 
-const itemSchema = yup.object().shape({
-  idjenjang: yup.string().required("Jabatan wajib dipilih"),
-  tglmulai: yup.string().required("Tanggal mulai wajib diisi"),
-});
-
+// === Lifecycle ===
 onMounted(() => {
-  fetchOptions();
-  if (props.currentUserId) loadData(props.currentUserId);
+  if (props.modelValue && Array.isArray(props.modelValue.list)) {
+    jabatanList.value = props.modelValue.list.map((item) => ({
+      ...item,
+      _tempId: Date.now() + Math.random(),
+    }));
+    formErrors.value = jabatanList.value.map(() => ({}));
+  } else {
+    jabatanList.value = [];
+    formErrors.value = [];
+  }
+
+  emit("validation-change", true);
 });
 
-async function fetchOptions() {
+// === Methods ===
+async function loadData(userId) {
+  if (isDataLoaded.value) return;
+
+  isLoading.value = true;
+  try {
+    await fetchPositionLevels();
+
+    if (userId) {
+      const res = await getUserLevels({ id_pengguna: userId });
+      const apiData = (
+        Array.isArray(res.data) ? res.data : res.data.data || []
+      ).map((d) => ({
+        idpenggunajenjang: d.idpenggunajenjang,
+        idjenjang: d.idjenjang,
+        tglmulai: d.tglmulai,
+        tglselesai: d.tglselesai,
+        status: d.status,
+        filesk: d.filesk,
+        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        _tempId: Date.now() + Math.random(),
+      }));
+
+      jabatanList.value = apiData;
+      formErrors.value = jabatanList.value.map(() => ({}));
+      emit("update:modelValue", { list: jabatanList.value });
+    }
+
+    isDataLoaded.value = true;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function fetchPositionLevels() {
   try {
     const res = await getPositionLevels({ limit: 999 });
     jabatanOptions.value = Array.isArray(res.data)
       ? res.data
       : res.data.data || [];
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error("Error fetching position levels:", error);
+    toast.error("Gagal memuat data jabatan.");
   }
 }
 
-const loadData = async (userId) => {
-  if (!userId || isLoaded.value) return;
-  try {
-    const res = await getUserLevels({ id_pengguna: userId });
-    const apiData = (
-      Array.isArray(res.data) ? res.data : res.data.data || []
-    ).map((d) => ({
-      idpenggunajenjang: d.idpenggunajenjang,
-      idjenjang: d.idjenjang,
-      tglmulai: d.tglmulai,
-      tglselesai: d.tglselesai,
-      status: d.status,
-      filesk: d.filesk,
-      isOpen: false,
-      fileRaw: null,
-    }));
-    emit("update:modelValue", [...apiData, ...props.modelValue]);
-    isLoaded.value = true;
-  } catch (e) {
-    console.error(e);
+function addJabatan() {
+  jabatanList.value.forEach((item) => (item.status = "Tidak Aktif"));
+
+  jabatanList.value.push({
+    _tempId: Date.now(),
+    idjenjang: "",
+    tglmulai: "",
+    tglselesai: "",
+    filesk: null,
+    filesk_preview: "",
+    status: "Aktif",
+  });
+
+  formErrors.value.push({});
+}
+
+function removeJabatan(index) {
+  jabatanList.value.splice(index, 1);
+  formErrors.value.splice(index, 1);
+}
+
+function handleFileUpload(index, event) {
+  const file = event.target.files[0];
+  if (file) {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.warning("Ukuran file maksimal 5MB");
+      event.target.value = "";
+      return;
+    }
+
+    jabatanList.value[index].filesk = file;
+    jabatanList.value[index].filesk_preview = file.name;
   }
-};
-
-function getJabatanName(id) {
-  const found = jabatanOptions.value.find((x) => x.idjenjang === id);
-  return found ? found.namajenjang : "";
 }
 
-function addItem() {
-  emit("update:modelValue", [
-    ...props.modelValue,
-    {
-      idjenjang: "",
-      tglmulai: "",
-      tglselesai: "",
-      status: "Aktif",
-      fileRaw: null,
-      isOpen: true,
-    },
-  ]);
+function handleStatusChange(index, isChecked) {
+  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  jabatanList.value[index].status = newStatus;
+
+  if (newStatus === "Aktif") {
+    jabatanList.value.forEach((item, i) => {
+      if (i !== index) {
+        item.status = "Tidak Aktif";
+      }
+    });
+  }
 }
 
-function removeItem(index) {
-  const l = [...props.modelValue];
-  l.splice(index, 1);
-  emit("update:modelValue", l);
-  errors.value.splice(index, 1);
+// === Validation Logic ===
+function getError(index, field) {
+  return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-function toggleItem(i) {
-  props.modelValue[i].isOpen = !props.modelValue[i].isOpen;
-}
-function handleFile(e, i) {
-  props.modelValue[i].fileRaw = e.target.files[0];
-}
+function validateField(index, field) {
+  const item = jabatanList.value[index];
+  if (!formErrors.value[index]) formErrors.value[index] = {};
 
-async function validate() {
-  errors.value = [];
-  let valid = true;
-  for (let i = 0; i < props.modelValue.length; i++) {
-    try {
-      await itemSchema.validate(props.modelValue[i], { abortEarly: false });
-      errors.value[i] = {};
-    } catch (err) {
-      valid = false;
-      const o = {};
-      err.inner.forEach((e) => (o[e.path] = e.message));
-      errors.value[i] = o;
-      props.modelValue[i].isOpen = true;
+  if (field === "idjenjang") {
+    if (!item.idjenjang) {
+      formErrors.value[index].idjenjang = "Jabatan wajib dipilih.";
+    } else {
+      formErrors.value[index].idjenjang = "";
     }
   }
-  return valid;
+
+  if (field === "tglmulai") {
+    if (!item.tglmulai) {
+      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+    } else {
+      formErrors.value[index].tglmulai = "";
+    }
+  }
 }
+
+function validate() {
+  let isValid = true;
+
+  if (jabatanList.value.length === 0) {
+    return true;
+  }
+
+  jabatanList.value.forEach((item, index) => {
+    if (!formErrors.value[index]) formErrors.value[index] = {};
+
+    if (!item.idjenjang) {
+      formErrors.value[index].idjenjang = "Jabatan wajib dipilih.";
+      isValid = false;
+    } else {
+      formErrors.value[index].idjenjang = "";
+    }
+
+    if (!item.tglmulai) {
+      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+      isValid = false;
+    } else {
+      formErrors.value[index].tglmulai = "";
+    }
+  });
+
+  return isValid;
+}
+
+// === Sync & Watch ===
+watch(
+  jabatanList,
+  (newList) => {
+    emit("update:modelValue", { list: newList });
+    let isValid = true;
+    if (newList.length > 0) {
+      isValid = newList.every((item) => item.idjenjang && item.tglmulai);
+    }
+
+    emit("validation-change", isValid);
+  },
+  { deep: true }
+);
 
 defineExpose({ validate, loadData });
 </script>
 
 <style scoped>
-.step-wrapper {
-  min-height: 300px;
+.step-jabatan {
+  padding: 0;
 }
-.accordion-button:not(.collapsed) {
-  background-color: #e7f1ff;
-  color: #0d6efd;
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.invalid-feedback {
+  display: block;
 }
 </style>

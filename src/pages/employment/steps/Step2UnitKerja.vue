@@ -22,7 +22,6 @@
         </button>
       </div>
 
-      <!-- Empty State -->
       <div
         v-if="unitKerjaList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -57,7 +56,6 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <!-- Unit Kerja Dropdown -->
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
                   Unit Kerja <span class="text-danger">*</span>
@@ -83,7 +81,6 @@
                 </div>
               </div>
 
-              <!-- Tanggal Mulai & Selesai -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
                   Tanggal Mulai <span class="text-danger">*</span>
@@ -112,7 +109,6 @@
                 </div>
               </div>
 
-              <!-- File SK -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
                 <input
@@ -127,7 +123,6 @@
                 </div>
               </div>
 
-              <!-- Status Switch -->
               <div class="col-md-6">
                 <label class="form-label fw-semibold d-block">Status</label>
                 <div class="form-check form-switch mt-2">
@@ -159,11 +154,16 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getWorkUnits } from "@/services/referensi/workUnits";
+import { getUserWorkUnits } from "@/services/general/personnel/userWorkUnits";
 
 const props = defineProps({
   modelValue: {
-    type: Object, // Expecting { list: [] } or just []
+    type: Object,
     default: () => ({ list: [] }),
+  },
+  currentUserId: {
+    type: String,
+    default: "",
   },
 });
 
@@ -174,38 +174,62 @@ const isLoading = ref(false);
 const isDataLoaded = ref(false);
 const workUnitOptions = ref([]);
 const unitKerjaList = ref([]);
-const formErrors = ref([]); // Array of error objects corresponding to list items
+const formErrors = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
-  // Initialize from props if available
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
-    // Deep copy to avoid direct mutation and add temp IDs
     unitKerjaList.value = props.modelValue.list.map((item) => ({
       ...item,
       _tempId: Date.now() + Math.random(),
     }));
-    // Init errors array
     formErrors.value = unitKerjaList.value.map(() => ({}));
   } else {
-    // DO NOT add empty item by default. Allow empty list.
     unitKerjaList.value = [];
     formErrors.value = [];
   }
 
-  // Emit initial validation state (empty is valid)
   emit("validation-change", true);
 });
 
 // === Methods ===
-async function loadData() {
+async function loadData(userId) {
   if (isDataLoaded.value) return;
-  await fetchWorkUnits();
-  isDataLoaded.value = true;
+
+  isLoading.value = true;
+  try {
+    await fetchWorkUnits();
+
+    if (userId) {
+      const res = await getUserWorkUnits({ id_pengguna: userId });
+      const apiData = (
+        Array.isArray(res.data) ? res.data : res.data.data || []
+      ).map((d) => ({
+        idpenggunaunitkerja: d.idpenggunaunitkerja,
+        idunitkerja: d.idunitkerja,
+        tglmulai: d.tglmulai,
+        tglselesai: d.tglselesai,
+        status: d.status,
+        filesk: d.filesk, // URL or path
+        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        _tempId: Date.now() + Math.random(),
+      }));
+
+      // Update local list and emit
+      unitKerjaList.value = apiData;
+      formErrors.value = unitKerjaList.value.map(() => ({}));
+      emit("update:modelValue", { list: unitKerjaList.value });
+    }
+
+    isDataLoaded.value = true;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function fetchWorkUnits() {
-  isLoading.value = true;
   try {
     const params = { page: 1, limit: 999, sort: "namaunitkerja", dir: "asc" };
     const response = await getWorkUnits(params);
@@ -224,26 +248,22 @@ async function fetchWorkUnits() {
   } catch (error) {
     console.error("Error fetching work units:", error);
     toast.error("Gagal memuat data unit kerja.");
-  } finally {
-    isLoading.value = false;
   }
 }
 
 function addUnitKerja() {
-  // If adding a new active item, deactivate others first
   unitKerjaList.value.forEach((item) => (item.status = "Tidak Aktif"));
 
   unitKerjaList.value.push({
-    _tempId: Date.now(), // Internal ID for v-for key
+    _tempId: Date.now(),
     idunitkerja: "",
     tglmulai: "",
     tglselesai: "",
     filesk: null,
-    filesk_preview: "", // For UI display only
+    filesk_preview: "",
     status: "Aktif",
   });
 
-  // Add empty error object for new item
   formErrors.value.push({});
 }
 
@@ -255,9 +275,7 @@ function removeUnitKerja(index) {
 function handleFileUpload(index, event) {
   const file = event.target.files[0];
   if (file) {
-    // Validate file size/type if needed
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       toast.warning("Ukuran file maksimal 5MB");
       event.target.value = "";
       return;
@@ -272,7 +290,6 @@ function handleStatusChange(index, isChecked) {
   const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   unitKerjaList.value[index].status = newStatus;
 
-  // If set to Active, deactivate all others
   if (newStatus === "Aktif") {
     unitKerjaList.value.forEach((item, i) => {
       if (i !== index) {
@@ -311,7 +328,6 @@ function validateField(index, field) {
 function validate() {
   let isValid = true;
 
-  // If empty, it's valid (optional step)
   if (unitKerjaList.value.length === 0) {
     return true;
   }
@@ -319,7 +335,6 @@ function validate() {
   unitKerjaList.value.forEach((item, index) => {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
-    // Validate Unit Kerja
     if (!item.idunitkerja) {
       formErrors.value[index].idunitkerja = "Unit Kerja wajib dipilih.";
       isValid = false;
@@ -327,7 +342,6 @@ function validate() {
       formErrors.value[index].idunitkerja = "";
     }
 
-    // Validate Tgl Mulai
     if (!item.tglmulai) {
       formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
       isValid = false;
@@ -343,11 +357,7 @@ function validate() {
 watch(
   unitKerjaList,
   (newList) => {
-    // 1. Sync to parent
     emit("update:modelValue", { list: newList });
-
-    // 2. Validate (Logic Only for Button State)
-    // Valid if empty OR if all items are valid
     let isValid = true;
     if (newList.length > 0) {
       isValid = newList.every((item) => item.idunitkerja && item.tglmulai);
@@ -366,7 +376,6 @@ defineExpose({ validate, loadData });
   padding: 0;
 }
 
-/* List Transitions */
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
