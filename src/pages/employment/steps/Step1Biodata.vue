@@ -220,7 +220,8 @@
             class="form-control"
             v-model="formData.nama"
             :class="{ 'is-invalid': formErrors.nama }"
-            placeholder="Nama lengkap"
+            :placeholder="isLoadingUserData ? 'Memuat...' : 'Nama lengkap'"
+            :disabled="isLoadingUserData"
             @blur="validateField('nama')"
           />
           <div class="invalid-feedback">{{ formErrors.nama }}</div>
@@ -254,7 +255,10 @@
             class="form-control"
             v-model="formData.nik"
             :class="{ 'is-invalid': formErrors.nik }"
-            placeholder="Nomor Induk Kependudukan"
+            :placeholder="
+              isLoadingUserData ? 'Memuat...' : 'Nomor Induk Kependudukan'
+            "
+            :disabled="isLoadingUserData"
             @blur="validateField('nik')"
           />
           <div class="invalid-feedback">{{ formErrors.nik }}</div>
@@ -269,7 +273,10 @@
             class="form-control"
             v-model="formData.email"
             :class="{ 'is-invalid': formErrors.email }"
-            placeholder="email@instansi.go.id"
+            :placeholder="
+              isLoadingUserData ? 'Memuat...' : 'email@instansi.go.id'
+            "
+            :disabled="isLoadingUserData"
             @blur="validateField('email')"
           />
           <div class="invalid-feedback">{{ formErrors.email }}</div>
@@ -314,7 +321,7 @@
             v-model="formData.idlevel"
             :class="{ 'is-invalid': formErrors.idlevel }"
             @blur="validateField('idlevel')"
-            :disabled="rolesLoading"
+            :disabled="rolesLoading || isLoadingUserData"
           >
             <option value="" disabled>Pilih Level</option>
             <option
@@ -540,6 +547,7 @@ const emit = defineEmits([
   "update:modelValue",
   "validation-change",
   "user-selected",
+  "user-data-loaded",
 ]);
 const toast = useToast();
 
@@ -594,6 +602,7 @@ const photoPreviewUrl = ref(null);
 const fileInput = ref(null);
 const isPhotoRemoved = ref(false);
 const isUpdatingFromParent = ref(false);
+const isLoadingUserData = ref(false);
 
 // === Validation Schema  ===
 const validationSchema = yup.object().shape({
@@ -888,14 +897,34 @@ async function fetchUsers() {
   }
 }
 
-function selectUser(user) {
+async function selectUser(user) {
+  console.log("User selected:", user);
   selectedUser.value = user;
   selectedUserId.value = user.idpengguna || user.email;
-  nextTick(() => {
-    populateFormData(user);
-    // Emit to parent that user has been selected
-    emit("user-selected", user.idpengguna);
-  });
+
+  // Mark selection as made so form becomes visible
+  selectionMade.value = true;
+
+  // Start loading state
+  isLoadingUserData.value = true;
+
+  // Small delay to show loading state
+  await nextTick();
+
+  // Populate form data
+  populateFormData(user);
+
+  // Emit events
+  emit("user-selected", user.idpengguna);
+  emit("user-data-loaded", user);
+
+  // Validate form immediately to enable "Next" button
+  await validate();
+
+  // End loading state after a brief moment to ensure UI updates
+  setTimeout(() => {
+    isLoadingUserData.value = false;
+  }, 300);
 }
 
 function handleSearch() {}

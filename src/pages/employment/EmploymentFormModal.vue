@@ -36,6 +36,7 @@
               :fieldToEdit="fieldToEdit"
               @validation-change="(isValid) => updateStepValidation(0, isValid)"
               @user-selected="handleUserSelected"
+              @user-data-loaded="handleUserDataLoaded"
             />
           </tab-content>
 
@@ -257,38 +258,77 @@ const stepValidations = reactive({
 // userId created from Step 1 (if new user is created)
 const createdUserId = ref(null);
 
-// === CENTRALIZED WIZARD STATE ===
-// This is the single source of truth that accumulates all data
+// ┌──────────────────────────────────────────────────────────────────────┐
+// │  CENTRALIZED WIZARD STATE                                             │
+// │  This is the single source of truth that accumulates all data         │
+// │  Struktur data dipertahankan sesuai spesifikasi API                   │
+// └──────────────────────────────────────────────────────────────────────┘
 const wizardState = reactive({
+  // Step 1: Biodata
   biodata: {
     mode: "", // 'new' or 'existing' or 'edit'
     isExisting: false,
     userId: null,
-    userData: {},
+    userData: {
+      idpengguna: null,
+      idlevel: "",
+      email: "",
+      nama: "",
+      telp: "",
+      created_at: null,
+      updated_at: null,
+      deleted_at: null,
+      email_verified_at: null,
+      remember_token: null,
+      lastlogin: null,
+      nik: "",
+      gelardepan: "",
+      gelarbelakang: "",
+      alamat: "",
+      kodekabupaten: "",
+      nip: "",
+      no_karpeg: "",
+      tempatlahir: "",
+      tanggallahir: "",
+      foto: null,
+      status: "Aktif",
+    },
     photoFile: null,
     isPhotoRemoved: false,
   },
+
+  // Step 2: Unit Kerja (Repeater)
   unitKerja: {
-    data: [],
-    files: {},
+    data: [], // Array of { idpenggunaunitkerja, idpengguna, idunitkerja, tglmulai, tglselesai, filesk, status, created_at, updated_at, deleted_at }
+    files: {}, // Map: index -> File object
   },
+
+  // Step 3: Jabatan (Repeater)
   jabatan: {
-    data: [],
+    data: [], // Array of { idepnggunajenjang, idpengguna, idjenjang, tglmulai, tglselesai, filesk, status, created_at, updated_at, deleted_at }
     files: {},
   },
+
+  // Step 4: Pangkat (Repeater)
   pangkat: {
-    data: [],
+    data: [], // Array of { idpenggunapangkat, idpengguna, idpangkat, tglmulai, tglselesai, filesk, status, created_at, updated_at, deleted_at }
     files: {},
   },
+
+  // Step 5: Pendidikan (Repeater - No Files)
   pendidikan: {
-    data: [],
+    data: [], // Array of { idpenggunapendidikan, idpengguna, idjenjangpendidikan, programstudi, namaperguruantinggi, tahunlulus, created_at, updated_at, deleted_at }
   },
+
+  // Step 6: Pelatihan (Repeater)
   pelatihan: {
-    data: [],
+    data: [], // Array of { idpenggunalatihan, idpengguna, namapelatihan, namapenyelenggara, filesertifikat, created_at, updated_at, deleted_at, tglmulai, tglselesai, status }
     files: {},
   },
+
+  // Step 7: Prestasi (Repeater)
   prestasi: {
-    data: [],
+    data: [], // Array of { idpenggunaprestasi, idpengguna, idskala, namaprestasi, namapenyelenggara, filesertifikat, created_at, updated_at, deleted_at, status }
     files: {},
   },
 });
@@ -347,6 +387,15 @@ function handleUserSelected(userId) {
       }
     });
   }
+}
+
+/**
+ * Handle when user data is loaded in Step1 (for existing user selection)
+ * This populates the biodata in wizardState
+ */
+function handleUserDataLoaded(userData) {
+  console.log("User data loaded:", userData);
+  // Data already updated via v-model binding
 }
 
 /**
@@ -426,22 +475,20 @@ function wizardCompleted() {
   submitForm();
 }
 
-// === MAIN LOGIC: CENTRALIZED SUBMISSION ===
-/**
- * ┌─────────────────────────────────────────────────────────────────┐
- * │  CENTRALIZED DATA SUBMISSION ARCHITECTURE                       │
- * │                                                                   │
- * │  Semua data dari Step 1-7 dikumpulkan dalam wizardState dan     │
- * │  dikirim dalam satu proses submission yang terkoordinasi.       │
- * │                                                                   │
- * │  Alur:                                                           │
- * │  1. Save/Update Biodata (Step 1) → Dapatkan idpengguna         │
- * │  2. Untuk setiap kategori (Step 2-7):                          │
- * │     - Delete existing records (jika edit mode)                  │
- * │     - Insert new records dengan idpengguna                      │
- * │  3. Commit seluruh transaksi atau rollback jika ada error      │
- * └─────────────────────────────────────────────────────────────────┘
- */
+// ┌──────────────────────────────────────────────────────────────────────┐
+// │  CENTRALIZED DATA SUBMISSION ARCHITECTURE                             │
+// │                                                                        │
+// │  Semua data dari Step 1-7 dikumpulkan dalam wizardState dan          │
+// │  dikirim dalam satu proses submission yang terkoordinasi.            │
+// │                                                                        │
+// │  Alur:                                                                │
+// │  1. Save/Update Biodata (Step 1) → Dapatkan idpengguna              │
+// │  2. Untuk setiap kategori (Step 2-7):                               │
+// │     - Validate single active status rule                             │
+// │     - Delete existing records (jika edit mode)                        │
+// │     - Insert new records dengan idpengguna                           │
+// │  3. Commit seluruh transaksi atau rollback jika ada error           │
+// └──────────────────────────────────────────────────────────────────────┘
 async function submitForm() {
   isLoading.value = true;
   errorMessage.value = null;
@@ -479,8 +526,11 @@ async function submitForm() {
     console.log("User ID for subsequent steps:", userId);
 
     // ============================================================
-    // STEP 2-7: Save Related Data (Repeaters)
+    // STEP 2-7: Validate & Save Related Data (Repeaters)
     // ============================================================
+    // Validate single active status rule before submitting
+    validateSingleActiveStatus();
+
     // Simpan semua data terkait secara berurutan
     await saveUnitKerja(userId);
     await saveJabatan(userId);
@@ -508,6 +558,34 @@ async function submitForm() {
     toast.error(errorMessage.value);
   } finally {
     isLoading.value = false;
+  }
+}
+
+/**
+ * Validate single active status rule across all repeater steps
+ * Each category can only have ONE record with status = "Aktif"
+ */
+function validateSingleActiveStatus() {
+  const categories = [
+    { name: "Unit Kerja", data: wizardState.unitKerja.data },
+    { name: "Jabatan", data: wizardState.jabatan.data },
+    { name: "Pangkat", data: wizardState.pangkat.data },
+    { name: "Pelatihan", data: wizardState.pelatihan.data },
+    { name: "Prestasi", data: wizardState.prestasi.data },
+  ];
+
+  for (const category of categories) {
+    if (!category.data || category.data.length === 0) continue;
+
+    const activeCount = category.data.filter(
+      (item) => item.status === "Aktif"
+    ).length;
+
+    if (activeCount > 1) {
+      throw new Error(
+        `Kategori ${category.name} hanya boleh memiliki satu data dengan status aktif. Saat ini ada ${activeCount} data aktif.`
+      );
+    }
   }
 }
 
@@ -555,7 +633,7 @@ function createBiodataFormData() {
   const data = new FormData();
   const biodata = wizardState.biodata.userData;
 
-  // Append all biodata fields
+  // Append all biodata fields sesuai struktur API
   data.append("record[idlevel]", biodata.idlevel || "");
   data.append("record[email]", biodata.email || "");
   data.append("record[nama]", biodata.nama || "");
@@ -829,6 +907,10 @@ function createFormData(item, fileKey, userId) {
   color: #6c757d;
 }
 
+.btn-close::before {
+  content: "×";
+}
+
 .btn-close:hover {
   color: #000;
 }
@@ -853,11 +935,87 @@ function createFormData(item, fileKey, userId) {
   padding: 1.5rem 0;
 }
 
-:deep(.vue-form-wizard .wizard-navigation .wizard-progress-with-circle) {
+/* Hide default wizard buttons */
+:deep(.vue-form-wizard .wizard-btn) {
+  display: none !important;
+}
+
+:deep(.wizard-footer-left),
+:deep(.wizard-footer-right) {
+  display: none !important;
+}
+
+/* Stepper Styling */
+:deep(.vue-form-wizard .wizard-header) {
+  display: none;
+}
+
+:deep(.vue-form-wizard .wizard-navigation) {
   margin-bottom: 2rem;
 }
 
+:deep(.vue-form-wizard .wizard-progress-with-circle) {
+  position: relative;
+  top: 20px;
+  height: 4px;
+  background-color: #e9ecef;
+}
+
+:deep(.vue-form-wizard .wizard-progress-bar) {
+  height: 4px;
+  background-color: #0d6efd;
+}
+
 :deep(.vue-form-wizard .wizard-nav-pills) {
-  margin-bottom: 2rem;
+  position: relative;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+:deep(.vue-form-wizard .wizard-nav-pills > li) {
+  margin-top: 0;
+}
+
+:deep(.vue-form-wizard .wizard-nav-pills > li > a) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #6c757d !important;
+  font-weight: 500;
+  padding-top: 0;
+}
+
+:deep(.vue-form-wizard .wizard-nav-pills > li.active > a) {
+  color: #0d6efd !important;
+}
+
+:deep(.vue-form-wizard .wizard-icon-circle) {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  border-width: 3px;
+  background-color: #fff;
+  margin-bottom: 10px;
+}
+
+:deep(.vue-form-wizard .wizard-nav-pills > li.active .wizard-icon-circle) {
+  border-color: #0d6efd;
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+:deep(.vue-form-wizard .wizard-nav-pills > li.checked .wizard-icon-circle) {
+  border-color: #0d6efd;
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+/* Ensure wizard content is visible */
+:deep(.fw-body-container > div) {
+  display: block !important;
+  visibility: visible !important;
+  height: auto !important;
+  opacity: 1 !important;
 }
 </style>
