@@ -1,85 +1,162 @@
-import axios from 'axios';
-import { encryptAes256GcmHex, decryptAes256GcmHex } from './cryptoHelper';
+import axios from "axios";
+import { encryptAes256GcmHex, decryptAes256GcmHex } from "./cryptoHelper";
+import { performHandshake } from "./handshake";
 
-const keyHex = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+/* =========================== CONFIG =========================== */
+const encryptionEnabled = process.env.VUE_APP_API_ENCRYPTION === "true";
+const FALLBACK_TO_PLAIN = false;
+const MAX_HANDSHAKE_RETRY = 5;
+const BASE_DELAY = 200;
 
-// const encryptionEnabled = false;
+/* =========================== STATE =========================== */
+let AES_KEY = null;
+let SESSION = null;
+let handshakePromise = null;
+let handshakeRetryCount = 0;
+let requestQueue = [];
+let isHandshaking = false;
 
-const encryptionEnabled = process.env.VUE_APP_API_ENCRYPTION 
-  ? process.env.VUE_APP_API_ENCRYPTION.trim() === 'true' 
-  : false;
+/* =========================== UTILS =========================== */
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
+async function startHandshakeOnce() {
+    if (handshakePromise) return handshakePromise;
+    isHandshaking = true;
+
+    handshakePromise = (async () => {
+        while (handshakeRetryCount < MAX_HANDSHAKE_RETRY) {
+            try {
+                const result = await performHandshake();
+                AES_KEY = result.aesKeyHex;
+                SESSION = result.sessionToken;
+                handshakeRetryCount = 0;
+                isHandshaking = false;
+                return result;
+            } catch (err) {
+                handshakeRetryCount++;
+                await delay(BASE_DELAY * handshakeRetryCount);
+            }
+        }
+        isHandshaking = false;
+        throw new Error("Handshake permanently failed");
+    })();
+
+    return handshakePromise.finally(() => {
+        handshakePromise = null;
+    });
+}
+
+async function ensureReady() {
+    if (!encryptionEnabled) return;
+    if (AES_KEY && SESSION) return;
+
+    try {
+        await startHandshakeOnce();
+    } catch (err) {
+        if (FALLBACK_TO_PLAIN) {
+            console.warn("Handshake gagal total, fallback ke plain request");
+            AES_KEY = null;
+            SESSION = null;
+        } else {
+            throw err;
+        }
+    }
+}
+
+async function flushQueue() {
+    const pending = [...requestQueue];
+    requestQueue = [];
+
+    for (const item of pending) {
+        try {
+            const res = await apiClient(item.config); // pakai instance
+            item.resolve(res);
+        } catch (err) {
+            item.reject(err);
+        }
+    }
+}
+
+/* =========================== AXIOS INSTANCE =========================== */
 const apiClient = axios.create({
-  baseURL: process.env.VUE_APP_API_URL,
+    baseURL: process.env.VUE_APP_API_URL,
 });
 
-// 🔹 Request interceptor (TETAP PATUH PADA ENV)
-// Kita hanya mengenkripsi kiriman jika ENV = true
+/* =========================== REQUEST INTERCEPTOR =========================== */
 apiClient.interceptors.request.use(async (config) => {
-  if (!encryptionEnabled) return config;
+    if (!encryptionEnabled) return config;
 
-  const isFormData = config.data instanceof FormData;
-  if (isFormData) return config;
+    await ensureReady();
 
-  try {
-    if (config.method === 'get' || config.method === 'delete') {
-      if (config.params && Object.keys(config.params).length > 0) {
-        const encrypted = await encryptAes256GcmHex(config.params, keyHex);
-        config.params = { payload: encrypted };
-      }
-    } else if (config.data) {
-      const encrypted = await encryptAes256GcmHex(config.data, keyHex);
-      config.data = { payload: encrypted };
-    }
-  } catch (error) {
-    console.error('❌ Error encrypting request:', error);
-    return Promise.reject(error);
-  }
+    config.headers["X-Session-Token"] = SESSION;
 
-  return config;
-}, error => Promise.reject(error));
+    const method = config.method.toLowerCase();
+    config._origData = config.data;
+    config._origParams = config.params;
 
-// 🔹 Response interceptor (AUTO DETECT)
-// Kita akan mendekripsi jika ENV = true ATAU jika respon mengandung 'payload'
-apiClient.interceptors.response.use(async (response) => {
-  
-  // 1. CEK KERAS: Jika fitur dimatikan, JANGAN pernah mencoba mendekripsi apapun.
-  // Kembalikan response mentah-mentah.
-  if (!encryptionEnabled) {
-    return response; 
-  }
+    if (config.data instanceof FormData) return config;
 
-  // 2. CEK SAFETY: Jika browser tidak mendukung crypto (karena HTTP), skip dekripsi
-  if (!window.crypto || !window.crypto.subtle) {
-      console.warn("⚠️ Browser memblokir Crypto API (Koneksi Tidak Aman). Skip dekripsi.");
-      return response;
-  }
-
-  // --- Kode Lama di bawah ini (Hanya jalan jika encryptionEnabled = true) ---
-  const hasEncryptedPayload = response.data && response.data.payload;
-
-  if (hasEncryptedPayload) {
-      try {
-        const decryptedString = await decryptAes256GcmHex(response.data.payload, keyHex);
-        
-        let decryptedData;
-        if (typeof decryptedString === 'string') {
-          try {
-              decryptedData = JSON.parse(decryptedString);
-          } catch (jsonError) {
-              decryptedData = decryptedString;
-          }
-        } else {
-            decryptedData = decryptedString;
+    if (["get", "delete"].includes(method)) {
+        if (config._origParams && AES_KEY) {
+            config.params = {
+                payload: await encryptAes256GcmHex(config._origParams, AES_KEY),
+            };
         }
-        response.data = decryptedData;
+    } else if (config._origData && AES_KEY) {
+        config.data = {
+            payload: await encryptAes256GcmHex(config._origData, AES_KEY),
+        };
+    }
 
-      } catch (e) {
-        console.error('❌ Gagal decrypt response:', e);
-      }
-  }
+    return config;
+});
 
-  return response;
-}, error => Promise.reject(error));
+/* =========================== RESPONSE INTERCEPTOR =========================== */
+apiClient.interceptors.response.use(
+    async (response) => {
+        if (!encryptionEnabled || !AES_KEY) return response;
+
+        if (response.data?.payload) {
+            try {
+                response.data = await decryptAes256GcmHex(response.data.payload, AES_KEY);
+            } catch (e) {
+                console.warn("Decrypt failed:", e);
+            }
+        }
+
+        return response;
+    },
+    async (error) => {
+        if (!encryptionEnabled || !error.response) return Promise.reject(error);
+
+        const status = error.response.status;
+        const msg = error.response.data?.message || "";
+        const expired = status === 401 || status === 403 || msg.includes("Missing session") || msg.includes("expired");
+
+        if (!expired) return Promise.reject(error);
+
+        const original = error.config;
+        if (original._retryDone) return Promise.reject(error);
+        original._retryDone = true;
+
+        AES_KEY = null;
+        SESSION = null;
+
+        await ensureReady();
+        await flushQueue();
+
+        if (AES_KEY) {
+            if (original._origData) {
+                original.data = { payload: await encryptAes256GcmHex(original._origData, AES_KEY) };
+            }
+            if (original._origParams) {
+                original.params = { payload: await encryptAes256GcmHex(original._origParams, AES_KEY) };
+            }
+            original.headers["X-Session-Token"] = SESSION;
+        }
+
+        return apiClient(original);
+    }
+);
 
 export default apiClient;
