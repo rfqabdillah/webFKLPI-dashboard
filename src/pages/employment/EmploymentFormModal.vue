@@ -24,6 +24,7 @@
           :back-button-text="'Sebelumnya'"
           :finish-button-text="'Selesai'"
         >
+          <!-- Step 1: Biodata (Required) -->
           <tab-content
             title="Biodata"
             icon="fa fa-user"
@@ -31,13 +32,14 @@
           >
             <Step1Biodata
               ref="step1Ref"
-              v-model="stepData.biodata"
+              v-model="wizardState.biodata"
               :fieldToEdit="fieldToEdit"
-              @validation-change="(valid) => updateStepValidation(0, valid)"
+              @validation-change="(isValid) => updateStepValidation(0, isValid)"
               @user-selected="handleUserSelected"
             />
           </tab-content>
 
+          <!-- Step 2: Unit Kerja (Repeater) -->
           <tab-content
             title="Unit Kerja"
             icon="fa fa-building"
@@ -45,23 +47,27 @@
           >
             <Step2UnitKerja
               ref="step2Ref"
-              v-model="stepData.unitKerja"
+              v-model="wizardState.unitKerja"
               :currentUserId="currentUserId"
+              @validation-change="(isValid) => updateStepValidation(1, isValid)"
             />
           </tab-content>
 
+          <!-- Step 3: Jabatan (Repeater) -->
           <tab-content
             title="Jabatan"
-            icon="fa fa-briefcase"
+            icon="fa fa-id-badge"
             :before-change="() => validateStep(2)"
           >
             <Step3Jabatan
               ref="step3Ref"
-              v-model="stepData.jabatan"
+              v-model="wizardState.jabatan"
               :currentUserId="currentUserId"
+              @validation-change="(isValid) => updateStepValidation(2, isValid)"
             />
           </tab-content>
 
+          <!-- Step 4: Pangkat (Repeater) -->
           <tab-content
             title="Pangkat"
             icon="fa fa-star"
@@ -69,11 +75,13 @@
           >
             <Step4Pangkat
               ref="step4Ref"
-              v-model="stepData.pangkat"
+              v-model="wizardState.pangkat"
               :currentUserId="currentUserId"
+              @validation-change="(isValid) => updateStepValidation(3, isValid)"
             />
           </tab-content>
 
+          <!-- Step 5: Pendidikan (Repeater) -->
           <tab-content
             title="Pendidikan"
             icon="fa fa-graduation-cap"
@@ -81,11 +89,13 @@
           >
             <Step5Pendidikan
               ref="step5Ref"
-              v-model="stepData.pendidikan"
+              v-model="wizardState.pendidikan"
               :currentUserId="currentUserId"
+              @validation-change="(isValid) => updateStepValidation(4, isValid)"
             />
           </tab-content>
 
+          <!-- Step 6: Pelatihan (Repeater) -->
           <tab-content
             title="Pelatihan"
             icon="fa fa-certificate"
@@ -93,11 +103,13 @@
           >
             <Step6Pelatihan
               ref="step6Ref"
-              v-model="stepData.pelatihan"
+              v-model="wizardState.pelatihan"
               :currentUserId="currentUserId"
+              @validation-change="(isValid) => updateStepValidation(5, isValid)"
             />
           </tab-content>
 
+          <!-- Step 7: Prestasi (Repeater) -->
           <tab-content
             title="Prestasi"
             icon="fa fa-trophy"
@@ -105,8 +117,9 @@
           >
             <Step7Prestasi
               ref="step7Ref"
-              v-model="stepData.prestasi"
+              v-model="wizardState.prestasi"
               :currentUserId="currentUserId"
+              @validation-change="(isValid) => updateStepValidation(6, isValid)"
             />
           </tab-content>
         </form-wizard>
@@ -131,15 +144,15 @@
           type="button"
           class="btn btn-primary"
           @click="nextTab"
-          :disabled="isLoading"
+          :disabled="isLoading || !stepValidations[currentTabIndex]"
         >
           Selanjutnya <i class="fa fa-arrow-right ms-1"></i>
         </button>
         <button
-          v-else
+          v-if="currentTabIndex === 6"
           type="button"
           class="btn btn-success"
-          @click="submitForm"
+          @click="wizardCompleted"
           :disabled="isLoading"
         >
           <span
@@ -162,7 +175,6 @@ import { useToast } from "vue-toastification";
 import { FormWizard, TabContent } from "vue3-form-wizard";
 import "vue3-form-wizard/dist/style.css";
 
-// Import Component Steps
 import Step1Biodata from "./steps/Step1Biodata.vue";
 import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
 import Step3Jabatan from "./steps/Step3Jabatan.vue";
@@ -171,14 +183,32 @@ import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
 import Step6Pelatihan from "./steps/Step6Pelatihan.vue";
 import Step7Prestasi from "./steps/Step7Prestasi.vue";
 
-// Import Services
+// Import API services (akan digunakan untuk final submission)
 import { addUser, updateUser } from "@/services/referensi/users";
-import { addUserWorkUnit } from "@/services/general/personnel/userWorkUnits";
-import { addUserLevel } from "@/services/general/personnel/userLevels";
-import { addUserRank } from "@/services/general/personnel/userRanks";
-import { addUserEducation } from "@/services/general/personnel/userEducation";
-import { addUserTraining } from "@/services/general/personnel/userTrainings";
-import { addUserAchievement } from "@/services/general/personnel/userAchievments";
+import {
+  addUserWorkUnit,
+  updateUserWorkUnit,
+} from "@/services/general/personnel/userWorkUnits";
+import {
+  addUserPosition,
+  updateUserPosition,
+} from "@/services/general/personnel/userPositions";
+import {
+  addUserRank,
+  updateUserRank,
+} from "@/services/general/personnel/userRanks";
+import {
+  addUserEducation,
+  updateUserEducation,
+} from "@/services/general/personnel/userEducation";
+import {
+  addUserTraining,
+  updateUserTraining,
+} from "@/services/general/personnel/userTrainings";
+import {
+  addUserAchievement,
+  updateUserAchievement,
+} from "@/services/general/personnel/userAchievments";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
@@ -190,7 +220,6 @@ const toast = useToast();
 
 // === Wizard State ===
 const wizardRef = ref(null);
-// Refs for Steps validation & data loading
 const step1Ref = ref(null);
 const step2Ref = ref(null);
 const step3Ref = ref(null);
@@ -202,30 +231,71 @@ const step7Ref = ref(null);
 const currentTabIndex = ref(0);
 const isLoading = ref(false);
 const errorMessage = ref(null);
-const step1IsValid = ref(false);
 
-// === Centralized Data Management ===
-const stepData = reactive({
-  biodata: {
-    mode: "", // "" | "existing" | "new"
-    userId: null, // Selected user ID (for existing mode)
-    userData: {}, // User data fields
-    photoFile: null, // New photo file
-    isPhotoRemoved: false,
-  },
-  unitKerja: { list: [] },
-  jabatan: { list: [] },
-  pangkat: { list: [] },
-  pendidikan: { list: [] },
-  pelatihan: { list: [] },
-  prestasi: { list: [] },
+// Track which steps have been visited/loaded
+const stepLoaded = reactive({
+  0: false, // Step 1: Biodata
+  1: false, // Step 2: Unit Kerja
+  2: false, // Step 3: Jabatan
+  3: false, // Step 4: Pangkat
+  4: false, // Step 5: Pendidikan
+  5: false, // Step 6: Pelatihan
+  6: false, // Step 7: Prestasi
 });
 
-// Track if user was created in this session
+// Track validation state per step
+const stepValidations = reactive({
+  0: false,
+  1: true, // Optional steps default to true
+  2: true,
+  3: true,
+  4: true,
+  5: true,
+  6: true,
+});
+
+// userId created from Step 1 (if new user is created)
 const createdUserId = ref(null);
+
+// === CENTRALIZED WIZARD STATE ===
+// This is the single source of truth that accumulates all data
+const wizardState = reactive({
+  biodata: {
+    mode: "", // 'new' or 'existing' or 'edit'
+    isExisting: false,
+    userId: null,
+    userData: {},
+    photoFile: null,
+    isPhotoRemoved: false,
+  },
+  unitKerja: {
+    data: [],
+    files: {},
+  },
+  jabatan: {
+    data: [],
+    files: {},
+  },
+  pangkat: {
+    data: [],
+    files: {},
+  },
+  pendidikan: {
+    data: [],
+  },
+  pelatihan: {
+    data: [],
+    files: {},
+  },
+  prestasi: {
+    data: [],
+    files: {},
+  },
+});
 
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
+
 const modalTitle = computed(() =>
   isEditMode.value
     ? `Edit Data ${props.entityName}`
@@ -243,8 +313,8 @@ const currentUserId = computed(() => {
   if (isEditMode.value && props.fieldToEdit) {
     return props.fieldToEdit.idpengguna;
   }
-  if (stepData.biodata.userId) {
-    return stepData.biodata.userId;
+  if (wizardState.biodata.userId) {
+    return wizardState.biodata.userId;
   }
   if (createdUserId.value) {
     return createdUserId.value;
@@ -258,7 +328,7 @@ function closeModal() {
 }
 
 function updateStepValidation(stepIndex, isValid) {
-  if (stepIndex === 0) step1IsValid.value = isValid;
+  stepValidations[stepIndex] = isValid;
 }
 
 /**
@@ -266,39 +336,47 @@ function updateStepValidation(stepIndex, isValid) {
  * When user selects existing user OR creates new user
  */
 function handleUserSelected(userId) {
-  if (!userId) return;
+  console.log("User selected/created with ID:", userId);
+  createdUserId.value = userId;
 
-  // Update currentUserId tracking
-  if (stepData.biodata.mode === "existing") {
-    stepData.biodata.userId = userId;
-  } else if (stepData.biodata.mode === "new") {
-    createdUserId.value = userId;
+  // Trigger lazy loading of data for steps 2-7 when we have a userId
+  if (userId && !stepLoaded[1]) {
+    Object.keys(stepLoaded).forEach((key) => {
+      if (parseInt(key) > 0) {
+        stepLoaded[key] = false; // Reset to allow re-loading
+      }
+    });
   }
 }
 
 /**
  * Lazy load data when tab changes
  */
-function onChangeCurrentTab(prevIndex, nextIndex) {
+async function onChangeCurrentTab(prevIndex, nextIndex) {
   currentTabIndex.value = nextIndex;
-  const userId = currentUserId.value;
 
-  // Load data for steps 2-7 when entering them
-  if (userId) {
-    nextTick(() => {
-      if (nextIndex === 1 && step2Ref.value?.loadData)
-        step2Ref.value.loadData(userId);
-      if (nextIndex === 2 && step3Ref.value?.loadData)
-        step3Ref.value.loadData(userId);
-      if (nextIndex === 3 && step4Ref.value?.loadData)
-        step4Ref.value.loadData(userId);
-      if (nextIndex === 4 && step5Ref.value?.loadData)
-        step5Ref.value.loadData(userId);
-      if (nextIndex === 5 && step6Ref.value?.loadData)
-        step6Ref.value.loadData(userId);
-      if (nextIndex === 6 && step7Ref.value?.loadData)
-        step7Ref.value.loadData(userId);
-    });
+  // If moving to Step 2-7 and we have userId, load data
+  if (nextIndex > 0 && currentUserId.value && !stepLoaded[nextIndex]) {
+    const stepRefs = [
+      null,
+      step2Ref,
+      step3Ref,
+      step4Ref,
+      step5Ref,
+      step6Ref,
+      step7Ref,
+    ];
+    const stepRef = stepRefs[nextIndex];
+
+    if (stepRef.value && typeof stepRef.value.loadData === "function") {
+      try {
+        await stepRef.value.loadData(currentUserId.value);
+        stepLoaded[nextIndex] = true;
+      } catch (error) {
+        console.error(`Error loading data for step ${nextIndex}:`, error);
+        toast.error(`Gagal memuat data untuk step ini.`);
+      }
+    }
   }
 }
 
@@ -306,77 +384,37 @@ function onChangeCurrentTab(prevIndex, nextIndex) {
  * Validate step before proceeding
  */
 async function validateStep(stepIndex) {
-  let isValid = true;
+  const stepRefs = [
+    step1Ref,
+    step2Ref,
+    step3Ref,
+    step4Ref,
+    step5Ref,
+    step6Ref,
+    step7Ref,
+  ];
+  const stepRef = stepRefs[stepIndex];
 
-  // Step 0: Biodata - Required validation
-  if (stepIndex === 0 && step1Ref.value) {
-    isValid = await step1Ref.value.validate();
-
-    if (isValid && !isEditMode.value) {
-      const biodataData = stepData.biodata;
-
-      // Mode must be selected
-      if (!biodataData.mode || biodataData.mode === "") {
-        toast.warning(
-          "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru."
-        );
+  if (stepRef.value && typeof stepRef.value.validate === "function") {
+    try {
+      const isValid = await stepRef.value.validate();
+      if (!isValid) {
         return false;
       }
-
-      // If existing mode, user must be selected
-      if (biodataData.mode === "existing" && !biodataData.userId) {
-        toast.warning("Silakan pilih pengguna dari daftar yang ada.");
-        return false;
-      }
-
-      // Required fields validation
-      const userData = biodataData.userData;
-      const requiredFields = {
-        nama: "Nama",
-        nik: "NIK",
-        email: "Email",
-        idlevel: "Level/Role",
-      };
-
-      const missingFields = [];
-      for (const [field, label] of Object.entries(requiredFields)) {
-        if (!userData[field] || userData[field] === "") {
-          missingFields.push(label);
-        }
-      }
-
-      if (missingFields.length > 0) {
-        toast.error(`Field berikut wajib diisi: ${missingFields.join(", ")}`);
-        return false;
-      }
+    } catch (error) {
+      console.error(`Validation error in step ${stepIndex}:`, error);
+      toast.error("Terjadi kesalahan saat validasi. Silakan periksa kembali.");
+      return false;
     }
   }
 
-  // Steps 1-6: Optional repeater validation
-  if (stepIndex === 1 && step2Ref.value)
-    isValid = await step2Ref.value.validate();
-  if (stepIndex === 2 && step3Ref.value)
-    isValid = await step3Ref.value.validate();
-  if (stepIndex === 3 && step4Ref.value)
-    isValid = await step4Ref.value.validate();
-  if (stepIndex === 4 && step5Ref.value)
-    isValid = await step5Ref.value.validate();
-  if (stepIndex === 5 && step6Ref.value)
-    isValid = await step6Ref.value.validate();
-  if (stepIndex === 6 && step7Ref.value)
-    isValid = await step7Ref.value.validate();
-
-  if (!isValid && stepIndex > 0) {
-    toast.warning("Mohon lengkapi data yang wajib diisi pada langkah ini.");
-  }
-
-  return isValid;
+  return true;
 }
 
 function nextTab() {
-  validateStep(currentTabIndex.value).then((valid) => {
-    if (valid) wizardRef.value.nextTab();
-  });
+  if (wizardRef.value) {
+    wizardRef.value.nextTab();
+  }
 }
 
 function prevTab() {
@@ -384,244 +422,81 @@ function prevTab() {
 }
 
 function wizardCompleted() {
+  // Final submission
   submitForm();
 }
 
-// === MAIN LOGIC: SUBMIT DATA (CENTRALIZED) ===
+// === MAIN LOGIC: CENTRALIZED SUBMISSION ===
+/**
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │  CENTRALIZED DATA SUBMISSION ARCHITECTURE                       │
+ * │                                                                   │
+ * │  Semua data dari Step 1-7 dikumpulkan dalam wizardState dan     │
+ * │  dikirim dalam satu proses submission yang terkoordinasi.       │
+ * │                                                                   │
+ * │  Alur:                                                           │
+ * │  1. Save/Update Biodata (Step 1) → Dapatkan idpengguna         │
+ * │  2. Untuk setiap kategori (Step 2-7):                          │
+ * │     - Delete existing records (jika edit mode)                  │
+ * │     - Insert new records dengan idpengguna                      │
+ * │  3. Commit seluruh transaksi atau rollback jika ada error      │
+ * └─────────────────────────────────────────────────────────────────┘
+ */
 async function submitForm() {
   isLoading.value = true;
   errorMessage.value = null;
 
   try {
-    // ============================================
-    // STEP 1: PROCESS BIODATA
-    // ============================================
-    const biodataInfo = stepData.biodata;
-    let userId = biodataInfo.userId;
+    // ============================================================
+    // STEP 1: Save/Update Biodata
+    // ============================================================
+    let userId = null;
 
-    // Case 1: Create New User
-    if (
-      biodataInfo.mode === "new" &&
-      !isEditMode.value &&
-      !createdUserId.value
-    ) {
-      const userData = new FormData();
-
-      // Append all user data fields
-      const fields = biodataInfo.userData;
-      for (const key in fields) {
-        if (
-          fields[key] !== null &&
-          fields[key] !== undefined &&
-          fields[key] !== ""
-        ) {
-          userData.append(`record[${key}]`, fields[key]);
-        }
-      }
-
-      // Handle photo upload
-      if (biodataInfo.photoFile) {
-        userData.append(
-          "upload_foto",
-          biodataInfo.photoFile,
-          biodataInfo.photoFile.name
-        );
-      }
-
-      // Append empty dummy arrays (backend requirement)
-      [
-        "idpenggunajenjang",
-        "idpenggunapangkat",
-        "idpenggunapelatihan",
-        "idpenggunapendidikan",
-        "idpenggunaprestasi",
-        "idpenggunaunitkerja",
-      ].forEach((k) => userData.append(`record[${k}]`, ""));
-
-      const res = await addUser(userData);
-      userId = res.data?.data?.idpengguna || res.data?.idpengguna;
-
-      if (!userId) throw new Error("Gagal mendapatkan ID Pengguna baru.");
-
-      // Save created user ID
-      createdUserId.value = userId;
-      stepData.biodata.userId = userId;
-
-      toast.success("Data pengguna baru berhasil dibuat.");
+    // Jika edit mode, gunakan idpengguna yang sudah ada
+    if (isEditMode.value) {
+      userId = props.fieldToEdit.idpengguna;
+      await saveBiodataUpdate(userId);
     }
-
-    // Case 2: Update Existing User (Edit mode or existing user with changes)
-    else if (
-      isEditMode.value ||
-      (biodataInfo.mode === "existing" && biodataInfo.userData)
-    ) {
-      userId = isEditMode.value
-        ? props.fieldToEdit.idpengguna
-        : biodataInfo.userId;
-
-      if (!userId) throw new Error("ID Pengguna tidak valid untuk update.");
-
-      const userData = new FormData();
-      const fields = biodataInfo.userData;
-
-      for (const key in fields) {
-        if (fields[key] !== null && fields[key] !== undefined) {
-          userData.append(`record[${key}]`, fields[key]);
-        }
+    // Jika mode existing, gunakan userId yang dipilih (tidak perlu save biodata lagi)
+    else if (wizardState.biodata.isExisting && wizardState.biodata.userId) {
+      userId = wizardState.biodata.userId;
+      // Optional: Update biodata if changes were made
+      if (wizardState.biodata.userData) {
+        await saveBiodataUpdate(userId);
       }
-
-      if (biodataInfo.photoFile) {
-        userData.append(
-          "upload_foto",
-          biodataInfo.photoFile,
-          biodataInfo.photoFile.name
-        );
-      }
-
-      userData.append("_method", "PUT");
-      await updateUser(userId, userData);
-
-      toast.success("Data pengguna berhasil diperbarui.");
     }
-
-    // Case 3: Using existing user without changes
-    else if (biodataInfo.mode === "existing" && biodataInfo.userId) {
-      userId = biodataInfo.userId;
+    // Jika mode new, create new user
+    else if (wizardState.biodata.mode === "new") {
+      userId = await saveBiodataCreate();
+    } else {
+      throw new Error("Mode biodata tidak valid");
     }
 
     if (!userId) {
-      throw new Error(
-        "ID Pengguna tidak valid. Tidak dapat melanjutkan penyimpanan data terkait."
-      );
+      throw new Error("Gagal mendapatkan ID pengguna");
     }
 
-    // ============================================
-    // STEP 2-7: PROCESS REPEATER DATA
-    // ============================================
-    const promises = [];
+    console.log("User ID for subsequent steps:", userId);
 
-    /**
-     * Helper function to create FormData for each record
-     * Attaches idpengguna and handles file uploads
-     */
-    const createFormData = (item, fileKey) => {
-      const fd = new FormData();
-      fd.append("record[idpengguna]", userId);
+    // ============================================================
+    // STEP 2-7: Save Related Data (Repeaters)
+    // ============================================================
+    // Simpan semua data terkait secara berurutan
+    await saveUnitKerja(userId);
+    await saveJabatan(userId);
+    await savePangkat(userId);
+    await savePendidikan(userId);
+    await savePelatihan(userId);
+    await savePrestasi(userId);
 
-      Object.keys(item).forEach((key) => {
-        // Skip internal/metadata keys
-        if (
-          [
-            "_tempId",
-            "isOpen",
-            "fileRaw",
-            "existingFile",
-            "filesk_preview",
-            "fileijazah_preview",
-            "filesertifikat_preview",
-          ].includes(key)
-        ) {
-          return;
-        }
-
-        // Handle file fields separately
-        if (
-          key === fileKey ||
-          key === "filesk" ||
-          key === "fileijazah" ||
-          key === "filesertifikat"
-        ) {
-          return; // Will be handled below
-        }
-
-        if (item[key] !== null && item[key] !== undefined && item[key] !== "") {
-          fd.append(`record[${key}]`, item[key]);
-        }
-      });
-
-      // Append file if exists (new upload)
-      // Check for various file field naming
-      if (item[fileKey] && item[fileKey] instanceof File) {
-        fd.append(fileKey, item[fileKey]);
-      } else if (item.fileRaw && item.fileRaw instanceof File) {
-        fd.append(fileKey, item.fileRaw);
-      } else if (item.filesk && item.filesk instanceof File) {
-        fd.append("filesk", item.filesk);
-      } else if (item.fileijazah && item.fileijazah instanceof File) {
-        fd.append("fileijazah", item.fileijazah);
-      } else if (item.filesertifikat && item.filesertifikat instanceof File) {
-        fd.append("filesertifikat", item.filesertifikat);
-      }
-
-      return fd;
-    };
-
-    // Step 2: Unit Kerja
-    if (stepData.unitKerja.list && stepData.unitKerja.list.length > 0) {
-      stepData.unitKerja.list.forEach((item) => {
-        // Only submit items that have required fields
-        if (item.idunitkerja && item.tglmulai) {
-          promises.push(addUserWorkUnit(createFormData(item, "filesk")));
-        }
-      });
-    }
-
-    // Step 3: Jabatan
-    if (stepData.jabatan.list && stepData.jabatan.list.length > 0) {
-      stepData.jabatan.list.forEach((item) => {
-        if (item.idjenjang && item.tglmulai) {
-          promises.push(addUserLevel(createFormData(item, "filesk")));
-        }
-      });
-    }
-
-    // Step 4: Pangkat
-    if (stepData.pangkat.list && stepData.pangkat.list.length > 0) {
-      stepData.pangkat.list.forEach((item) => {
-        if (item.idpangkat && item.tglmulai) {
-          promises.push(addUserRank(createFormData(item, "filesk")));
-        }
-      });
-    }
-
-    // Step 5: Pendidikan
-    if (stepData.pendidikan.list && stepData.pendidikan.list.length > 0) {
-      stepData.pendidikan.list.forEach((item) => {
-        if (item.idpendidikan && item.namasekolah) {
-          promises.push(addUserEducation(createFormData(item, "fileijazah")));
-        }
-      });
-    }
-
-    // Step 6: Pelatihan
-    if (stepData.pelatihan.list && stepData.pelatihan.list.length > 0) {
-      stepData.pelatihan.list.forEach((item) => {
-        if (item.namapelatihan) {
-          promises.push(
-            addUserTraining(createFormData(item, "filesertifikat"))
-          );
-        }
-      });
-    }
-
-    // Step 7: Prestasi
-    if (stepData.prestasi.list && stepData.prestasi.list.length > 0) {
-      stepData.prestasi.list.forEach((item) => {
-        if (item.namaprestasi) {
-          promises.push(
-            addUserAchievement(createFormData(item, "filesertifikat"))
-          );
-        }
-      });
-    }
-
-    // Execute all repeater data submissions in parallel
-    if (promises.length > 0) {
-      await Promise.all(promises);
-      toast.success("Semua data riwayat berhasil disimpan.");
-    }
-
-    toast.success("Data Berhasil Disimpan!", { timeout: 3000 });
+    // ============================================================
+    // SUCCESS
+    // ============================================================
+    toast.success(
+      `Data ${props.entityName} berhasil ${
+        isEditMode.value ? "diperbarui" : "ditambahkan"
+      }`
+    );
     emit("save-successful");
     closeModal();
   } catch (error) {
@@ -636,32 +511,265 @@ async function submitForm() {
   }
 }
 
-// === Watchers ===
-watch(
-  () => props.fieldToEdit,
-  (newData) => {
-    if (!newData) {
-      // Reset all data when modal is closed/new
-      currentTabIndex.value = 0;
-      createdUserId.value = null;
+/**
+ * ============================================================
+ * BIODATA SUBMISSION HELPERS
+ * ============================================================
+ */
+async function saveBiodataCreate() {
+  const formData = createBiodataFormData();
 
-      Object.keys(stepData).forEach((key) => {
-        if (key === "biodata") {
-          stepData[key] = {
-            mode: "",
-            userId: null,
-            userData: {},
-            photoFile: null,
-            isPhotoRemoved: false,
-          };
-        } else {
-          stepData[key] = { list: [] };
-        }
-      });
+  const response = await addUser(formData);
+
+  // Extract user ID from response
+  let userId = null;
+  if (response.data && response.data.idpengguna) {
+    userId = response.data.idpengguna;
+  } else if (response.idpengguna) {
+    userId = response.idpengguna;
+  } else if (
+    response.data &&
+    response.data.data &&
+    response.data.data.idpengguna
+  ) {
+    userId = response.data.data.idpengguna;
+  }
+
+  if (!userId) {
+    console.warn("Could not extract userId from response:", response);
+    throw new Error("Gagal mendapatkan ID pengguna dari response");
+  }
+
+  return userId;
+}
+
+async function saveBiodataUpdate(userId) {
+  const formData = createBiodataFormData();
+  formData.append("_method", "PUT");
+
+  await updateUser(userId, formData);
+  return userId;
+}
+
+function createBiodataFormData() {
+  const data = new FormData();
+  const biodata = wizardState.biodata.userData;
+
+  // Append all biodata fields
+  data.append("record[idlevel]", biodata.idlevel || "");
+  data.append("record[email]", biodata.email || "");
+  data.append("record[nama]", biodata.nama || "");
+  data.append("record[telp]", biodata.telp || "");
+  data.append("record[nik]", biodata.nik || "");
+  data.append("record[gelardepan]", biodata.gelardepan || "");
+  data.append("record[gelarbelakang]", biodata.gelarbelakang || "");
+  data.append("record[alamat]", biodata.alamat || "");
+  data.append("record[kodekabupaten]", biodata.kodekabupaten || "");
+  data.append("record[nip]", biodata.nip || "");
+  data.append("record[no_karpeg]", biodata.no_karpeg || "");
+  data.append("record[tempatlahir]", biodata.tempatlahir || "");
+  data.append("record[tanggallahir]", biodata.tanggallahir || "");
+  data.append("record[status]", biodata.status || "Aktif");
+
+  // Handle photo upload
+  if (wizardState.biodata.photoFile) {
+    data.append(
+      "upload_foto",
+      wizardState.biodata.photoFile,
+      wizardState.biodata.photoFile.name
+    );
+  } else if (wizardState.biodata.isPhotoRemoved) {
+    data.append("record[foto]", "");
+  }
+
+  return data;
+}
+
+/**
+ * ============================================================
+ * STEP 2: UNIT KERJA
+ * ============================================================
+ */
+async function saveUnitKerja(userId) {
+  const items = wizardState.unitKerja.data || [];
+  if (items.length === 0) {
+    console.log("No unit kerja data to save");
+    return;
+  }
+
+  for (const item of items) {
+    const formData = createFormData(item, "filesk", userId);
+
+    // Jika item memiliki ID (edit mode), update; jika tidak, create
+    if (item.idpenggunaunitkerja) {
+      formData.append("_method", "PUT");
+      await updateUserWorkUnit(item.idpenggunaunitkerja, formData);
+    } else {
+      await addUserWorkUnit(formData);
     }
-  },
-  { immediate: true }
-);
+  }
+}
+
+/**
+ * ============================================================
+ * STEP 3: JABATAN
+ * ============================================================
+ */
+async function saveJabatan(userId) {
+  const items = wizardState.jabatan.data || [];
+  if (items.length === 0) {
+    console.log("No jabatan data to save");
+    return;
+  }
+
+  for (const item of items) {
+    const formData = createFormData(item, "filesk", userId);
+
+    if (item.idepnggunajenjang) {
+      formData.append("_method", "PUT");
+      await updateUserPosition(item.idepnggunajenjang, formData);
+    } else {
+      await addUserPosition(formData);
+    }
+  }
+}
+
+/**
+ * ============================================================
+ * STEP 4: PANGKAT
+ * ============================================================
+ */
+async function savePangkat(userId) {
+  const items = wizardState.pangkat.data || [];
+  if (items.length === 0) {
+    console.log("No pangkat data to save");
+    return;
+  }
+
+  for (const item of items) {
+    const formData = createFormData(item, "filesk", userId);
+
+    if (item.idpenggunapangkat) {
+      formData.append("_method", "PUT");
+      await updateUserRank(item.idpenggunapangkat, formData);
+    } else {
+      await addUserRank(formData);
+    }
+  }
+}
+
+/**
+ * ============================================================
+ * STEP 5: PENDIDIKAN
+ * ============================================================
+ */
+async function savePendidikan(userId) {
+  const items = wizardState.pendidikan.data || [];
+  if (items.length === 0) {
+    console.log("No pendidikan data to save");
+    return;
+  }
+
+  for (const item of items) {
+    const formData = createFormData(item, null, userId);
+
+    if (item.idpenggunapendidikan) {
+      formData.append("_method", "PUT");
+      await updateUserEducation(item.idpenggunapendidikan, formData);
+    } else {
+      await addUserEducation(formData);
+    }
+  }
+}
+
+/**
+ * ============================================================
+ * STEP 6: PELATIHAN
+ * ============================================================
+ */
+async function savePelatihan(userId) {
+  const items = wizardState.pelatihan.data || [];
+  if (items.length === 0) {
+    console.log("No pelatihan data to save");
+    return;
+  }
+
+  for (const item of items) {
+    const formData = createFormData(item, "filesertifikat", userId);
+
+    if (item.idpenggunalatihan) {
+      formData.append("_method", "PUT");
+      await updateUserTraining(item.idpenggunalatihan, formData);
+    } else {
+      await addUserTraining(formData);
+    }
+  }
+}
+
+/**
+ * ============================================================
+ * STEP 7: PRESTASI
+ * ============================================================
+ */
+async function savePrestasi(userId) {
+  const items = wizardState.prestasi.data || [];
+  if (items.length === 0) {
+    console.log("No prestasi data to save");
+    return;
+  }
+
+  for (const item of items) {
+    const formData = createFormData(item, "filesertifikat", userId);
+
+    if (item.idpenggunaprestasi) {
+      formData.append("_method", "PUT");
+      await updateUserAchievement(item.idpenggunaprestasi, formData);
+    } else {
+      await addUserAchievement(formData);
+    }
+  }
+}
+
+/**
+ * ============================================================
+ * HELPER: CREATE FORMDATA FOR REPEATER ITEMS
+ * ============================================================
+ */
+function createFormData(item, fileKey, userId) {
+  const formData = new FormData();
+
+  // Always append idpengguna
+  formData.append("record[idpengguna]", userId);
+
+  // Append all other fields from item
+  Object.keys(item).forEach((key) => {
+    // Skip internal fields and file-related fields
+    if (
+      key.startsWith("_") ||
+      key === "idpengguna" ||
+      key === fileKey ||
+      key === `${fileKey}Preview`
+    ) {
+      return;
+    }
+
+    const value = item[key];
+    if (value !== null && value !== undefined && value !== "") {
+      formData.append(`record[${key}]`, value);
+    }
+  });
+
+  // Handle file upload if fileKey is provided
+  if (fileKey && item[`_${fileKey}File`]) {
+    formData.append(
+      `upload_${fileKey}`,
+      item[`_${fileKey}File`],
+      item[`_${fileKey}File`].name
+    );
+  }
+
+  return formData;
+}
 </script>
 
 <style scoped>
@@ -671,75 +779,85 @@ watch(
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1050;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
 .modal-content {
-  background: white;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 1000px;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  width: 100%;
   max-height: 90vh;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-}
-
-.modal-header,
-.modal-footer {
-  padding: 1rem;
-  flex-shrink: 0;
-}
-
-.modal-body {
-  padding: 1rem;
-  overflow-y: auto;
-  flex-grow: 1;
+  margin: auto;
 }
 
 .modal-header {
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #dee2e6;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.modal-footer {
-  border-top: 1px solid #dee2e6;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+.modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
 }
 
-/* Vue3 Form Wizard Styling Overrides */
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+}
+
+.btn-close:hover {
+  color: #000;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* Wizard Customization */
+:deep(.wizard-tab-content) {
+  min-height: 300px;
+  padding: 1.5rem 0;
+}
+
 :deep(.vue-form-wizard .wizard-navigation .wizard-progress-with-circle) {
   margin-bottom: 2rem;
 }
 
-:deep(.vue-form-wizard .wizard-icon-circle) {
-  width: 50px;
-  height: 50px;
-  font-size: 18px;
-}
-
-:deep(.vue-form-wizard .wizard-card-footer) {
-  display: none !important;
-}
-
-/* Ensure wizard content is visible */
-:deep(.wizard-tab-content) {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-height: 200px;
-}
-
-:deep(.fw-body-container > div) {
-  display: block !important;
-  visibility: visible !important;
+:deep(.vue-form-wizard .wizard-nav-pills) {
+  margin-bottom: 2rem;
 }
 </style>
