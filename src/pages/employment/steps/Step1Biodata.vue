@@ -771,7 +771,25 @@ function populateFormData(data) {
 }
 
 async function validate() {
-  if (selectionMade.value) {
+  // Reset errors terlebih dahulu
+  Object.keys(formErrors).forEach((key) => (formErrors[key] = ""));
+
+  // Jika belum pilih mode dan bukan edit mode
+  if (!selectionMade.value && !isEditMode.value) {
+    toast.error(
+      "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru."
+    );
+    return false;
+  }
+
+  // Jika mode 'existing' tapi belum pilih user
+  if (mode.value === "existing" && !selectedUser.value && !isEditMode.value) {
+    toast.error("Silakan pilih pengguna dari daftar yang tersedia.");
+    return false;
+  }
+
+  // Validasi form fields
+  if (selectionMade.value || isEditMode.value) {
     try {
       await validationSchema.validate(formData, { abortEarly: false });
       return true;
@@ -779,6 +797,11 @@ async function validate() {
       err.inner.forEach((error) => {
         formErrors[error.path] = error.message;
       });
+
+      // Tampilkan error pertama sebagai toast
+      if (err.inner.length > 0) {
+        toast.error(err.inner[0].message);
+      }
       return false;
     }
   }

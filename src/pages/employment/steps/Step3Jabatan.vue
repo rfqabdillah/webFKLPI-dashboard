@@ -22,6 +22,13 @@
         </button>
       </div>
 
+      <div class="alert alert-info py-2 small mb-3" role="alert">
+        <i class="fa fa-info-circle me-1"></i>
+        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <span class="badge bg-success">Aktif</span>. Ketika Anda mengaktifkan
+        satu data, data lainnya akan otomatis menjadi "Tidak Aktif".
+      </div>
+
       <div
         v-if="jabatanList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"

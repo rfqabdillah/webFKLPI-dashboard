@@ -224,7 +224,10 @@ const modalTitle = computed(() =>
 const currentUserId = computed(() => {
   if (props.fieldToEdit) return props.fieldToEdit.idpengguna;
   // Jika create baru tapi user sudah pilih "Existing" di Step 1
-  return stepData.biodata.userId || null;
+  if (stepData.biodata.userId) return stepData.biodata.userId;
+  // Jika user baru tapi sudah di-save (dari response API)
+  if (stepData.biodata.createdUserId) return stepData.biodata.createdUserId;
+  return null;
 });
 
 // === Methods ===
@@ -264,8 +267,24 @@ async function validateStep(stepIndex) {
   let isValid = true;
 
   // Panggil fungsi validate() milik component anak
-  if (stepIndex === 0 && step1Ref.value)
+  if (stepIndex === 0 && step1Ref.value) {
     isValid = await step1Ref.value.validate();
+    // Validasi tambahan: pastikan mode sudah dipilih dan user ID ada (untuk existing)
+    if (isValid && !isEditMode.value) {
+      const biodataData = stepData.biodata;
+      if (!biodataData.mode || biodataData.mode === "") {
+        toast.warning(
+          "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru."
+        );
+        return false;
+      }
+      // Jika mode existing, pastikan user sudah dipilih
+      if (biodataData.mode === "existing" && !biodataData.userId) {
+        toast.warning("Silakan pilih pengguna dari daftar yang ada.");
+        return false;
+      }
+    }
+  }
   if (stepIndex === 1 && step2Ref.value)
     isValid = await step2Ref.value.validate();
   if (stepIndex === 2 && step3Ref.value)
@@ -346,6 +365,10 @@ async function submitForm() {
       // Ambil ID User baru dari response
       userId = res.data?.data?.idpengguna || res.data?.idpengguna;
       if (!userId) throw new Error("Gagal mendapatkan ID Pengguna baru.");
+
+      // Simpan ke stepData agar bisa diakses di step selanjutnya
+      stepData.biodata.createdUserId = userId;
+      stepData.biodata.userId = userId;
     } else if (biodataInfo.mode === "edit" || isEditMode.value) {
       // Update User Existing (Jika ada perubahan biodata)
       userId = isEditMode.value ? props.fieldToEdit.idpengguna : userId;
