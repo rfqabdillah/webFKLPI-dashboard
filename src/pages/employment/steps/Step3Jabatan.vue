@@ -22,11 +22,15 @@
         </button>
       </div>
 
-      <div class="alert alert-info py-2 small mb-3" role="alert">
-        <i class="fa fa-info-circle me-1"></i>
+      <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
-        <span class="badge bg-success">Aktif</span>. Ketika Anda mengaktifkan
-        satu data, data lainnya akan otomatis menjadi "Tidak Aktif".
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
       </div>
 
       <div
@@ -65,7 +69,7 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Nama Jabatan <span class="text-danger">*</span>
+                  Jenjang Jabatan <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -74,13 +78,13 @@
                   required
                   @blur="validateField(index, 'idjenjang')"
                 >
-                  <option value="" disabled>Pilih Jabatan</option>
+                  <option value="" disabled>Pilih Jenjang Jabatan</option>
                   <option
-                    v-for="opt in jabatanOptions"
-                    :key="opt.idjenjang"
-                    :value="opt.idjenjang"
+                    v-for="jenjang in positionLevelOptions"
+                    :key="jenjang.idjenjang"
+                    :value="jenjang.idjenjang"
                   >
-                    {{ opt.namajenjang }}
+                    {{ jenjang.namajenjang }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
@@ -161,7 +165,8 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getPositionLevels } from "@/services/referensi/positionLevels";
-import { getUserLevels } from "@/services/general/personnel/userLevels";
+import { getUserPositions } from "@/services/general/personnel/userPositions";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
@@ -179,12 +184,14 @@ const toast = useToast();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
-const jabatanOptions = ref([]);
+const positionLevelOptions = ref([]);
 const jabatanList = ref([]);
 const formErrors = ref([]);
 
 // === Lifecycle ===
 onMounted(() => {
+  fetchPositionLevels();
+
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     jabatanList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -208,11 +215,11 @@ async function loadData(userId) {
     await fetchPositionLevels();
 
     if (userId) {
-      const res = await getUserLevels({ id_pengguna: userId });
+      const res = await getUserPositions({ id_pengguna: userId });
       const apiData = (
         Array.isArray(res.data) ? res.data : res.data.data || []
       ).map((d) => ({
-        idpenggunajenjang: d.idpenggunajenjang,
+        idpenggunajabatan: d.idpenggunajabatan,
         idjenjang: d.idjenjang,
         tglmulai: d.tglmulai,
         tglselesai: d.tglselesai,
@@ -237,13 +244,23 @@ async function loadData(userId) {
 
 async function fetchPositionLevels() {
   try {
-    const res = await getPositionLevels({ limit: 999 });
-    jabatanOptions.value = Array.isArray(res.data)
-      ? res.data
-      : res.data.data || [];
+    const params = { page: 1, limit: 999, sort: "namajenjang", dir: "asc" };
+    const response = await getPositionLevels(params);
+
+    if (response.data && Array.isArray(response.data)) {
+      if (response.data[0] && response.data[0].data) {
+        positionLevelOptions.value = response.data[0].data;
+      } else {
+        positionLevelOptions.value = response.data;
+      }
+    } else if (response.data?.data && Array.isArray(response.data.data)) {
+      positionLevelOptions.value = response.data.data;
+    } else {
+      positionLevelOptions.value = [];
+    }
   } catch (error) {
     console.error("Error fetching position levels:", error);
-    toast.error("Gagal memuat data jabatan.");
+    toast.error("Gagal memuat data jenjang jabatan.");
   }
 }
 
@@ -264,8 +281,23 @@ function addJabatan() {
 }
 
 function removeJabatan(index) {
-  jabatanList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  Swal.fire({
+    title: "Hapus Data?",
+    text: "Data jabatan ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      jabatanList.value.splice(index, 1);
+      formErrors.value.splice(index, 1);
+      toast.success("Data jabatan berhasil dihapus");
+    }
+  });
 }
 
 function handleFileUpload(index, event) {
@@ -306,7 +338,7 @@ function validateField(index, field) {
 
   if (field === "idjenjang") {
     if (!item.idjenjang) {
-      formErrors.value[index].idjenjang = "Jabatan wajib dipilih.";
+      formErrors.value[index].idjenjang = "Jenjang Jabatan wajib dipilih.";
     } else {
       formErrors.value[index].idjenjang = "";
     }
@@ -332,7 +364,7 @@ function validate() {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     if (!item.idjenjang) {
-      formErrors.value[index].idjenjang = "Jabatan wajib dipilih.";
+      formErrors.value[index].idjenjang = "Jenjang Jabatan wajib dipilih.";
       isValid = false;
     } else {
       formErrors.value[index].idjenjang = "";

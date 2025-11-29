@@ -10,11 +10,9 @@
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h6 class="mb-1">
-            <i class="fa fa-star me-2"></i>Riwayat Pangkat / Golongan
-          </h6>
+          <h6 class="mb-1"><i class="fa fa-star me-2"></i>Riwayat Pangkat</h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat pangkat atau golongan pegawai.
+            Tambahkan riwayat kepangkatan pegawai jika ada.
           </p>
         </div>
         <button class="btn btn-primary btn-sm" @click="addPangkat">
@@ -22,11 +20,15 @@
         </button>
       </div>
 
-      <div class="alert alert-info py-2 small mb-3" role="alert">
-        <i class="fa fa-info-circle me-1"></i>
+      <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
-        <span class="badge bg-success">Aktif</span>. Ketika Anda mengaktifkan
-        satu data, data lainnya akan otomatis menjadi "Tidak Aktif".
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
       </div>
 
       <div
@@ -65,7 +67,7 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Pangkat / Golongan <span class="text-danger">*</span>
+                  Pangkat <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -76,11 +78,11 @@
                 >
                   <option value="" disabled>Pilih Pangkat</option>
                   <option
-                    v-for="opt in rankOptions"
-                    :key="opt.idpangkat"
-                    :value="opt.idpangkat"
+                    v-for="pangkat in rankOptions"
+                    :key="pangkat.idpangkat"
+                    :value="pangkat.idpangkat"
                   >
-                    {{ opt.pangkat }}
+                    {{ pangkat.pangkat }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
@@ -160,6 +162,7 @@ import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getRanks } from "@/services/referensi/ranks";
 import { getUserRanks } from "@/services/general/personnel/userRanks";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
@@ -181,8 +184,9 @@ const rankOptions = ref([]);
 const pangkatList = ref([]);
 const formErrors = ref([]);
 
-// === Lifecycle ===
 onMounted(() => {
+  fetchRanks();
+
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pangkatList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -193,18 +197,14 @@ onMounted(() => {
     pangkatList.value = [];
     formErrors.value = [];
   }
-
   emit("validation-change", true);
 });
 
-// === Methods ===
 async function loadData(userId) {
   if (isDataLoaded.value) return;
-
   isLoading.value = true;
   try {
     await fetchRanks();
-
     if (userId) {
       const res = await getUserRanks({ id_pengguna: userId });
       const apiData = (
@@ -219,12 +219,10 @@ async function loadData(userId) {
         filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
         _tempId: Date.now() + Math.random(),
       }));
-
       pangkatList.value = apiData;
       formErrors.value = pangkatList.value.map(() => ({}));
       emit("update:modelValue", { list: pangkatList.value });
     }
-
     isDataLoaded.value = true;
   } catch (error) {
     console.error("Error loading data:", error);
@@ -235,10 +233,19 @@ async function loadData(userId) {
 
 async function fetchRanks() {
   try {
-    const res = await getRanks({ limit: 100 });
-    rankOptions.value = Array.isArray(res.data)
-      ? res.data
-      : res.data.data || [];
+    const params = { page: 1, limit: 999, sort: "namapangkat", dir: "asc" };
+    const response = await getRanks(params);
+    if (response.data && Array.isArray(response.data)) {
+      if (response.data[0] && response.data[0].data) {
+        rankOptions.value = response.data[0].data;
+      } else {
+        rankOptions.value = response.data;
+      }
+    } else if (response.data?.data && Array.isArray(response.data.data)) {
+      rankOptions.value = response.data.data;
+    } else {
+      rankOptions.value = [];
+    }
   } catch (error) {
     console.error("Error fetching ranks:", error);
     toast.error("Gagal memuat data pangkat.");
@@ -247,7 +254,6 @@ async function fetchRanks() {
 
 function addPangkat() {
   pangkatList.value.forEach((item) => (item.status = "Tidak Aktif"));
-
   pangkatList.value.push({
     _tempId: Date.now(),
     idpangkat: "",
@@ -257,13 +263,27 @@ function addPangkat() {
     filesk_preview: "",
     status: "Aktif",
   });
-
   formErrors.value.push({});
 }
 
 function removePangkat(index) {
-  pangkatList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  Swal.fire({
+    title: "Hapus Data?",
+    text: "Data pangkat ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      pangkatList.value.splice(index, 1);
+      formErrors.value.splice(index, 1);
+      toast.success("Data pangkat berhasil dihapus");
+    }
+  });
 }
 
 function handleFileUpload(index, event) {
@@ -274,7 +294,6 @@ function handleFileUpload(index, event) {
       event.target.value = "";
       return;
     }
-
     pangkatList.value[index].filesk = file;
     pangkatList.value[index].filesk_preview = file.name;
   }
@@ -283,7 +302,6 @@ function handleFileUpload(index, event) {
 function handleStatusChange(index, isChecked) {
   const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   pangkatList.value[index].status = newStatus;
-
   if (newStatus === "Aktif") {
     pangkatList.value.forEach((item, i) => {
       if (i !== index) {
@@ -293,7 +311,6 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
-// === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
@@ -301,7 +318,6 @@ function getError(index, field) {
 function validateField(index, field) {
   const item = pangkatList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
-
   if (field === "idpangkat") {
     if (!item.idpangkat) {
       formErrors.value[index].idpangkat = "Pangkat wajib dipilih.";
@@ -309,7 +325,6 @@ function validateField(index, field) {
       formErrors.value[index].idpangkat = "";
     }
   }
-
   if (field === "tglmulai") {
     if (!item.tglmulai) {
       formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
@@ -321,21 +336,17 @@ function validateField(index, field) {
 
 function validate() {
   let isValid = true;
-
   if (pangkatList.value.length === 0) {
     return true;
   }
-
   pangkatList.value.forEach((item, index) => {
     if (!formErrors.value[index]) formErrors.value[index] = {};
-
     if (!item.idpangkat) {
       formErrors.value[index].idpangkat = "Pangkat wajib dipilih.";
       isValid = false;
     } else {
       formErrors.value[index].idpangkat = "";
     }
-
     if (!item.tglmulai) {
       formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
       isValid = false;
@@ -343,11 +354,9 @@ function validate() {
       formErrors.value[index].tglmulai = "";
     }
   });
-
   return isValid;
 }
 
-// === Sync & Watch ===
 watch(
   pangkatList,
   (newList) => {
@@ -356,7 +365,6 @@ watch(
     if (newList.length > 0) {
       isValid = newList.every((item) => item.idpangkat && item.tglmulai);
     }
-
     emit("validation-change", isValid);
   },
   { deep: true }
@@ -369,7 +377,6 @@ defineExpose({ validate, loadData });
 .step-pangkat {
   padding: 0;
 }
-
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
@@ -379,7 +386,6 @@ defineExpose({ validate, loadData });
   opacity: 0;
   transform: translateX(-30px);
 }
-
 .invalid-feedback {
   display: block;
 }

@@ -4,7 +4,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data...</p>
+      <p class="mt-2 text-muted">Memuat data referensi...</p>
     </div>
 
     <div v-else>
@@ -14,7 +14,7 @@
             <i class="fa fa-certificate me-2"></i>Riwayat Pelatihan
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat pelatihan atau kursus.
+            Tambahkan riwayat pelatihan pegawai jika ada.
           </p>
         </div>
         <button class="btn btn-primary btn-sm" @click="addPelatihan">
@@ -22,11 +22,15 @@
         </button>
       </div>
 
-      <div class="alert alert-info py-2 small mb-3" role="alert">
-        <i class="fa fa-info-circle me-1"></i>
+      <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
-        <span class="badge bg-success">Aktif</span>. Ketika Anda mengaktifkan
-        satu data, data lainnya akan otomatis menjadi "Tidak Aktif".
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
       </div>
 
       <div
@@ -72,8 +76,8 @@
                   class="form-control"
                   v-model="item.namapelatihan"
                   :class="{ 'is-invalid': getError(index, 'namapelatihan') }"
-                  placeholder="Contoh: Pelatihan Kepemimpinan"
                   required
+                  placeholder="Contoh: Pelatihan Kepemimpinan"
                   @blur="validateField(index, 'namapelatihan')"
                 />
                 <div class="invalid-feedback">
@@ -83,7 +87,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Penyelenggara <span class="text-danger">*</span>
+                  Nama Penyelenggara <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -92,8 +96,8 @@
                   :class="{
                     'is-invalid': getError(index, 'namapenyelenggara'),
                   }"
-                  placeholder="Contoh: BKN"
                   required
+                  placeholder="Contoh: LKPP"
                   @blur="validateField(index, 'namapenyelenggara')"
                 />
                 <div class="invalid-feedback">
@@ -125,6 +129,9 @@
                   class="form-control"
                   v-model="item.tglselesai"
                 />
+                <div class="form-text small">
+                  Kosongkan jika masih berlangsung.
+                </div>
               </div>
 
               <div class="col-md-6">
@@ -175,6 +182,7 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getUserTrainings } from "@/services/general/personnel/userTrainings";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
@@ -195,7 +203,6 @@ const isDataLoaded = ref(false);
 const pelatihanList = ref([]);
 const formErrors = ref([]);
 
-// === Lifecycle ===
 onMounted(() => {
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pelatihanList.value = props.modelValue.list.map((item) => ({
@@ -207,14 +214,11 @@ onMounted(() => {
     pelatihanList.value = [];
     formErrors.value = [];
   }
-
   emit("validation-change", true);
 });
 
-// === Methods ===
 async function loadData(userId) {
   if (isDataLoaded.value) return;
-
   isLoading.value = true;
   try {
     if (userId) {
@@ -222,7 +226,7 @@ async function loadData(userId) {
       const apiData = (
         Array.isArray(res.data) ? res.data : res.data.data || []
       ).map((d) => ({
-        idpenggunalatihan: d.idpenggunalatihan,
+        idpenggunapelatihan: d.idpenggunapelatihan,
         namapelatihan: d.namapelatihan,
         namapenyelenggara: d.namapenyelenggara,
         tglmulai: d.tglmulai,
@@ -234,12 +238,10 @@ async function loadData(userId) {
           : "",
         _tempId: Date.now() + Math.random(),
       }));
-
       pelatihanList.value = apiData;
       formErrors.value = pelatihanList.value.map(() => ({}));
       emit("update:modelValue", { list: pelatihanList.value });
     }
-
     isDataLoaded.value = true;
   } catch (error) {
     console.error("Error loading data:", error);
@@ -250,7 +252,6 @@ async function loadData(userId) {
 
 function addPelatihan() {
   pelatihanList.value.forEach((item) => (item.status = "Tidak Aktif"));
-
   pelatihanList.value.push({
     _tempId: Date.now(),
     namapelatihan: "",
@@ -261,13 +262,27 @@ function addPelatihan() {
     filesertifikat_preview: "",
     status: "Aktif",
   });
-
   formErrors.value.push({});
 }
 
 function removePelatihan(index) {
-  pelatihanList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  Swal.fire({
+    title: "Hapus Data?",
+    text: "Data pelatihan ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      pelatihanList.value.splice(index, 1);
+      formErrors.value.splice(index, 1);
+      toast.success("Data pelatihan berhasil dihapus");
+    }
+  });
 }
 
 function handleFileUpload(index, event) {
@@ -278,7 +293,6 @@ function handleFileUpload(index, event) {
       event.target.value = "";
       return;
     }
-
     pelatihanList.value[index].filesertifikat = file;
     pelatihanList.value[index].filesertifikat_preview = file.name;
   }
@@ -287,7 +301,6 @@ function handleFileUpload(index, event) {
 function handleStatusChange(index, isChecked) {
   const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   pelatihanList.value[index].status = newStatus;
-
   if (newStatus === "Aktif") {
     pelatihanList.value.forEach((item, i) => {
       if (i !== index) {
@@ -297,7 +310,6 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
-// === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
@@ -307,54 +319,41 @@ function validateField(index, field) {
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
   if (field === "namapelatihan") {
-    if (!item.namapelatihan) {
-      formErrors.value[index].namapelatihan = "Nama Pelatihan wajib diisi.";
-    } else {
-      formErrors.value[index].namapelatihan = "";
-    }
+    formErrors.value[index].namapelatihan = !item.namapelatihan
+      ? "Nama Pelatihan wajib diisi."
+      : "";
   }
-
   if (field === "namapenyelenggara") {
-    if (!item.namapenyelenggara) {
-      formErrors.value[index].namapenyelenggara = "Penyelenggara wajib diisi.";
-    } else {
-      formErrors.value[index].namapenyelenggara = "";
-    }
+    formErrors.value[index].namapenyelenggara = !item.namapenyelenggara
+      ? "Nama Penyelenggara wajib diisi."
+      : "";
   }
-
   if (field === "tglmulai") {
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
+    formErrors.value[index].tglmulai = !item.tglmulai
+      ? "Tanggal Mulai wajib diisi."
+      : "";
   }
 }
 
 function validate() {
   let isValid = true;
-
-  if (pelatihanList.value.length === 0) {
-    return true;
-  }
+  if (pelatihanList.value.length === 0) return true;
 
   pelatihanList.value.forEach((item, index) => {
     if (!formErrors.value[index]) formErrors.value[index] = {};
-
     if (!item.namapelatihan) {
       formErrors.value[index].namapelatihan = "Nama Pelatihan wajib diisi.";
       isValid = false;
     } else {
       formErrors.value[index].namapelatihan = "";
     }
-
     if (!item.namapenyelenggara) {
-      formErrors.value[index].namapenyelenggara = "Penyelenggara wajib diisi.";
+      formErrors.value[index].namapenyelenggara =
+        "Nama Penyelenggara wajib diisi.";
       isValid = false;
     } else {
       formErrors.value[index].namapenyelenggara = "";
     }
-
     if (!item.tglmulai) {
       formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
       isValid = false;
@@ -362,11 +361,9 @@ function validate() {
       formErrors.value[index].tglmulai = "";
     }
   });
-
   return isValid;
 }
 
-// === Sync & Watch ===
 watch(
   pelatihanList,
   (newList) => {
@@ -377,7 +374,6 @@ watch(
         (item) => item.namapelatihan && item.namapenyelenggara && item.tglmulai
       );
     }
-
     emit("validation-change", isValid);
   },
   { deep: true }
@@ -390,7 +386,6 @@ defineExpose({ validate, loadData });
 .step-pelatihan {
   padding: 0;
 }
-
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
@@ -400,7 +395,6 @@ defineExpose({ validate, loadData });
   opacity: 0;
   transform: translateX(-30px);
 }
-
 .invalid-feedback {
   display: block;
 }

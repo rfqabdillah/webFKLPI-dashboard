@@ -22,11 +22,15 @@
         </button>
       </div>
 
-      <div class="alert alert-info py-2 small mb-3" role="alert">
-        <i class="fa fa-info-circle me-1"></i>
+      <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
-        <span class="badge bg-success">Aktif</span>. Ketika Anda mengaktifkan
-        satu data, data lainnya akan otomatis menjadi "Tidak Aktif".
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
       </div>
 
       <div
@@ -162,6 +166,7 @@ import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getWorkUnits } from "@/services/referensi/workUnits";
 import { getUserWorkUnits } from "@/services/general/personnel/userWorkUnits";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
@@ -275,8 +280,23 @@ function addUnitKerja() {
 }
 
 function removeUnitKerja(index) {
-  unitKerjaList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  Swal.fire({
+    title: "Hapus Data?",
+    text: "Data unit kerja ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      unitKerjaList.value.splice(index, 1);
+      formErrors.value.splice(index, 1);
+      toast.success("Data unit kerja berhasil dihapus");
+    }
+  });
 }
 
 function handleFileUpload(index, event) {

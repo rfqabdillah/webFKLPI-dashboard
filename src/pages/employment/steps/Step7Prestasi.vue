@@ -14,7 +14,7 @@
             <i class="fa fa-trophy me-2"></i>Riwayat Prestasi
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat prestasi yang pernah diraih.
+            Tambahkan riwayat prestasi pegawai jika ada.
           </p>
         </div>
         <button class="btn btn-primary btn-sm" @click="addPrestasi">
@@ -22,11 +22,15 @@
         </button>
       </div>
 
-      <div class="alert alert-info py-2 small mb-3" role="alert">
-        <i class="fa fa-info-circle me-1"></i>
+      <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
-        <span class="badge bg-success">Aktif</span>. Ketika Anda mengaktifkan
-        satu data, data lainnya akan otomatis menjadi "Tidak Aktif".
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
       </div>
 
       <div
@@ -63,7 +67,7 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <div class="col-12">
+              <div class="col-md-12">
                 <label class="form-label fw-semibold">
                   Nama Prestasi <span class="text-danger">*</span>
                 </label>
@@ -71,9 +75,9 @@
                   type="text"
                   class="form-control"
                   v-model="item.namaprestasi"
-                  placeholder="Contoh: Juara 1 Lomba Coding"
                   :class="{ 'is-invalid': getError(index, 'namaprestasi') }"
                   required
+                  placeholder="Contoh: Juara 1 Lomba Inovasi Pelayanan Publik"
                   @blur="validateField(index, 'namaprestasi')"
                 />
                 <div class="invalid-feedback">
@@ -83,27 +87,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Penyelenggara <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="item.namapenyelenggara"
-                  placeholder="Contoh: Kemenkominfo"
-                  :class="{
-                    'is-invalid': getError(index, 'namapenyelenggara'),
-                  }"
-                  required
-                  @blur="validateField(index, 'namapenyelenggara')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "namapenyelenggara") }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  Skala <span class="text-danger">*</span>
+                  Skala Prestasi <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -114,15 +98,35 @@
                 >
                   <option value="" disabled>Pilih Skala</option>
                   <option
-                    v-for="opt in skalaOptions"
-                    :key="opt.idskala"
-                    :value="opt.idskala"
+                    v-for="skala in scaleOptions"
+                    :key="skala.idskala"
+                    :value="skala.idskala"
                   >
-                    {{ opt.namaskala }}
+                    {{ skala.namaskala }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
                   {{ getError(index, "idskala") }}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  Nama Penyelenggara <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="item.namapenyelenggara"
+                  :class="{
+                    'is-invalid': getError(index, 'namapenyelenggara'),
+                  }"
+                  required
+                  placeholder="Contoh: Kementerian PANRB"
+                  @blur="validateField(index, 'namapenyelenggara')"
+                />
+                <div class="invalid-feedback">
+                  {{ getError(index, "namapenyelenggara") }}
                 </div>
               </div>
 
@@ -175,6 +179,7 @@ import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getScales } from "@/services/referensi/scale";
 import { getUserAchievements } from "@/services/general/personnel/userAchievments";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
@@ -192,12 +197,13 @@ const toast = useToast();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
-const skalaOptions = ref([]);
+const scaleOptions = ref([]);
 const prestasiList = ref([]);
 const formErrors = ref([]);
 
-// === Lifecycle ===
 onMounted(() => {
+  fetchScales();
+
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     prestasiList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -208,18 +214,14 @@ onMounted(() => {
     prestasiList.value = [];
     formErrors.value = [];
   }
-
   emit("validation-change", true);
 });
 
-// === Methods ===
 async function loadData(userId) {
   if (isDataLoaded.value) return;
-
   isLoading.value = true;
   try {
     await fetchScales();
-
     if (userId) {
       const res = await getUserAchievements({ id_pengguna: userId });
       const apiData = (
@@ -227,8 +229,8 @@ async function loadData(userId) {
       ).map((d) => ({
         idpenggunaprestasi: d.idpenggunaprestasi,
         namaprestasi: d.namaprestasi,
-        namapenyelenggara: d.namapenyelenggara,
         idskala: d.idskala,
+        namapenyelenggara: d.namapenyelenggara,
         status: d.status,
         filesertifikat: d.filesertifikat,
         filesertifikat_preview: d.filesertifikat
@@ -236,12 +238,10 @@ async function loadData(userId) {
           : "",
         _tempId: Date.now() + Math.random(),
       }));
-
       prestasiList.value = apiData;
       formErrors.value = prestasiList.value.map(() => ({}));
       emit("update:modelValue", { list: prestasiList.value });
     }
-
     isDataLoaded.value = true;
   } catch (error) {
     console.error("Error loading data:", error);
@@ -252,36 +252,57 @@ async function loadData(userId) {
 
 async function fetchScales() {
   try {
-    const params = { limit: 100, sort: "namaskala", dir: "asc" };
-    const res = await getScales(params);
-    skalaOptions.value = Array.isArray(res.data)
-      ? res.data
-      : res.data.data || [];
+    const params = { page: 1, limit: 999, sort: "namaskala", dir: "asc" };
+    const response = await getScales(params);
+    if (response.data && Array.isArray(response.data)) {
+      if (response.data[0] && response.data[0].data) {
+        scaleOptions.value = response.data[0].data;
+      } else {
+        scaleOptions.value = response.data;
+      }
+    } else if (response.data?.data && Array.isArray(response.data.data)) {
+      scaleOptions.value = response.data.data;
+    } else {
+      scaleOptions.value = [];
+    }
   } catch (error) {
     console.error("Error fetching scales:", error);
-    toast.error("Gagal memuat data skala.");
+    toast.error("Gagal memuat data skala prestasi.");
   }
 }
 
 function addPrestasi() {
   prestasiList.value.forEach((item) => (item.status = "Tidak Aktif"));
-
   prestasiList.value.push({
     _tempId: Date.now(),
     namaprestasi: "",
-    namapenyelenggara: "",
     idskala: "",
+    namapenyelenggara: "",
     filesertifikat: null,
     filesertifikat_preview: "",
     status: "Aktif",
   });
-
   formErrors.value.push({});
 }
 
 function removePrestasi(index) {
-  prestasiList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  Swal.fire({
+    title: "Hapus Data?",
+    text: "Data prestasi ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      prestasiList.value.splice(index, 1);
+      formErrors.value.splice(index, 1);
+      toast.success("Data prestasi berhasil dihapus");
+    }
+  });
 }
 
 function handleFileUpload(index, event) {
@@ -292,7 +313,6 @@ function handleFileUpload(index, event) {
       event.target.value = "";
       return;
     }
-
     prestasiList.value[index].filesertifikat = file;
     prestasiList.value[index].filesertifikat_preview = file.name;
   }
@@ -301,7 +321,6 @@ function handleFileUpload(index, event) {
 function handleStatusChange(index, isChecked) {
   const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   prestasiList.value[index].status = newStatus;
-
   if (newStatus === "Aktif") {
     prestasiList.value.forEach((item, i) => {
       if (i !== index) {
@@ -311,7 +330,6 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
-// === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
@@ -321,66 +339,51 @@ function validateField(index, field) {
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
   if (field === "namaprestasi") {
-    if (!item.namaprestasi) {
-      formErrors.value[index].namaprestasi = "Nama Prestasi wajib diisi.";
-    } else {
-      formErrors.value[index].namaprestasi = "";
-    }
+    formErrors.value[index].namaprestasi = !item.namaprestasi
+      ? "Nama Prestasi wajib diisi."
+      : "";
   }
-
-  if (field === "namapenyelenggara") {
-    if (!item.namapenyelenggara) {
-      formErrors.value[index].namapenyelenggara = "Penyelenggara wajib diisi.";
-    } else {
-      formErrors.value[index].namapenyelenggara = "";
-    }
-  }
-
   if (field === "idskala") {
-    if (!item.idskala) {
-      formErrors.value[index].idskala = "Skala wajib dipilih.";
-    } else {
-      formErrors.value[index].idskala = "";
-    }
+    formErrors.value[index].idskala = !item.idskala
+      ? "Skala Prestasi wajib dipilih."
+      : "";
+  }
+  if (field === "namapenyelenggara") {
+    formErrors.value[index].namapenyelenggara = !item.namapenyelenggara
+      ? "Nama Penyelenggara wajib diisi."
+      : "";
   }
 }
 
 function validate() {
   let isValid = true;
-
-  if (prestasiList.value.length === 0) {
-    return true;
-  }
+  if (prestasiList.value.length === 0) return true;
 
   prestasiList.value.forEach((item, index) => {
     if (!formErrors.value[index]) formErrors.value[index] = {};
-
     if (!item.namaprestasi) {
       formErrors.value[index].namaprestasi = "Nama Prestasi wajib diisi.";
       isValid = false;
     } else {
       formErrors.value[index].namaprestasi = "";
     }
-
-    if (!item.namapenyelenggara) {
-      formErrors.value[index].namapenyelenggara = "Penyelenggara wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].namapenyelenggara = "";
-    }
-
     if (!item.idskala) {
-      formErrors.value[index].idskala = "Skala wajib dipilih.";
+      formErrors.value[index].idskala = "Skala Prestasi wajib dipilih.";
       isValid = false;
     } else {
       formErrors.value[index].idskala = "";
     }
+    if (!item.namapenyelenggara) {
+      formErrors.value[index].namapenyelenggara =
+        "Nama Penyelenggara wajib diisi.";
+      isValid = false;
+    } else {
+      formErrors.value[index].namapenyelenggara = "";
+    }
   });
-
   return isValid;
 }
 
-// === Sync & Watch ===
 watch(
   prestasiList,
   (newList) => {
@@ -388,10 +391,9 @@ watch(
     let isValid = true;
     if (newList.length > 0) {
       isValid = newList.every(
-        (item) => item.namaprestasi && item.namapenyelenggara && item.idskala
+        (item) => item.namaprestasi && item.idskala && item.namapenyelenggara
       );
     }
-
     emit("validation-change", isValid);
   },
   { deep: true }
@@ -404,7 +406,6 @@ defineExpose({ validate, loadData });
 .step-prestasi {
   padding: 0;
 }
-
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
@@ -414,7 +415,6 @@ defineExpose({ validate, loadData });
   opacity: 0;
   transform: translateX(-30px);
 }
-
 .invalid-feedback {
   display: block;
 }
