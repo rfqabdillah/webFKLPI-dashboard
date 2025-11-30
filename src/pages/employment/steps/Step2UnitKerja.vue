@@ -108,6 +108,7 @@
                   {{ getError(index, "tglmulai") }}
                 </div>
               </div>
+
               <div class="col-md-6">
                 <label class="form-label fw-semibold">Tanggal Selesai</label>
                 <input
@@ -122,15 +123,61 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
+
                 <input
                   type="file"
                   class="form-control"
                   @change="(e) => handleFileUpload(index, e)"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
-                <div v-if="item.filesk_preview" class="mt-2 small text-success">
-                  <i class="fa fa-check-circle me-1"></i> File terpilih:
-                  {{ item.filesk_preview }}
+
+                <div
+                  v-if="isUrl(item.filesk)"
+                  class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
+                >
+                  <div class="d-flex align-items-center overflow-hidden">
+                    <div class="me-3 text-danger">
+                      <i class="fa fa-file-pdf-o fa-2x"></i>
+                    </div>
+                    <div class="text-truncate">
+                      <small
+                        class="text-muted d-block"
+                        style="font-size: 0.75rem"
+                        >File Tersimpan:</small
+                      >
+                      <span
+                        class="fw-bold text-dark text-truncate d-block"
+                        :title="item.filesk_preview"
+                      >
+                        {{ item.filesk_preview }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a
+                    :href="item.filesk"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
+                  >
+                    <i class="fa fa-external-link me-1"></i> Buka
+                  </a>
+                </div>
+
+                <div
+                  v-else-if="item.filesk_preview"
+                  class="mt-2 p-2 border border-success rounded bg-white text-success"
+                >
+                  <div class="d-flex align-items-center">
+                    <i class="fa fa-check-circle fa-lg me-2"></i>
+                    <div class="overflow-hidden">
+                      <small class="d-block text-muted"
+                        >File baru dipilih:</small
+                      >
+                      <strong class="text-truncate d-block">{{
+                        item.filesk_preview
+                      }}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -188,6 +235,13 @@ const workUnitOptions = ref([]);
 const unitKerjaList = ref([]);
 const formErrors = ref([]);
 
+// === Helper Functions ===
+const isUrl = (string) => {
+  return (
+    typeof string === "string" && string.length > 0 && string.startsWith("http")
+  );
+};
+
 // === Lifecycle ===
 onMounted(() => {
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
@@ -206,28 +260,38 @@ onMounted(() => {
 
 // === Methods ===
 async function loadData(userId) {
-  if (isDataLoaded.value) return;
-
   isLoading.value = true;
   try {
     await fetchWorkUnits();
 
     if (userId) {
+      console.log("Step2UnitKerja - Loading data for userId:", userId);
       const res = await getUserWorkUnits({ id_pengguna: userId });
-      const apiData = (
-        Array.isArray(res.data) ? res.data : res.data.data || []
-      ).map((d) => ({
+
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunaunitkerja) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+
+      const apiData = filteredData.map((d) => ({
         idpenggunaunitkerja: d.idpenggunaunitkerja,
         idunitkerja: d.idunitkerja,
         tglmulai: d.tglmulai,
         tglselesai: d.tglselesai,
         status: d.status,
-        filesk: d.filesk, // URL or path
+        filesk: d.filesk,
         filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
         _tempId: Date.now() + Math.random(),
       }));
 
-      // Update local list and emit
       unitKerjaList.value = apiData;
       formErrors.value = unitKerjaList.value.map(() => ({}));
       emit("update:modelValue", { list: unitKerjaList.value });

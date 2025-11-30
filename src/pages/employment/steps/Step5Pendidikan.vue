@@ -192,15 +192,33 @@ onMounted(() => {
 });
 
 async function loadData(userId) {
-  if (isDataLoaded.value) return;
   isLoading.value = true;
   try {
     await fetchEducationLevels();
     if (userId) {
+      console.log("Step5Pendidikan - Loading data for userId:", userId);
       const res = await getUserEducations({ id_pengguna: userId });
-      const apiData = (
-        Array.isArray(res.data) ? res.data : res.data.data || []
-      ).map((d) => ({
+      console.log("Step5Pendidikan - API Response:", res);
+
+      // Handle nested response structure
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunapendidikan) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      console.log("Step5Pendidikan - Raw data extracted:", rawData);
+
+      // Filter by userId on client-side
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step5Pendidikan - Filtered data:", filteredData);
+
+      const apiData = filteredData.map((d) => ({
         idpenggunapendidikan: d.idpenggunapendidikan,
         idjenjangpendidikan: d.idjenjangpendidikan,
         programstudi: d.programstudi,
@@ -208,6 +226,9 @@ async function loadData(userId) {
         tahunlulus: d.tahunlulus,
         _tempId: Date.now() + Math.random(),
       }));
+
+      console.log("Step5Pendidikan - Mapped data:", apiData);
+
       pendidikanList.value = apiData;
       formErrors.value = pendidikanList.value.map(() => ({}));
       emit("update:modelValue", { list: pendidikanList.value });

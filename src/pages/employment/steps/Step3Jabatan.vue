@@ -122,15 +122,61 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
+
                 <input
                   type="file"
                   class="form-control"
                   @change="(e) => handleFileUpload(index, e)"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
-                <div v-if="item.filesk_preview" class="mt-2 small text-success">
-                  <i class="fa fa-check-circle me-1"></i> File terpilih:
-                  {{ item.filesk_preview }}
+
+                <div
+                  v-if="isUrl(item.filesk)"
+                  class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
+                >
+                  <div class="d-flex align-items-center overflow-hidden">
+                    <div class="me-3 text-danger">
+                      <i class="fa fa-file-pdf-o fa-2x"></i>
+                    </div>
+                    <div class="text-truncate">
+                      <small
+                        class="text-muted d-block"
+                        style="font-size: 0.75rem"
+                        >File Tersimpan:</small
+                      >
+                      <span
+                        class="fw-bold text-dark text-truncate d-block"
+                        :title="item.filesk_preview"
+                      >
+                        {{ item.filesk_preview }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a
+                    :href="item.filesk"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
+                  >
+                    <i class="fa fa-external-link me-1"></i> Buka
+                  </a>
+                </div>
+
+                <div
+                  v-else-if="item.filesk_preview"
+                  class="mt-2 p-2 border border-success rounded bg-white text-success"
+                >
+                  <div class="d-flex align-items-center">
+                    <i class="fa fa-check-circle fa-lg me-2"></i>
+                    <div class="overflow-hidden">
+                      <small class="d-block text-muted"
+                        >File baru dipilih:</small
+                      >
+                      <strong class="text-truncate d-block">{{
+                        item.filesk_preview
+                      }}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -188,6 +234,13 @@ const positionLevelOptions = ref([]);
 const jabatanList = ref([]);
 const formErrors = ref([]);
 
+// === Helper Functions ===
+const isUrl = (string) => {
+  return (
+    typeof string === "string" && string.length > 0 && string.startsWith("http")
+  );
+};
+
 // === Lifecycle ===
 onMounted(() => {
   fetchPositionLevels();
@@ -208,17 +261,34 @@ onMounted(() => {
 
 // === Methods ===
 async function loadData(userId) {
-  if (isDataLoaded.value) return;
-
   isLoading.value = true;
   try {
     await fetchPositionLevels();
 
     if (userId) {
+      console.log("Step3Jabatan - Loading data for userId:", userId);
       const res = await getUserLevels({ id_pengguna: userId });
-      const apiData = (
-        Array.isArray(res.data) ? res.data : res.data.data || []
-      ).map((d) => ({
+      console.log("Step3Jabatan - API Response:", res);
+
+      // Handle nested response structure: res.data is an array with [0].data containing actual records
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunajenjang) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      console.log("Step3Jabatan - Raw data extracted:", rawData);
+
+      // Filter by userId on client-side
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step3Jabatan - Filtered data:", filteredData);
+
+      const apiData = filteredData.map((d) => ({
         idpenggunajenjang: d.idpenggunajenjang,
         idjenjang: d.idjenjang,
         tglmulai: d.tglmulai,
@@ -228,6 +298,8 @@ async function loadData(userId) {
         filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
         _tempId: Date.now() + Math.random(),
       }));
+
+      console.log("Step3Jabatan - Mapped data:", apiData);
 
       jabatanList.value = apiData;
       formErrors.value = jabatanList.value.map(() => ({}));

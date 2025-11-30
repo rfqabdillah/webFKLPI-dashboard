@@ -136,18 +136,61 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File Sertifikat</label>
+
                 <input
                   type="file"
                   class="form-control"
                   @change="(e) => handleFileUpload(index, e)"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
+
                 <div
-                  v-if="item.filesertifikat_preview"
-                  class="mt-2 small text-success"
+                  v-if="isUrl(item.filesertifikat)"
+                  class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
                 >
-                  <i class="fa fa-check-circle me-1"></i> File terpilih:
-                  {{ item.filesertifikat_preview }}
+                  <div class="d-flex align-items-center overflow-hidden">
+                    <div class="me-3 text-danger">
+                      <i class="fa fa-file-pdf-o fa-2x"></i>
+                    </div>
+                    <div class="text-truncate">
+                      <small
+                        class="text-muted d-block"
+                        style="font-size: 0.75rem"
+                        >File Tersimpan:</small
+                      >
+                      <span
+                        class="fw-bold text-dark text-truncate d-block"
+                        :title="item.filesertifikat_preview"
+                      >
+                        {{ item.filesertifikat_preview }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a
+                    :href="item.filesertifikat"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
+                  >
+                    <i class="fa fa-external-link me-1"></i> Buka
+                  </a>
+                </div>
+
+                <div
+                  v-else-if="item.filesertifikat_preview"
+                  class="mt-2 p-2 border border-success rounded bg-white text-success"
+                >
+                  <div class="d-flex align-items-center">
+                    <i class="fa fa-check-circle fa-lg me-2"></i>
+                    <div class="overflow-hidden">
+                      <small class="d-block text-muted"
+                        >File baru dipilih:</small
+                      >
+                      <strong class="text-truncate d-block">{{
+                        item.filesertifikat_preview
+                      }}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -203,6 +246,13 @@ const isDataLoaded = ref(false);
 const pelatihanList = ref([]);
 const formErrors = ref([]);
 
+// === Helper Functions ===
+const isUrl = (string) => {
+  return (
+    typeof string === "string" && string.length > 0 && string.startsWith("http")
+  );
+};
+
 onMounted(() => {
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pelatihanList.value = props.modelValue.list.map((item) => ({
@@ -218,14 +268,32 @@ onMounted(() => {
 });
 
 async function loadData(userId) {
-  if (isDataLoaded.value) return;
   isLoading.value = true;
   try {
     if (userId) {
+      console.log("Step6Pelatihan - Loading data for userId:", userId);
       const res = await getUserTrainings({ id_pengguna: userId });
-      const apiData = (
-        Array.isArray(res.data) ? res.data : res.data.data || []
-      ).map((d) => ({
+      console.log("Step6Pelatihan - API Response:", res);
+
+      // Handle nested response structure
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunapelatihan) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      console.log("Step6Pelatihan - Raw data extracted:", rawData);
+
+      // Filter by userId on client-side
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step6Pelatihan - Filtered data:", filteredData);
+
+      const apiData = filteredData.map((d) => ({
         idpenggunapelatihan: d.idpenggunapelatihan,
         namapelatihan: d.namapelatihan,
         namapenyelenggara: d.namapenyelenggara,
@@ -238,6 +306,9 @@ async function loadData(userId) {
           : "",
         _tempId: Date.now() + Math.random(),
       }));
+
+      console.log("Step6Pelatihan - Mapped data:", apiData);
+
       pelatihanList.value = apiData;
       formErrors.value = pelatihanList.value.map(() => ({}));
       emit("update:modelValue", { list: pelatihanList.value });
