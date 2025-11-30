@@ -65,13 +65,13 @@
                 }}{{ formatDate(item.tanggallahir) || "-" }}
               </dd>
 
-              <dt>Kejuruan</dt>
+              <!-- <dt>Kejuruan</dt>
               <dd>{{ item["vocational-fields"]?.namakejuruan || "-" }}</dd>
 
               <dt>Sub Kejuruan</dt>
               <dd>
                 {{ item["vocational-subfields"]?.namasubkejuruan || "-" }}
-              </dd>
+              </dd> -->
             </dl>
           </div>
         </div>

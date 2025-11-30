@@ -175,9 +175,9 @@ import {
   updateUserWorkUnit,
 } from "@/services/general/personnel/userWorkUnits";
 import {
-  addUserPosition,
-  updateUserPosition,
-} from "@/services/general/personnel/userPositions";
+  addUserLevel,
+  updateUserLevel,
+} from "@/services/general/personnel/userLevels";
 import {
   addUserRank,
   updateUserRank,
@@ -462,7 +462,20 @@ function createBiodataFormData() {
   const biodata = wizardState.biodata.userData;
 
   Object.keys(biodata).forEach((key) => {
-    if (biodata[key] !== null && biodata[key] !== undefined && key !== "foto") {
+    if (
+      biodata[key] !== null &&
+      biodata[key] !== undefined &&
+      key !== "foto" &&
+      key !== "roles" &&
+      key !== "permissions" &&
+      key !== "created_at" &&
+      key !== "updated_at" &&
+      key !== "deleted_at" &&
+      key !== "email_verified_at" &&
+      key !== "remember_token" &&
+      key !== "lastlogin" &&
+      key !== "kodepropinsi"
+    ) {
       data.append(`record[${key}]`, biodata[key]);
     }
   });
@@ -500,12 +513,16 @@ function createFormData(item, fileKey, userId) {
   const formData = new FormData();
   formData.append("record[idpengguna]", userId);
 
+  const systemFields = ["created_at", "updated_at", "deleted_at"];
+
   Object.keys(item).forEach((key) => {
     if (
       !key.startsWith("_") &&
       key !== "idpengguna" &&
       key !== fileKey &&
-      key !== `${fileKey}Preview`
+      !key.endsWith("_preview") &&
+      !key.endsWith("Preview") &&
+      !systemFields.includes(key)
     ) {
       const value = item[key];
       if (value !== null && value !== undefined) {
@@ -514,12 +531,8 @@ function createFormData(item, fileKey, userId) {
     }
   });
 
-  if (fileKey && item[`_${fileKey}File`]) {
-    formData.append(
-      `upload_${fileKey}`,
-      item[`_${fileKey}File`],
-      item[`_${fileKey}File`].name
-    );
+  if (fileKey && item[fileKey] instanceof File) {
+    formData.append(`upload_${fileKey}`, item[fileKey], item[fileKey].name);
   }
 
   return formData;
@@ -540,11 +553,11 @@ async function saveUnitKerja(userId) {
 async function saveJabatan(userId) {
   for (const item of wizardState.jabatan.list) {
     const formData = createFormData(item, "filesk", userId);
-    if (item.idpenggunajabatan) {
+    if (item.idpenggunajenjang) {
       formData.append("_method", "PUT");
-      await updateUserPosition(item.idpenggunajabatan, formData);
+      await updateUserLevel(item.idpenggunajenjang, formData);
     } else {
-      await addUserPosition(formData);
+      await addUserLevel(formData);
     }
   }
 }

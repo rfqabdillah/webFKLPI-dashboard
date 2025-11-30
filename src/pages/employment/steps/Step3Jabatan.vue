@@ -165,7 +165,7 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getPositionLevels } from "@/services/referensi/positionLevels";
-import { getUserPositions } from "@/services/general/personnel/userPositions";
+import { getUserLevels } from "@/services/general/personnel/userLevels";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -215,11 +215,11 @@ async function loadData(userId) {
     await fetchPositionLevels();
 
     if (userId) {
-      const res = await getUserPositions({ id_pengguna: userId });
+      const res = await getUserLevels({ id_pengguna: userId });
       const apiData = (
         Array.isArray(res.data) ? res.data : res.data.data || []
       ).map((d) => ({
-        idpenggunajabatan: d.idpenggunajabatan,
+        idpenggunajenjang: d.idpenggunajenjang,
         idjenjang: d.idjenjang,
         tglmulai: d.tglmulai,
         tglselesai: d.tglselesai,
