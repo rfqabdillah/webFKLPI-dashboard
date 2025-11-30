@@ -152,7 +152,7 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
-import { getUserEducation } from "@/services/general/personnel/userEducation";
+import { getUserEducations } from "@/services/general/personnel/userEducation";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -197,7 +197,7 @@ async function loadData(userId) {
   try {
     await fetchEducationLevels();
     if (userId) {
-      const res = await getUserEducation({ id_pengguna: userId });
+      const res = await getUserEducations({ id_pengguna: userId });
       const apiData = (
         Array.isArray(res.data) ? res.data : res.data.data || []
       ).map((d) => ({

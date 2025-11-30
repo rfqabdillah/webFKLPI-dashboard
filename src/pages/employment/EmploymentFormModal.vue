@@ -23,7 +23,9 @@
             :class="{
               active: currentStepIndex === index,
               completed: currentStepIndex > index,
+              clickable: visitedSteps.has(index) && index !== currentStepIndex,
             }"
+            @click="goToStep(index)"
           >
             <div class="step-circle">
               <i :class="step.icon"></i>
@@ -223,6 +225,7 @@ const step7Ref = ref(null);
 
 // === State ===
 const currentStepIndex = ref(0);
+const visitedSteps = ref(new Set([0])); // Track which steps have been visited
 const isLoading = ref(false);
 const errorMessage = ref(null);
 const createdUserId = ref(null);
@@ -255,12 +258,12 @@ const wizardState = reactive({
     photoFile: null,
     isPhotoRemoved: false,
   },
-  unitKerja: { data: [] },
-  jabatan: { data: [] },
-  pangkat: { data: [] },
-  pendidikan: { data: [] },
-  pelatihan: { data: [] },
-  prestasi: { data: [] },
+  unitKerja: { list: [] },
+  jabatan: { list: [] },
+  pangkat: { list: [] },
+  pendidikan: { list: [] },
+  pelatihan: { list: [] },
+  prestasi: { list: [] },
 });
 
 const stepLoaded = reactive([false, false, false, false, false, false, false]);
@@ -369,6 +372,14 @@ async function nextStep() {
   }
 
   currentStepIndex.value++;
+  visitedSteps.value.add(currentStepIndex.value); // Mark new step as visited
+}
+
+function goToStep(targetIndex) {
+  // Only allow navigation to visited steps or the current step
+  if (visitedSteps.value.has(targetIndex)) {
+    currentStepIndex.value = targetIndex;
+  }
 }
 
 function prevStep() {
@@ -515,7 +526,7 @@ function createFormData(item, fileKey, userId) {
 }
 
 async function saveUnitKerja(userId) {
-  for (const item of wizardState.unitKerja.data) {
+  for (const item of wizardState.unitKerja.list) {
     const formData = createFormData(item, "filesk", userId);
     if (item.idpenggunaunitkerja) {
       formData.append("_method", "PUT");
@@ -527,11 +538,11 @@ async function saveUnitKerja(userId) {
 }
 
 async function saveJabatan(userId) {
-  for (const item of wizardState.jabatan.data) {
+  for (const item of wizardState.jabatan.list) {
     const formData = createFormData(item, "filesk", userId);
-    if (item.idepnggunajenjang) {
+    if (item.idpenggunajabatan) {
       formData.append("_method", "PUT");
-      await updateUserPosition(item.idepnggunajenjang, formData);
+      await updateUserPosition(item.idpenggunajabatan, formData);
     } else {
       await addUserPosition(formData);
     }
@@ -539,7 +550,7 @@ async function saveJabatan(userId) {
 }
 
 async function savePangkat(userId) {
-  for (const item of wizardState.pangkat.data) {
+  for (const item of wizardState.pangkat.list) {
     const formData = createFormData(item, "filesk", userId);
     if (item.idpenggunapangkat) {
       formData.append("_method", "PUT");
@@ -551,7 +562,7 @@ async function savePangkat(userId) {
 }
 
 async function savePendidikan(userId) {
-  for (const item of wizardState.pendidikan.data) {
+  for (const item of wizardState.pendidikan.list) {
     const formData = createFormData(item, null, userId);
     if (item.idpenggunapendidikan) {
       formData.append("_method", "PUT");
@@ -563,11 +574,11 @@ async function savePendidikan(userId) {
 }
 
 async function savePelatihan(userId) {
-  for (const item of wizardState.pelatihan.data) {
+  for (const item of wizardState.pelatihan.list) {
     const formData = createFormData(item, "filesertifikat", userId);
-    if (item.idpenggunalatihan) {
+    if (item.idpenggunapelatihan) {
       formData.append("_method", "PUT");
-      await updateUserTraining(item.idpenggunalatihan, formData);
+      await updateUserTraining(item.idpenggunapelatihan, formData);
     } else {
       await addUserTraining(formData);
     }
@@ -575,7 +586,7 @@ async function savePelatihan(userId) {
 }
 
 async function savePrestasi(userId) {
-  for (const item of wizardState.prestasi.data) {
+  for (const item of wizardState.prestasi.list) {
     const formData = createFormData(item, "filesertifikat", userId);
     if (item.idpenggunaprestasi) {
       formData.append("_method", "PUT");
@@ -721,6 +732,21 @@ async function savePrestasi(userId) {
 
 .wizard-step.completed .step-title {
   color: #28a745;
+}
+
+/* Clickable Steps */
+.wizard-step.clickable {
+  cursor: pointer;
+}
+
+.wizard-step.clickable:hover .step-circle {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.wizard-step.clickable:hover .step-title {
+  color: #1e7e34;
+  font-weight: 600;
 }
 
 /* Step Content */
