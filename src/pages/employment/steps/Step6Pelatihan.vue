@@ -224,7 +224,10 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
-import { getUserTrainings } from "@/services/general/personnel/userTrainings";
+import {
+  getUserTrainings,
+  deleteUserTraining,
+} from "@/services/general/personnel/userTrainings";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -289,9 +292,15 @@ async function loadData(userId) {
 
       console.log("Step6Pelatihan - Raw data extracted:", rawData);
 
-      // Filter by userId on client-side
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step6Pelatihan - Filtered data:", filteredData);
+      // Filter by userId AND remove empty/invalid records
+      const filteredData = rawData.filter((d) => {
+        return (
+          d.idpengguna === userId &&
+          d.namapelatihan && // Harus ada nama pelatihan
+          d.namapenyelenggara && // Harus ada penyelenggara
+          d.tglmulai // Harus ada tanggal mulai
+        );
+      });
 
       const apiData = filteredData.map((d) => ({
         idpenggunapelatihan: d.idpenggunapelatihan,
@@ -337,9 +346,13 @@ function addPelatihan() {
 }
 
 function removePelatihan(index) {
+  const item = pelatihanList.value[index];
+
   Swal.fire({
     title: "Hapus Data?",
-    text: "Data pelatihan ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    text: item.idpenggunapelatihan
+      ? "Data pelatihan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data pelatihan ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -347,11 +360,22 @@ function removePelatihan(index) {
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      pelatihanList.value.splice(index, 1);
-      formErrors.value.splice(index, 1);
-      toast.success("Data pelatihan berhasil dihapus");
+      try {
+        if (item.idpenggunapelatihan) {
+          await deleteUserTraining(item.idpenggunapelatihan);
+          toast.success("Data pelatihan berhasil dihapus dari database");
+        } else {
+          toast.success("Data pelatihan berhasil dihapus");
+        }
+
+        pelatihanList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting pelatihan:", error);
+        toast.error("Gagal menghapus data pelatihan");
+      }
     }
   });
 }

@@ -152,7 +152,10 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
-import { getUserEducations } from "@/services/general/personnel/userEducation";
+import {
+  getUserEducations,
+  deleteUserEducation,
+} from "@/services/general/personnel/userEducation";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -214,9 +217,15 @@ async function loadData(userId) {
 
       console.log("Step5Pendidikan - Raw data extracted:", rawData);
 
-      // Filter by userId on client-side
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step5Pendidikan - Filtered data:", filteredData);
+      // Filter by userId AND remove empty/invalid records
+      const filteredData = rawData.filter((d) => {
+        return (
+          d.idpengguna === userId &&
+          d.idjenjangpendidikan && // Harus ada jenjang pendidikan
+          d.tahunlulus && // Harus ada tahun lulus
+          d.programstudi // Harus ada program studi
+        );
+      });
 
       const apiData = filteredData.map((d) => ({
         idpenggunapendidikan: d.idpenggunapendidikan,
@@ -279,9 +288,13 @@ function addPendidikan() {
 }
 
 function removePendidikan(index) {
+  const item = pendidikanList.value[index];
+
   Swal.fire({
     title: "Hapus Data?",
-    text: "Data pendidikan ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    text: item.idpenggunapendidikan
+      ? "Data pendidikan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data pendidikan ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -289,11 +302,22 @@ function removePendidikan(index) {
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      pendidikanList.value.splice(index, 1);
-      formErrors.value.splice(index, 1);
-      toast.success("Data pendidikan berhasil dihapus");
+      try {
+        if (item.idpenggunapendidikan) {
+          await deleteUserEducation(item.idpenggunapendidikan);
+          toast.success("Data pendidikan berhasil dihapus dari database");
+        } else {
+          toast.success("Data pendidikan berhasil dihapus");
+        }
+
+        pendidikanList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting pendidikan:", error);
+        toast.error("Gagal menghapus data pendidikan");
+      }
     }
   });
 }

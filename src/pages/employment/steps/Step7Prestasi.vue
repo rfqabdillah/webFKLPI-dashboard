@@ -221,7 +221,10 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getScales } from "@/services/referensi/scale";
-import { getUserAchievements } from "@/services/general/personnel/userAchievments";
+import {
+  getUserAchievements,
+  deleteUserAchievement,
+} from "@/services/general/personnel/userAchievments";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -290,9 +293,15 @@ async function loadData(userId) {
 
       console.log("Step7Prestasi - Raw data extracted:", rawData);
 
-      // Filter by userId on client-side
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step7Prestasi - Filtered data:", filteredData);
+      // Filter by userId AND remove empty/invalid records
+      const filteredData = rawData.filter((d) => {
+        return (
+          d.idpengguna === userId &&
+          d.namaprestasi && // Harus ada nama prestasi
+          d.idskala && // Harus ada skala
+          d.namapenyelenggara // Harus ada penyelenggara
+        );
+      });
 
       const apiData = filteredData.map((d) => ({
         idpenggunaprestasi: d.idpenggunaprestasi,
@@ -357,9 +366,13 @@ function addPrestasi() {
 }
 
 function removePrestasi(index) {
+  const item = prestasiList.value[index];
+
   Swal.fire({
     title: "Hapus Data?",
-    text: "Data prestasi ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    text: item.idpenggunaprestasi
+      ? "Data prestasi ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data prestasi ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -367,11 +380,22 @@ function removePrestasi(index) {
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      prestasiList.value.splice(index, 1);
-      formErrors.value.splice(index, 1);
-      toast.success("Data prestasi berhasil dihapus");
+      try {
+        if (item.idpenggunaprestasi) {
+          await deleteUserAchievement(item.idpenggunaprestasi);
+          toast.success("Data prestasi berhasil dihapus dari database");
+        } else {
+          toast.success("Data prestasi berhasil dihapus");
+        }
+
+        prestasiList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting prestasi:", error);
+        toast.error("Gagal menghapus data prestasi");
+      }
     }
   });
 }

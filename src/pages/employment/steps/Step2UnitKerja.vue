@@ -212,7 +212,10 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getWorkUnits } from "@/services/referensi/workUnits";
-import { getUserWorkUnits } from "@/services/general/personnel/userWorkUnits";
+import {
+  getUserWorkUnits,
+  deleteUserWorkUnit,
+} from "@/services/general/personnel/userWorkUnits";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -279,7 +282,14 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      // Filter by userId AND remove empty/invalid records
+      const filteredData = rawData.filter((d) => {
+        return (
+          d.idpengguna === userId &&
+          d.idunitkerja && // Harus ada unit kerja
+          d.tglmulai // Harus ada tanggal mulai
+        );
+      });
 
       const apiData = filteredData.map((d) => ({
         idpenggunaunitkerja: d.idpenggunaunitkerja,
@@ -344,9 +354,13 @@ function addUnitKerja() {
 }
 
 function removeUnitKerja(index) {
+  const item = unitKerjaList.value[index];
+
   Swal.fire({
     title: "Hapus Data?",
-    text: "Data unit kerja ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    text: item.idpenggunaunitkerja
+      ? "Data unit kerja ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data unit kerja ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -354,11 +368,24 @@ function removeUnitKerja(index) {
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      unitKerjaList.value.splice(index, 1);
-      formErrors.value.splice(index, 1);
-      toast.success("Data unit kerja berhasil dihapus");
+      try {
+        // Jika ada ID, hapus dari database
+        if (item.idpenggunaunitkerja) {
+          await deleteUserWorkUnit(item.idpenggunaunitkerja);
+          toast.success("Data unit kerja berhasil dihapus dari database");
+        } else {
+          toast.success("Data unit kerja berhasil dihapus");
+        }
+
+        // Hapus dari array lokal
+        unitKerjaList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting unit kerja:", error);
+        toast.error("Gagal menghapus data unit kerja");
+      }
     }
   });
 }

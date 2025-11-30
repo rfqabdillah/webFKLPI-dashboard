@@ -207,7 +207,10 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getRanks } from "@/services/referensi/ranks";
-import { getUserRanks } from "@/services/general/personnel/userRanks";
+import {
+  getUserRanks,
+  deleteUserRank,
+} from "@/services/general/personnel/userRanks";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -276,9 +279,14 @@ async function loadData(userId) {
 
       console.log("Step4Pangkat - Raw data extracted:", rawData);
 
-      // Filter by userId on client-side
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step4Pangkat - Filtered data:", filteredData);
+      // Filter by userId AND remove empty/invalid records
+      const filteredData = rawData.filter((d) => {
+        return (
+          d.idpengguna === userId &&
+          d.idpangkat && // Harus ada pangkat
+          d.tglmulai // Harus ada tanggal mulai
+        );
+      });
 
       const apiData = filteredData.map((d) => ({
         idpenggunapangkat: d.idpenggunapangkat,
@@ -341,9 +349,13 @@ function addPangkat() {
 }
 
 function removePangkat(index) {
+  const item = pangkatList.value[index];
+
   Swal.fire({
     title: "Hapus Data?",
-    text: "Data pangkat ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    text: item.idpenggunapangkat
+      ? "Data pangkat ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data pangkat ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -351,11 +363,22 @@ function removePangkat(index) {
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      pangkatList.value.splice(index, 1);
-      formErrors.value.splice(index, 1);
-      toast.success("Data pangkat berhasil dihapus");
+      try {
+        if (item.idpenggunapangkat) {
+          await deleteUserRank(item.idpenggunapangkat);
+          toast.success("Data pangkat berhasil dihapus dari database");
+        } else {
+          toast.success("Data pangkat berhasil dihapus");
+        }
+
+        pangkatList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting pangkat:", error);
+        toast.error("Gagal menghapus data pangkat");
+      }
     }
   });
 }

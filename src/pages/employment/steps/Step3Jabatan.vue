@@ -211,7 +211,10 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getPositionLevels } from "@/services/referensi/positionLevels";
-import { getUserLevels } from "@/services/general/personnel/userLevels";
+import {
+  getUserLevels,
+  deleteUserLevel,
+} from "@/services/general/personnel/userLevels";
 import Swal from "sweetalert2";
 
 const props = defineProps({
@@ -284,9 +287,14 @@ async function loadData(userId) {
 
       console.log("Step3Jabatan - Raw data extracted:", rawData);
 
-      // Filter by userId on client-side
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step3Jabatan - Filtered data:", filteredData);
+      // Filter by userId AND remove empty/invalid records
+      const filteredData = rawData.filter((d) => {
+        return (
+          d.idpengguna === userId &&
+          d.idjenjang && // Harus ada jenjang
+          d.tglmulai // Harus ada tanggal mulai
+        );
+      });
 
       const apiData = filteredData.map((d) => ({
         idpenggunajenjang: d.idpenggunajenjang,
@@ -353,9 +361,13 @@ function addJabatan() {
 }
 
 function removeJabatan(index) {
+  const item = jabatanList.value[index];
+
   Swal.fire({
     title: "Hapus Data?",
-    text: "Data jabatan ini akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    text: item.idpenggunajenjang
+      ? "Data jabatan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data jabatan ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -363,11 +375,22 @@ function removeJabatan(index) {
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      jabatanList.value.splice(index, 1);
-      formErrors.value.splice(index, 1);
-      toast.success("Data jabatan berhasil dihapus");
+      try {
+        if (item.idpenggunajenjang) {
+          await deleteUserLevel(item.idpenggunajenjang);
+          toast.success("Data jabatan berhasil dihapus dari database");
+        } else {
+          toast.success("Data jabatan berhasil dihapus");
+        }
+
+        jabatanList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting jabatan:", error);
+        toast.error("Gagal menghapus data jabatan");
+      }
     }
   });
 }
