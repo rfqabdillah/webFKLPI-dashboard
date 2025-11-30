@@ -293,15 +293,9 @@ async function loadData(userId) {
 
       console.log("Step7Prestasi - Raw data extracted:", rawData);
 
-      // Filter by userId AND remove empty/invalid records
-      const filteredData = rawData.filter((d) => {
-        return (
-          d.idpengguna === userId &&
-          d.namaprestasi && // Harus ada nama prestasi
-          d.idskala && // Harus ada skala
-          d.namapenyelenggara // Harus ada penyelenggara
-        );
-      });
+      // Filter by userId only
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step7Prestasi - Filtered data:", filteredData);
 
       const apiData = filteredData.map((d) => ({
         idpenggunaprestasi: d.idpenggunaprestasi,

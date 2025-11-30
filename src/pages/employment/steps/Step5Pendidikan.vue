@@ -217,15 +217,9 @@ async function loadData(userId) {
 
       console.log("Step5Pendidikan - Raw data extracted:", rawData);
 
-      // Filter by userId AND remove empty/invalid records
-      const filteredData = rawData.filter((d) => {
-        return (
-          d.idpengguna === userId &&
-          d.idjenjangpendidikan && // Harus ada jenjang pendidikan
-          d.tahunlulus && // Harus ada tahun lulus
-          d.programstudi // Harus ada program studi
-        );
-      });
+      // Filter by userId only
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step5Pendidikan - Filtered data:", filteredData);
 
       const apiData = filteredData.map((d) => ({
         idpenggunapendidikan: d.idpenggunapendidikan,

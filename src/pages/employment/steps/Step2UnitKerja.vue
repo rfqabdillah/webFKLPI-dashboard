@@ -282,14 +282,8 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
-      // Filter by userId AND remove empty/invalid records
-      const filteredData = rawData.filter((d) => {
-        return (
-          d.idpengguna === userId &&
-          d.idunitkerja && // Harus ada unit kerja
-          d.tglmulai // Harus ada tanggal mulai
-        );
-      });
+      // Filter by userId only (tanpa filter data kosong)
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
 
       const apiData = filteredData.map((d) => ({
         idpenggunaunitkerja: d.idpenggunaunitkerja,

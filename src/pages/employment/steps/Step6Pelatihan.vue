@@ -292,15 +292,9 @@ async function loadData(userId) {
 
       console.log("Step6Pelatihan - Raw data extracted:", rawData);
 
-      // Filter by userId AND remove empty/invalid records
-      const filteredData = rawData.filter((d) => {
-        return (
-          d.idpengguna === userId &&
-          d.namapelatihan && // Harus ada nama pelatihan
-          d.namapenyelenggara && // Harus ada penyelenggara
-          d.tglmulai // Harus ada tanggal mulai
-        );
-      });
+      // Filter by userId only
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step6Pelatihan - Filtered data:", filteredData);
 
       const apiData = filteredData.map((d) => ({
         idpenggunapelatihan: d.idpenggunapelatihan,

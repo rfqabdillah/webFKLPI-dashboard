@@ -279,14 +279,9 @@ async function loadData(userId) {
 
       console.log("Step4Pangkat - Raw data extracted:", rawData);
 
-      // Filter by userId AND remove empty/invalid records
-      const filteredData = rawData.filter((d) => {
-        return (
-          d.idpengguna === userId &&
-          d.idpangkat && // Harus ada pangkat
-          d.tglmulai // Harus ada tanggal mulai
-        );
-      });
+      // Filter by userId only
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step4Pangkat - Filtered data:", filteredData);
 
       const apiData = filteredData.map((d) => ({
         idpenggunapangkat: d.idpenggunapangkat,
