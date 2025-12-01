@@ -406,14 +406,12 @@
             <dl class="detail-list">
               <dt>Dibuat Pada</dt>
               <dd>{{ formatDate(item.created_at) || "-" }}</dd>
-              <dt>Terakhir Login</dt>
-              <dd>{{ formatDate(item.lastlogin) || "Belum pernah login" }}</dd>
+              <dt>Diupdate Pada</dt>
+              <dd>{{ formatDate(item.updated_at) || "-" }}</dd>
             </dl>
           </div>
           <div class="col-md-6">
             <dl class="detail-list">
-              <dt>Diupdate Pada</dt>
-              <dd>{{ formatDate(item.updated_at) || "-" }}</dd>
               <dt>Email Terverifikasi</dt>
               <dd>
                 {{
@@ -459,7 +457,6 @@ const riwayatPendidikan = ref([]);
 const riwayatPelatihan = ref([]);
 const riwayatPrestasi = ref([]);
 
-// Load semua riwayat saat ada itemToView
 watch(
   () => props.itemToView,
   async (newItem) => {
@@ -554,7 +551,7 @@ function extractData(response) {
   font-size: 1.2rem;
   font-weight: 600;
   color: #000;
-  border-bottom: 2px solid #0d6efd;
+  border-bottom: 2px solid #000;
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
