@@ -23,6 +23,17 @@
       </div>
 
       <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
+        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
+      </div>
+
+      <div
         v-if="unitKerjaList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
       >
@@ -97,6 +108,7 @@
                   {{ getError(index, "tglmulai") }}
                 </div>
               </div>
+
               <div class="col-md-6">
                 <label class="form-label fw-semibold">Tanggal Selesai</label>
                 <input
@@ -111,15 +123,61 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
+
                 <input
                   type="file"
                   class="form-control"
                   @change="(e) => handleFileUpload(index, e)"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
-                <div v-if="item.filesk_preview" class="mt-2 small text-success">
-                  <i class="fa fa-check-circle me-1"></i> File terpilih:
-                  {{ item.filesk_preview }}
+
+                <div
+                  v-if="isUrl(item.filesk)"
+                  class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
+                >
+                  <div class="d-flex align-items-center overflow-hidden">
+                    <div class="me-3 text-danger">
+                      <i class="fa fa-file-pdf-o fa-2x"></i>
+                    </div>
+                    <div class="text-truncate">
+                      <small
+                        class="text-muted d-block"
+                        style="font-size: 0.75rem"
+                        >File Tersimpan:</small
+                      >
+                      <span
+                        class="fw-bold text-dark text-truncate d-block"
+                        :title="item.filesk_preview"
+                      >
+                        {{ item.filesk_preview }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a
+                    :href="item.filesk"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
+                  >
+                    <i class="fa fa-external-link me-1"></i> Buka
+                  </a>
+                </div>
+
+                <div
+                  v-else-if="item.filesk_preview"
+                  class="mt-2 p-2 border border-success rounded bg-white text-success"
+                >
+                  <div class="d-flex align-items-center">
+                    <i class="fa fa-check-circle fa-lg me-2"></i>
+                    <div class="overflow-hidden">
+                      <small class="d-block text-muted"
+                        >File baru dipilih:</small
+                      >
+                      <strong class="text-truncate d-block">{{
+                        item.filesk_preview
+                      }}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -154,11 +212,20 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getWorkUnits } from "@/services/referensi/workUnits";
+import {
+  getUserWorkUnits,
+  deleteUserWorkUnit,
+} from "@/services/general/personnel/userWorkUnits";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({ list: [] }),
+  },
+  currentUserId: {
+    type: String,
+    default: "",
   },
 });
 
@@ -170,6 +237,13 @@ const isDataLoaded = ref(false);
 const workUnitOptions = ref([]);
 const unitKerjaList = ref([]);
 const formErrors = ref([]);
+
+// === Helper Functions ===
+const isUrl = (string) => {
+  return (
+    typeof string === "string" && string.length > 0 && string.startsWith("http")
+  );
+};
 
 // === Lifecycle ===
 onMounted(() => {
@@ -188,14 +262,54 @@ onMounted(() => {
 });
 
 // === Methods ===
-async function loadData() {
-  if (isDataLoaded.value) return;
-  await fetchWorkUnits();
-  isDataLoaded.value = true;
+async function loadData(userId) {
+  isLoading.value = true;
+  try {
+    await fetchWorkUnits();
+
+    if (userId) {
+      console.log("Step2UnitKerja - Loading data for userId:", userId);
+      const res = await getUserWorkUnits({ id_pengguna: userId });
+
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunaunitkerja) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      // Filter by userId only (tanpa filter data kosong)
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+
+      const apiData = filteredData.map((d) => ({
+        idpenggunaunitkerja: d.idpenggunaunitkerja,
+        idunitkerja: d.idunitkerja,
+        tglmulai: d.tglmulai,
+        tglselesai: d.tglselesai,
+        status: d.status,
+        filesk: d.filesk,
+        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        _tempId: Date.now() + Math.random(),
+      }));
+
+      unitKerjaList.value = apiData;
+      formErrors.value = unitKerjaList.value.map(() => ({}));
+      emit("update:modelValue", { list: unitKerjaList.value });
+    }
+
+    isDataLoaded.value = true;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function fetchWorkUnits() {
-  isLoading.value = true;
   try {
     const params = { page: 1, limit: 999, sort: "namaunitkerja", dir: "asc" };
     const response = await getWorkUnits(params);
@@ -214,8 +328,6 @@ async function fetchWorkUnits() {
   } catch (error) {
     console.error("Error fetching work units:", error);
     toast.error("Gagal memuat data unit kerja.");
-  } finally {
-    isLoading.value = false;
   }
 }
 
@@ -236,8 +348,40 @@ function addUnitKerja() {
 }
 
 function removeUnitKerja(index) {
-  unitKerjaList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  const item = unitKerjaList.value[index];
+
+  Swal.fire({
+    title: "Hapus Data?",
+    text: item.idpenggunaunitkerja
+      ? "Data unit kerja ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data unit kerja ini akan dihapus.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        // Jika ada ID, hapus dari database
+        if (item.idpenggunaunitkerja) {
+          await deleteUserWorkUnit(item.idpenggunaunitkerja);
+          toast.success("Data unit kerja berhasil dihapus dari database");
+        } else {
+          toast.success("Data unit kerja berhasil dihapus");
+        }
+
+        // Hapus dari array lokal
+        unitKerjaList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting unit kerja:", error);
+        toast.error("Gagal menghapus data unit kerja");
+      }
+    }
+  });
 }
 
 function handleFileUpload(index, event) {

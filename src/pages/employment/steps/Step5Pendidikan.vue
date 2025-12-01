@@ -4,7 +4,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data referensi...</p>
+      <p class="mt-2 text-muted">Mem uat data referensi...</p>
     </div>
 
     <div v-else>
@@ -14,7 +14,7 @@
             <i class="fa fa-graduation-cap me-2"></i>Riwayat Pendidikan
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat pendidikan formal pegawai.
+            Tambahkan riwayat pendidikan pegawai jika ada.
           </p>
         </div>
         <button class="btn btn-primary btn-sm" @click="addPendidikan">
@@ -58,7 +58,7 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Jenjang <span class="text-danger">*</span>
+                  Jenjang Pendidikan <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -69,13 +69,13 @@
                   required
                   @blur="validateField(index, 'idjenjangpendidikan')"
                 >
-                  <option value="" disabled>Pilih Jenjang</option>
+                  <option value="" disabled>Pilih Jenjang Pendidikan</option>
                   <option
-                    v-for="level in educationLevelOptions"
-                    :key="level.idjenjangpendidikan"
-                    :value="level.idjenjangpendidikan"
+                    v-for="jenjang in educationLevelOptions"
+                    :key="jenjang.idjenjangpendidikan"
+                    :value="jenjang.idjenjangpendidikan"
                   >
-                    {{ level.namajenjangpendidikan }}
+                    {{ jenjang.namajenjangpendidikan }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
@@ -91,9 +91,10 @@
                   type="number"
                   class="form-control"
                   v-model="item.tahunlulus"
-                  placeholder="Contoh: 2015"
                   :class="{ 'is-invalid': getError(index, 'tahunlulus') }"
                   required
+                  min="1900"
+                  max="2100"
                   @blur="validateField(index, 'tahunlulus')"
                 />
                 <div class="invalid-feedback">
@@ -101,7 +102,25 @@
                 </div>
               </div>
 
-              <div class="col-12">
+              <div class="col-md-12">
+                <label class="form-label fw-semibold">
+                  Program Studi <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="item.programstudi"
+                  :class="{ 'is-invalid': getError(index, 'programstudi') }"
+                  required
+                  placeholder="Contoh: Teknik Informatika"
+                  @blur="validateField(index, 'programstudi')"
+                />
+                <div class="invalid-feedback">
+                  {{ getError(index, "programstudi") }}
+                </div>
+              </div>
+
+              <div class="col-md-12">
                 <label class="form-label fw-semibold">
                   Nama Perguruan Tinggi / Sekolah
                   <span class="text-danger">*</span>
@@ -110,42 +129,15 @@
                   type="text"
                   class="form-control"
                   v-model="item.namaperguruantinggi"
-                  placeholder="Nama institusi pendidikan"
                   :class="{
                     'is-invalid': getError(index, 'namaperguruantinggi'),
                   }"
                   required
+                  placeholder="Contoh: Universitas Indonesia"
                   @blur="validateField(index, 'namaperguruantinggi')"
                 />
                 <div class="invalid-feedback">
                   {{ getError(index, "namaperguruantinggi") }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Program Studi</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="item.programstudi"
-                  placeholder="Contoh: Teknik Informatika"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">File Ijazah</label>
-                <input
-                  type="file"
-                  class="form-control"
-                  @change="(e) => handleFileUpload(index, e)"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                />
-                <div
-                  v-if="item.fileijazah_preview"
-                  class="mt-2 small text-success"
-                >
-                  <i class="fa fa-check-circle me-1"></i> File terpilih:
-                  {{ item.fileijazah_preview }}
                 </div>
               </div>
             </div>
@@ -160,11 +152,20 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
+import {
+  getUserEducations,
+  deleteUserEducation,
+} from "@/services/general/personnel/userEducation";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({ list: [] }),
+  },
+  currentUserId: {
+    type: String,
+    default: "",
   },
 });
 
@@ -177,8 +178,9 @@ const educationLevelOptions = ref([]);
 const pendidikanList = ref([]);
 const formErrors = ref([]);
 
-// === Lifecycle ===
 onMounted(() => {
+  fetchEducationLevels();
+
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pendidikanList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -189,19 +191,60 @@ onMounted(() => {
     pendidikanList.value = [];
     formErrors.value = [];
   }
-
   emit("validation-change", true);
 });
 
-// === Methods ===
-async function loadData() {
-  if (isDataLoaded.value) return;
-  await fetchEducationLevels();
-  isDataLoaded.value = true;
+async function loadData(userId) {
+  isLoading.value = true;
+  try {
+    await fetchEducationLevels();
+    if (userId) {
+      console.log("Step5Pendidikan - Loading data for userId:", userId);
+      const res = await getUserEducations({ id_pengguna: userId });
+      console.log("Step5Pendidikan - API Response:", res);
+
+      // Handle nested response structure
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunapendidikan) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      console.log("Step5Pendidikan - Raw data extracted:", rawData);
+
+      // Filter by userId only
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step5Pendidikan - Filtered data:", filteredData);
+
+      const apiData = filteredData.map((d) => ({
+        idpenggunapendidikan: d.idpenggunapendidikan,
+        idjenjangpendidikan: d.idjenjangpendidikan,
+        programstudi: d.programstudi,
+        namaperguruantinggi: d.namaperguruantinggi,
+        tahunlulus: d.tahunlulus,
+        _tempId: Date.now() + Math.random(),
+      }));
+
+      console.log("Step5Pendidikan - Mapped data:", apiData);
+
+      pendidikanList.value = apiData;
+      formErrors.value = pendidikanList.value.map(() => ({}));
+      emit("update:modelValue", { list: pendidikanList.value });
+    }
+    isDataLoaded.value = true;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function fetchEducationLevels() {
-  isLoading.value = true;
   try {
     const params = {
       page: 1,
@@ -210,14 +253,13 @@ async function fetchEducationLevels() {
       dir: "asc",
     };
     const response = await getEducationLevels(params);
-
-    if (Array.isArray(response.data)) {
+    if (response.data && Array.isArray(response.data)) {
       if (response.data[0] && response.data[0].data) {
         educationLevelOptions.value = response.data[0].data;
       } else {
         educationLevelOptions.value = response.data;
       }
-    } else if (response.data && response.data.data) {
+    } else if (response.data?.data && Array.isArray(response.data.data)) {
       educationLevelOptions.value = response.data.data;
     } else {
       educationLevelOptions.value = [];
@@ -225,8 +267,6 @@ async function fetchEducationLevels() {
   } catch (error) {
     console.error("Error fetching education levels:", error);
     toast.error("Gagal memuat data jenjang pendidikan.");
-  } finally {
-    isLoading.value = false;
   }
 }
 
@@ -234,35 +274,48 @@ function addPendidikan() {
   pendidikanList.value.push({
     _tempId: Date.now(),
     idjenjangpendidikan: "",
-    namaperguruantinggi: "",
     programstudi: "",
+    namaperguruantinggi: "",
     tahunlulus: "",
-    fileijazah: null,
-    fileijazah_preview: "",
   });
-
   formErrors.value.push({});
 }
 
 function removePendidikan(index) {
-  pendidikanList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
-}
+  const item = pendidikanList.value[index];
 
-function handleFileUpload(index, event) {
-  const file = event.target.files[0];
-  if (file) {
-    if (file.size > 5 * 1024 * 1024) {
-      toast.warning("Ukuran file maksimal 5MB");
-      event.target.value = "";
-      return;
+  Swal.fire({
+    title: "Hapus Data?",
+    text: item.idpenggunapendidikan
+      ? "Data pendidikan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data pendidikan ini akan dihapus.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        if (item.idpenggunapendidikan) {
+          await deleteUserEducation(item.idpenggunapendidikan);
+          toast.success("Data pendidikan berhasil dihapus dari database");
+        } else {
+          toast.success("Data pendidikan berhasil dihapus");
+        }
+
+        pendidikanList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting pendidikan:", error);
+        toast.error("Gagal menghapus data pendidikan");
+      }
     }
-    pendidikanList.value[index].fileijazah = file;
-    pendidikanList.value[index].fileijazah_preview = file.name;
-  }
+  });
 }
 
-// === Validation ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
@@ -272,72 +325,61 @@ function validateField(index, field) {
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
   if (field === "idjenjangpendidikan") {
-    if (!item.idjenjangpendidikan)
-      formErrors.value[index].idjenjangpendidikan = "Jenjang wajib dipilih.";
-    else formErrors.value[index].idjenjangpendidikan = "";
+    formErrors.value[index].idjenjangpendidikan = !item.idjenjangpendidikan
+      ? "Jenjang Pendidikan wajib dipilih."
+      : "";
   }
-
+  if (field === "programstudi") {
+    formErrors.value[index].programstudi = !item.programstudi
+      ? "Program Studi wajib diisi."
+      : "";
+  }
   if (field === "namaperguruantinggi") {
-    if (!item.namaperguruantinggi)
-      formErrors.value[index].namaperguruantinggi =
-        "Nama Perguruan Tinggi wajib diisi.";
-    else formErrors.value[index].namaperguruantinggi = "";
+    formErrors.value[index].namaperguruantinggi = !item.namaperguruantinggi
+      ? "Nama Perguruan Tinggi wajib diisi."
+      : "";
   }
-
   if (field === "tahunlulus") {
-    if (!item.tahunlulus)
-      formErrors.value[index].tahunlulus = "Tahun Lulus wajib diisi.";
-    else formErrors.value[index].tahunlulus = "";
+    formErrors.value[index].tahunlulus = !item.tahunlulus
+      ? "Tahun Lulus wajib diisi."
+      : "";
   }
 }
 
 function validate() {
   let isValid = true;
-
-  if (pendidikanList.value.length === 0) {
-    return true;
-  }
+  if (pendidikanList.value.length === 0) return true;
 
   pendidikanList.value.forEach((item, index) => {
     if (!formErrors.value[index]) formErrors.value[index] = {};
-
-    if (!item.idjenjangpendidikan) {
-      formErrors.value[index].idjenjangpendidikan = "Jenjang wajib dipilih.";
-      isValid = false;
-    } else {
-      formErrors.value[index].idjenjangpendidikan = "";
-    }
-
-    if (!item.namaperguruantinggi) {
-      formErrors.value[index].namaperguruantinggi =
-        "Nama Perguruan Tinggi wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].namaperguruantinggi = "";
-    }
-
-    if (!item.tahunlulus) {
-      formErrors.value[index].tahunlulus = "Tahun Lulus wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].tahunlulus = "";
-    }
+    const required = [
+      "idjenjangpendidikan",
+      "programstudi",
+      "namaperguruantinggi",
+      "tahunlulus",
+    ];
+    required.forEach((field) => {
+      if (!item[field]) {
+        formErrors.value[index][field] = `Field ini wajib diisi.`;
+        isValid = false;
+      } else {
+        formErrors.value[index][field] = "";
+      }
+    });
   });
-
   return isValid;
 }
 
-// === Watchers ===
 watch(
   pendidikanList,
   (newList) => {
     emit("update:modelValue", { list: newList });
-
     let isValid = true;
     if (newList.length > 0) {
       isValid = newList.every(
         (item) =>
           item.idjenjangpendidikan &&
+          item.programstudi &&
           item.namaperguruantinggi &&
           item.tahunlulus
       );
@@ -354,7 +396,6 @@ defineExpose({ validate, loadData });
 .step-pendidikan {
   padding: 0;
 }
-
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
@@ -364,7 +405,6 @@ defineExpose({ validate, loadData });
   opacity: 0;
   transform: translateX(-30px);
 }
-
 .invalid-feedback {
   display: block;
 }

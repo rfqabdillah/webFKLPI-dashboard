@@ -12,141 +12,132 @@
         ></button>
       </div>
 
-      <!-- Modal Body with Wizard -->
+      <!-- Modal Body -->
       <div class="modal-body">
-        <form-wizard
-          ref="wizardRef"
-          @on-change="onChangeCurrentTab"
-          @on-complete="wizardCompleted"
-          color="#0d6efd"
-          error-color="#dc3545"
-          :title="null"
-          :subtitle="null"
-          :next-button-text="'Selanjutnya'"
-          :back-button-text="'Sebelumnya'"
-          :finish-button-text="'Selesai'"
-        >
-          <!-- Step 1: Biodata -->
-          <tab-content
-            title="Biodata"
-            icon="fa fa-user"
-            :before-change="() => validateStep(0)"
+        <!-- Step Indicator -->
+        <div class="wizard-steps mb-4">
+          <div
+            v-for="(step, index) in steps"
+            :key="index"
+            class="wizard-step"
+            :class="{
+              active: currentStepIndex === index,
+              completed: currentStepIndex > index,
+              clickable: visitedSteps.has(index) && index !== currentStepIndex,
+            }"
+            @click="goToStep(index)"
           >
+            <div class="step-circle">
+              <i :class="step.icon"></i>
+            </div>
+            <div class="step-title">{{ step.title }}</div>
+          </div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="step-content">
+          <!-- Step 1: Biodata -->
+          <div v-show="currentStepIndex === 0">
             <Step1Biodata
               ref="step1Ref"
-              v-model="stepData.biodata"
+              v-model="wizardState.biodata"
               :fieldToEdit="fieldToEdit"
-              @validation-change="(valid) => updateStepValidation(0, valid)"
+              @validation-change="(valid) => (stepValidations[0] = valid)"
+              @user-selected="handleUserSelected"
             />
-          </tab-content>
+          </div>
 
           <!-- Step 2: Unit Kerja -->
-          <tab-content
-            title="Unit Kerja"
-            icon="fa fa-building"
-            :before-change="() => validateStep(1)"
-          >
+          <div v-show="currentStepIndex === 1">
             <Step2UnitKerja
               ref="step2Ref"
-              v-model="stepData.unitKerja"
-              @validation-change="(valid) => updateStepValidation(1, valid)"
+              v-model="wizardState.unitKerja"
+              :currentUserId="currentUserId"
+              @validation-change="(valid) => (stepValidations[1] = valid)"
             />
-          </tab-content>
+          </div>
 
           <!-- Step 3: Jabatan -->
-          <tab-content
-            title="Jabatan"
-            icon="fa fa-briefcase"
-            :before-change="() => validateStep(2)"
-          >
+          <div v-show="currentStepIndex === 2">
             <Step3Jabatan
               ref="step3Ref"
-              v-model="stepData.jabatan"
-              @validation-change="(valid) => updateStepValidation(2, valid)"
+              v-model="wizardState.jabatan"
+              :currentUserId="currentUserId"
+              @validation-change="(valid) => (stepValidations[2] = valid)"
             />
-          </tab-content>
+          </div>
 
           <!-- Step 4: Pangkat -->
-          <tab-content
-            title="Pangkat"
-            icon="fa fa-star"
-            :before-change="() => validateStep(3)"
-          >
+          <div v-show="currentStepIndex === 3">
             <Step4Pangkat
               ref="step4Ref"
-              v-model="stepData.pangkat"
-              @validation-change="(valid) => updateStepValidation(3, valid)"
+              v-model="wizardState.pangkat"
+              :currentUserId="currentUserId"
+              @validation-change="(valid) => (stepValidations[3] = valid)"
             />
-          </tab-content>
+          </div>
 
           <!-- Step 5: Pendidikan -->
-          <tab-content
-            title="Pendidikan"
-            icon="fa fa-graduation-cap"
-            :before-change="() => validateStep(4)"
-          >
+          <div v-show="currentStepIndex === 4">
             <Step5Pendidikan
               ref="step5Ref"
-              v-model="stepData.pendidikan"
-              @validation-change="(valid) => updateStepValidation(4, valid)"
+              v-model="wizardState.pendidikan"
+              :currentUserId="currentUserId"
+              @validation-change="(valid) => (stepValidations[4] = valid)"
             />
-          </tab-content>
+          </div>
 
           <!-- Step 6: Pelatihan -->
-          <tab-content
-            title="Pelatihan"
-            icon="fa fa-certificate"
-            :before-change="() => validateStep(5)"
-          >
+          <div v-show="currentStepIndex === 5">
             <Step6Pelatihan
               ref="step6Ref"
-              v-model="stepData.pelatihan"
-              @validation-change="(valid) => updateStepValidation(5, valid)"
+              v-model="wizardState.pelatihan"
+              :currentUserId="currentUserId"
+              @validation-change="(valid) => (stepValidations[5] = valid)"
             />
-          </tab-content>
+          </div>
 
           <!-- Step 7: Prestasi -->
-          <tab-content
-            title="Prestasi"
-            icon="fa fa-trophy"
-            :before-change="() => validateStep(6)"
-          >
+          <div v-show="currentStepIndex === 6">
             <Step7Prestasi
               ref="step7Ref"
-              v-model="stepData.prestasi"
-              @validation-change="(valid) => updateStepValidation(6, valid)"
+              v-model="wizardState.prestasi"
+              :currentUserId="currentUserId"
+              @validation-change="(valid) => (stepValidations[6] = valid)"
             />
-          </tab-content>
-        </form-wizard>
+          </div>
+        </div>
 
         <!-- Error Message -->
-        <div v-if="errorMessage" class="alert alert-danger mt-3 mb-0">
-          <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
+        <div v-if="errorMessage" class="alert alert-danger mt-3">
+          <i class="fa fa-exclamation-circle me-2"></i>{{ errorMessage }}
         </div>
       </div>
 
-      <!-- Modal Footer with Custom Navigation -->
+      <!-- Modal Footer -->
       <div class="modal-footer">
         <button
-          v-if="currentTabIndex > 0"
+          v-if="currentStepIndex > 0"
           type="button"
           class="btn btn-secondary"
-          @click="prevTab"
+          @click="prevStep"
           :disabled="isLoading"
         >
-          Sebelumnya
+          <i class="fa fa-arrow-left me-1"></i> Sebelumnya
         </button>
+
         <button
-          v-if="currentTabIndex < 6"
+          v-if="currentStepIndex < steps.length - 1"
           type="button"
           class="btn btn-primary"
-          @click="nextTab"
+          @click="nextStep"
           :disabled="isLoading"
         >
-          Selanjutnya
+          Selanjutnya <i class="fa fa-arrow-right ms-1"></i>
         </button>
+
         <button
-          v-else
+          v-if="currentStepIndex === steps.length - 1"
           type="button"
           class="btn btn-success"
           @click="submitForm"
@@ -158,6 +149,7 @@
             role="status"
             aria-hidden="true"
           ></span>
+          <i v-else class="fa fa-check me-1"></i>
           {{ isLoading ? "Menyimpan..." : "Selesai" }}
         </button>
       </div>
@@ -168,8 +160,6 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
-import { FormWizard, TabContent } from "vue3-form-wizard";
-import "vue3-form-wizard/dist/style.css";
 
 import Step1Biodata from "./steps/Step1Biodata.vue";
 import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
@@ -180,12 +170,30 @@ import Step6Pelatihan from "./steps/Step6Pelatihan.vue";
 import Step7Prestasi from "./steps/Step7Prestasi.vue";
 
 import { addUser, updateUser } from "@/services/referensi/users";
-import { addUserWorkUnit } from "@/services/general/personnel/userWorkUnits";
-import { addUserLevel } from "@/services/general/personnel/userLevels";
-import { addUserRank } from "@/services/general/personnel/userRanks";
-import { addUserEducation } from "@/services/general/personnel/userEducation";
-import { addUserTraining } from "@/services/general/personnel/userTrainings";
-import { addUserAchievement } from "@/services/general/personnel/userAchievments";
+import {
+  addUserWorkUnit,
+  updateUserWorkUnit,
+} from "@/services/general/personnel/userWorkUnits";
+import {
+  addUserLevel,
+  updateUserLevel,
+} from "@/services/general/personnel/userLevels";
+import {
+  addUserRank,
+  updateUserRank,
+} from "@/services/general/personnel/userRanks";
+import {
+  addUserEducation,
+  updateUserEducation,
+} from "@/services/general/personnel/userEducation";
+import {
+  addUserTraining,
+  updateUserTraining,
+} from "@/services/general/personnel/userTrainings";
+import {
+  addUserAchievement,
+  updateUserAchievement,
+} from "@/services/general/personnel/userAchievments";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
@@ -195,8 +203,18 @@ const props = defineProps({
 const emit = defineEmits(["close", "save-successful"]);
 const toast = useToast();
 
-// === Wizard State ===
-const wizardRef = ref(null);
+// === Steps Configuration ===
+const steps = [
+  { title: "Biodata", icon: "fa fa-user" },
+  { title: "Unit Kerja", icon: "fa fa-building" },
+  { title: "Jabatan", icon: "fa fa-briefcase" },
+  { title: "Pangkat", icon: "fa fa-star" },
+  { title: "Pendidikan", icon: "fa fa-graduation-cap" },
+  { title: "Pelatihan", icon: "fa fa-certificate" },
+  { title: "Prestasi", icon: "fa fa-trophy" },
+];
+
+// === Refs ===
 const step1Ref = ref(null);
 const step2Ref = ref(null);
 const step3Ref = ref(null);
@@ -204,22 +222,42 @@ const step4Ref = ref(null);
 const step5Ref = ref(null);
 const step6Ref = ref(null);
 const step7Ref = ref(null);
-const currentTabIndex = ref(0);
+
+// === State ===
+const currentStepIndex = ref(0);
+const visitedSteps = ref(new Set([0])); // Track which steps have been visited
 const isLoading = ref(false);
 const errorMessage = ref(null);
+const createdUserId = ref(null);
 
-const stepValidations = reactive([
-  true, // Step 1: Biodata
-  true, // Step 2: Unit Kerja
-  true, // Step 3: Jabatan
-  true, // Step 4: Pangkat
-  true, // Step 5: Pendidikan
-  true, // Step 6: Pelatihan
-  true, // Step 7: Prestasi
-]);
+const stepValidations = reactive([false, true, true, true, true, true, true]);
 
-const stepData = reactive({
-  biodata: {},
+const wizardState = reactive({
+  biodata: {
+    mode: "",
+    isExisting: false,
+    userId: null,
+    userData: {
+      idpengguna: null,
+      idlevel: "",
+      email: "",
+      nama: "",
+      telp: "",
+      nik: "",
+      gelardepan: "",
+      gelarbelakang: "",
+      alamat: "",
+      kodekabupaten: "",
+      nip: "",
+      no_karpeg: "",
+      tempatlahir: "",
+      tanggallahir: "",
+      foto: null,
+      status: "Aktif",
+    },
+    photoFile: null,
+    isPhotoRemoved: false,
+  },
   unitKerja: { list: [] },
   jabatan: { list: [] },
   pangkat: { list: [] },
@@ -228,16 +266,48 @@ const stepData = reactive({
   prestasi: { list: [] },
 });
 
+const stepLoaded = reactive([false, false, false, false, false, false, false]);
+
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
-const modalTitle = computed(() => {
-  return isEditMode.value
+const modalTitle = computed(() =>
+  isEditMode.value
     ? `Edit Data ${props.entityName}`
-    : `Tambah Data ${props.entityName}`;
+    : `Tambah Data ${props.entityName}`
+);
+
+const currentUserId = computed(() => {
+  if (isEditMode.value && props.fieldToEdit)
+    return props.fieldToEdit.idpengguna;
+  if (wizardState.biodata.userId) return wizardState.biodata.userId;
+  if (createdUserId.value) return createdUserId.value;
+  return null;
 });
 
-const canSubmit = computed(() => {
-  return stepValidations.every((valid) => valid);
+const canProceed = computed(() => {
+  return stepValidations[currentStepIndex.value];
+});
+
+// === Watchers ===
+watch(
+  () => props.fieldToEdit,
+  (newData) => {
+    if (newData) {
+      wizardState.biodata.mode = "existing";
+      wizardState.biodata.isExisting = true;
+      wizardState.biodata.userId = newData.idpengguna;
+      Object.assign(wizardState.biodata.userData, newData);
+      stepLoaded.fill(false);
+    }
+  },
+  { immediate: true }
+);
+
+watch(currentStepIndex, async (newIndex, oldIndex) => {
+  // Load data when entering a repeater step
+  if (newIndex > 0 && currentUserId.value && !stepLoaded[newIndex]) {
+    await loadStepData(newIndex);
+  }
 });
 
 // === Methods ===
@@ -245,285 +315,113 @@ function closeModal() {
   emit("close");
 }
 
-function updateStepValidation(stepIndex, isValid) {
-  stepValidations[stepIndex] = isValid;
+function handleUserSelected(userId) {
+  createdUserId.value = userId;
+  stepLoaded.fill(false);
+  stepLoaded[0] = true;
 }
 
-function onChangeCurrentTab(prevIndex, nextIndex) {
-  currentTabIndex.value = nextIndex;
+async function loadStepData(stepIndex) {
+  const stepRefs = [
+    null,
+    step2Ref,
+    step3Ref,
+    step4Ref,
+    step5Ref,
+    step6Ref,
+    step7Ref,
+  ];
+  const stepRef = stepRefs[stepIndex];
 
-  // Lazy Load Data for Steps
-  if (nextIndex === 1 && step2Ref.value) {
-    step2Ref.value.loadData();
-  } else if (nextIndex === 2 && step3Ref.value) {
-    step3Ref.value.loadData();
-  } else if (nextIndex === 3 && step4Ref.value) {
-    step4Ref.value.loadData();
-  } else if (nextIndex === 4 && step5Ref.value) {
-    step5Ref.value.loadData();
-  } else if (nextIndex === 6 && step7Ref.value) {
-    step7Ref.value.loadData();
+  if (stepRef.value && typeof stepRef.value.loadData === "function") {
+    try {
+      await stepRef.value.loadData(currentUserId.value);
+      stepLoaded[stepIndex] = true;
+    } catch (error) {
+      console.error(`Error loading data for step ${stepIndex}:`, error);
+      toast.error(`Gagal memuat data: ${error.message}`);
+    }
   }
 }
 
-function validateStep(stepIndex) {
-  const isValid = stepValidations[stepIndex];
+async function nextStep() {
+  // Validate current step
+  const stepRefs = [
+    step1Ref,
+    step2Ref,
+    step3Ref,
+    step4Ref,
+    step5Ref,
+    step6Ref,
+    step7Ref,
+  ];
+  const currentRef = stepRefs[currentStepIndex.value];
 
-  if (!isValid) {
-    // Trigger UI validation
-    if (stepIndex === 0 && step1Ref.value) {
-      step1Ref.value.validate();
+  if (currentRef.value && typeof currentRef.value.validate === "function") {
+    const isValid = await currentRef.value.validate();
+    if (!isValid) {
+      // Validation messages are handled by each step component
+      // No need for additional toasts here
+      return;
     }
-    if (stepIndex === 1 && step2Ref.value) {
-      step2Ref.value.validate();
-    }
-    if (stepIndex === 2 && step3Ref.value) {
-      step3Ref.value.validate();
-    }
-    if (stepIndex === 3 && step4Ref.value) {
-      step4Ref.value.validate();
-    }
-    if (stepIndex === 4 && step5Ref.value) {
-      step5Ref.value.validate();
-    }
-    if (stepIndex === 5 && step6Ref.value) {
-      step6Ref.value.validate();
-    }
-    if (stepIndex === 6 && step7Ref.value) {
-      step7Ref.value.validate();
-    }
-
-    toast.warning("Mohon lengkapi data pada langkah ini sebelum melanjutkan");
   }
-  return isValid;
-}
 
-function wizardCompleted() {
-  submitForm();
-}
-
-function nextTab() {
-  if (validateStep(currentTabIndex.value)) {
-    wizardRef.value.nextTab();
-  }
-}
-
-function prevTab() {
-  wizardRef.value.prevTab();
-}
-
-async function submitForm() {
-  if (!canSubmit.value) {
-    toast.warning("Mohon lengkapi semua data yang diperlukan.");
+  if (!canProceed.value) {
+    toast.warning("Mohon lengkapi data yang diperlukan");
     return;
   }
 
+  currentStepIndex.value++;
+  visitedSteps.value.add(currentStepIndex.value); // Mark new step as visited
+}
+
+function goToStep(targetIndex) {
+  // Only allow navigation to visited steps or the current step
+  if (visitedSteps.value.has(targetIndex)) {
+    currentStepIndex.value = targetIndex;
+  }
+}
+
+function prevStep() {
+  if (currentStepIndex.value > 0) {
+    currentStepIndex.value--;
+  }
+}
+
+async function submitForm() {
   isLoading.value = true;
   errorMessage.value = null;
 
   try {
-    const biodataInfo = stepData.biodata;
     let userId = null;
 
-    if (
-      biodataInfo.mode === "edit" ||
-      (isEditMode.value && biodataInfo.mode === "new")
-    ) {
-      userId = biodataInfo.userId;
-      const data = new FormData();
-      const userData = biodataInfo.userData;
-
-      data.append("record[idlevel]", userData.idlevel || "");
-      data.append("record[email]", userData.email || "");
-      data.append("record[nama]", userData.nama || "");
-      data.append("record[telp]", userData.telp || "");
-      data.append("record[nik]", userData.nik || "");
-      data.append("record[gelardepan]", userData.gelardepan || "");
-      data.append("record[gelarbelakang]", userData.gelarbelakang || "");
-      data.append("record[alamat]", userData.alamat || "");
-      data.append("record[kodekabupaten]", userData.kodekabupaten || "");
-      data.append("record[nip]", userData.nip || "");
-      data.append("record[no_karpeg]", userData.no_karpeg || "");
-      data.append("record[tempatlahir]", userData.tempatlahir || "");
-      data.append("record[tanggallahir]", userData.tanggallahir || "");
-      data.append("record[status]", userData.status || "Aktif");
-
-      data.append("record[idpenggunajenjang]", "");
-      data.append("record[idpenggunapangkat]", "");
-      data.append("record[idpenggunapelatihan]", "");
-      data.append("record[idpenggunapendidikan]", "");
-      data.append("record[idpenggunaprestasi]", "");
-      data.append("record[idpenggunaunitkerja]", "");
-
-      if (biodataInfo.photoFile) {
-        data.append(
-          "upload_foto",
-          biodataInfo.photoFile,
-          biodataInfo.photoFile.name
-        );
-      }
-
-      await updateUser(userId, data);
-    } else if (biodataInfo.isExisting) {
-      userId = biodataInfo.userId;
+    // Step 1: Save/Update User
+    if (isEditMode.value) {
+      userId = props.fieldToEdit.idpengguna;
+      await saveBiodataUpdate(userId);
+    } else if (wizardState.biodata.isExisting && wizardState.biodata.userId) {
+      userId = wizardState.biodata.userId;
+      await saveBiodataUpdate(userId);
+    } else if (wizardState.biodata.mode === "new") {
+      userId = await saveBiodataCreate();
     } else {
-      const data = new FormData();
-      const userData = biodataInfo.userData;
-
-      data.append("record[idlevel]", userData.idlevel || "");
-      data.append("record[email]", userData.email || "");
-      data.append("record[nama]", userData.nama || "");
-      data.append("record[telp]", userData.telp || "");
-      data.append("record[nik]", userData.nik || "");
-      data.append("record[gelardepan]", userData.gelardepan || "");
-      data.append("record[gelarbelakang]", userData.gelarbelakang || "");
-      data.append("record[alamat]", userData.alamat || "");
-      data.append("record[kodekabupaten]", userData.kodekabupaten || "");
-      data.append("record[nip]", userData.nip || "");
-      data.append("record[no_karpeg]", userData.no_karpeg || "");
-      data.append("record[tempatlahir]", userData.tempatlahir || "");
-      data.append("record[tanggallahir]", userData.tanggallahir || "");
-      data.append("record[tanggallahir]", userData.tanggallahir || "");
-      data.append("record[status]", userData.status || "Aktif");
-
-      data.append("record[idpenggunajenjang]", "");
-      data.append("record[idpenggunapangkat]", "");
-      data.append("record[idpenggunapelatihan]", "");
-      data.append("record[idpenggunapendidikan]", "");
-      data.append("record[idpenggunaprestasi]", "");
-      data.append("record[idpenggunaunitkerja]", "");
-
-      if (biodataInfo.photoFile) {
-        data.append(
-          "upload_foto",
-          biodataInfo.photoFile,
-          biodataInfo.photoFile.name
-        );
-      }
-
-      const userResponse = await addUser(data);
-
-      if (
-        userResponse.data &&
-        userResponse.data.data &&
-        userResponse.data.data.idpengguna
-      ) {
-        userId = userResponse.data.data.idpengguna;
-      } else if (userResponse.data && userResponse.data.idpengguna) {
-        userId = userResponse.data.idpengguna;
-      } else {
-        throw new Error("Gagal mendapatkan ID pengguna baru.");
-      }
+      throw new Error("Mode biodata tidak valid");
     }
 
-    if (!userId) {
-      throw new Error("ID Pengguna tidak valid.");
-    }
+    if (!userId) throw new Error("Gagal mendapatkan ID pengguna");
 
-    const promises = [];
+    // Validate single active status
+    validateSingleActiveStatus();
 
-    // Save Unit Kerja
-    if (stepData.unitKerja.list && stepData.unitKerja.list.length > 0) {
-      stepData.unitKerja.list.forEach((item) => {
-        const formData = new FormData();
-        formData.append("record[idpengguna]", userId);
-        formData.append("record[idunitkerja]", item.idunitkerja);
-        formData.append("record[tglmulai]", item.tglmulai);
-        if (item.tglselesai)
-          formData.append("record[tglselesai]", item.tglselesai);
-        formData.append("record[status]", item.status);
-        if (item.filesk) formData.append("filesk", item.filesk);
-        promises.push(addUserWorkUnit(formData));
-      });
-    }
+    // Save all repeater data
+    await saveUnitKerja(userId);
+    await saveJabatan(userId);
+    await savePangkat(userId);
+    await savePendidikan(userId);
+    await savePelatihan(userId);
+    await savePrestasi(userId);
 
-    // Save Jabatan
-    if (stepData.jabatan.list && stepData.jabatan.list.length > 0) {
-      stepData.jabatan.list.forEach((item) => {
-        const formData = new FormData();
-        formData.append("record[idpengguna]", userId);
-        formData.append("record[idjenjang]", item.idjenjang);
-        formData.append("record[tglmulai]", item.tglmulai);
-        if (item.tglselesai)
-          formData.append("record[tglselesai]", item.tglselesai);
-        formData.append("record[status]", item.status);
-        if (item.filesk) formData.append("filesk", item.filesk);
-        promises.push(addUserLevel(formData));
-      });
-    }
-
-    // Save Pangkat
-    if (stepData.pangkat.list && stepData.pangkat.list.length > 0) {
-      stepData.pangkat.list.forEach((item) => {
-        const formData = new FormData();
-        formData.append("record[idpengguna]", userId);
-        formData.append("record[idpangkat]", item.idpangkat);
-        formData.append("record[tglmulai]", item.tglmulai);
-        if (item.tglselesai)
-          formData.append("record[tglselesai]", item.tglselesai);
-        formData.append("record[status]", item.status);
-        if (item.filesk) formData.append("filesk", item.filesk);
-        promises.push(addUserRank(formData));
-      });
-    }
-
-    // Save Pendidikan
-    if (stepData.pendidikan.list && stepData.pendidikan.list.length > 0) {
-      stepData.pendidikan.list.forEach((item) => {
-        const formData = new FormData();
-        formData.append("record[idpengguna]", userId);
-        formData.append(
-          "record[idjenjangpendidikan]",
-          item.idjenjangpendidikan
-        );
-        formData.append(
-          "record[namaperguruantinggi]",
-          item.namaperguruantinggi
-        );
-        formData.append("record[programstudi]", item.programstudi || "");
-        formData.append("record[tahunlulus]", item.tahunlulus);
-        if (item.fileijazah) formData.append("fileijazah", item.fileijazah);
-        promises.push(addUserEducation(formData));
-      });
-    }
-
-    // Save Pelatihan
-    if (stepData.pelatihan.list && stepData.pelatihan.list.length > 0) {
-      stepData.pelatihan.list.forEach((item) => {
-        const formData = new FormData();
-        formData.append("record[idpengguna]", userId);
-        formData.append("record[namapelatihan]", item.namapelatihan);
-        formData.append("record[namapenyelenggara]", item.namapenyelenggara);
-        formData.append("record[tglmulai]", item.tglmulai);
-        if (item.tglselesai)
-          formData.append("record[tglselesai]", item.tglselesai);
-        formData.append("record[status]", item.status);
-        if (item.filesertifikat)
-          formData.append("filesertifikat", item.filesertifikat);
-        promises.push(addUserTraining(formData));
-      });
-    }
-
-    // Save Prestasi
-    if (stepData.prestasi.list && stepData.prestasi.list.length > 0) {
-      stepData.prestasi.list.forEach((item) => {
-        const formData = new FormData();
-        formData.append("record[idpengguna]", userId);
-        formData.append("record[idskala]", item.idskala);
-        formData.append("record[namaprestasi]", item.namaprestasi);
-        formData.append("record[namapenyelenggara]", item.namapenyelenggara);
-        formData.append("record[status]", item.status); // Added status
-        if (item.filesertifikat)
-          formData.append("filesertifikat", item.filesertifikat);
-        promises.push(addUserAchievement(formData));
-      });
-    }
-
-    if (promises.length > 0) {
-      await Promise.all(promises);
-    }
-
-    toast.success("Data pegawai dan riwayat berhasil disimpan.");
+    toast.success("Data berhasil disimpan.");
     emit("save-successful");
     closeModal();
   } catch (error) {
@@ -536,35 +434,181 @@ async function submitForm() {
   }
 }
 
-// === Watchers ===
-watch(
-  () => props.fieldToEdit,
-  (newData) => {
-    if (newData) {
-      console.log("Edit mode - data:", newData);
-    } else {
-      Object.keys(stepData).forEach((key) => {
-        if (
-          [
-            "unitKerja",
-            "jabatan",
-            "pangkat",
-            "pendidikan",
-            "pelatihan",
-            "prestasi",
-          ].includes(key)
-        ) {
-          stepData[key] = { list: [] };
-        } else {
-          stepData[key] = {};
-        }
-      });
-      currentTabIndex.value = 0;
+function validateSingleActiveStatus() {
+  const categories = [
+    { name: "Unit Kerja", data: wizardState.unitKerja.data },
+    { name: "Jabatan", data: wizardState.jabatan.data },
+    { name: "Pangkat", data: wizardState.pangkat.data },
+    { name: "Pelatihan", data: wizardState.pelatihan.data },
+    { name: "Prestasi", data: wizardState.prestasi.data },
+  ];
+
+  for (const category of categories) {
+    if (!category.data) continue;
+    const activeCount = category.data.filter(
+      (item) => item.status === "Aktif"
+    ).length;
+    if (activeCount > 1) {
+      throw new Error(
+        `Kategori ${category.name} hanya boleh memiliki satu data dengan status aktif.`
+      );
     }
-    errorMessage.value = null;
-  },
-  { immediate: true }
-);
+  }
+}
+
+// === Data Saving Helpers ===
+function createBiodataFormData() {
+  const data = new FormData();
+  const biodata = wizardState.biodata.userData;
+
+  Object.keys(biodata).forEach((key) => {
+    if (
+      biodata[key] !== null &&
+      biodata[key] !== undefined &&
+      key !== "foto" &&
+      key !== "roles" &&
+      key !== "permissions" &&
+      key !== "created_at" &&
+      key !== "updated_at" &&
+      key !== "deleted_at" &&
+      key !== "email_verified_at" &&
+      key !== "remember_token" &&
+      key !== "lastlogin" &&
+      key !== "kodepropinsi"
+    ) {
+      data.append(`record[${key}]`, biodata[key]);
+    }
+  });
+
+  if (wizardState.biodata.photoFile) {
+    data.append(
+      "upload_foto",
+      wizardState.biodata.photoFile,
+      wizardState.biodata.photoFile.name
+    );
+  } else if (wizardState.biodata.isPhotoRemoved) {
+    data.append("record[foto]", "");
+  }
+
+  return data;
+}
+
+async function saveBiodataCreate() {
+  const formData = createBiodataFormData();
+  const response = await addUser(formData);
+  return (
+    response.data?.idpengguna ||
+    response.data?.data?.idpengguna ||
+    response.idpengguna
+  );
+}
+
+async function saveBiodataUpdate(userId) {
+  const formData = createBiodataFormData();
+  formData.append("_method", "PUT");
+  await updateUser(userId, formData);
+}
+
+function createFormData(item, fileKey, userId) {
+  const formData = new FormData();
+  formData.append("record[idpengguna]", userId);
+
+  const systemFields = ["created_at", "updated_at", "deleted_at"];
+
+  Object.keys(item).forEach((key) => {
+    if (
+      !key.startsWith("_") &&
+      key !== "idpengguna" &&
+      key !== fileKey &&
+      !key.endsWith("_preview") &&
+      !key.endsWith("Preview") &&
+      !systemFields.includes(key)
+    ) {
+      const value = item[key];
+      if (value !== null && value !== undefined) {
+        formData.append(`record[${key}]`, value);
+      }
+    }
+  });
+
+  if (fileKey && item[fileKey] instanceof File) {
+    formData.append(`upload_${fileKey}`, item[fileKey], item[fileKey].name);
+  }
+
+  return formData;
+}
+
+async function saveUnitKerja(userId) {
+  for (const item of wizardState.unitKerja.list) {
+    const formData = createFormData(item, "filesk", userId);
+    if (item.idpenggunaunitkerja) {
+      formData.append("_method", "PUT");
+      await updateUserWorkUnit(item.idpenggunaunitkerja, formData);
+    } else {
+      await addUserWorkUnit(formData);
+    }
+  }
+}
+
+async function saveJabatan(userId) {
+  for (const item of wizardState.jabatan.list) {
+    const formData = createFormData(item, "filesk", userId);
+    if (item.idpenggunajenjang) {
+      formData.append("_method", "PUT");
+      await updateUserLevel(item.idpenggunajenjang, formData);
+    } else {
+      await addUserLevel(formData);
+    }
+  }
+}
+
+async function savePangkat(userId) {
+  for (const item of wizardState.pangkat.list) {
+    const formData = createFormData(item, "filesk", userId);
+    if (item.idpenggunapangkat) {
+      formData.append("_method", "PUT");
+      await updateUserRank(item.idpenggunapangkat, formData);
+    } else {
+      await addUserRank(formData);
+    }
+  }
+}
+
+async function savePendidikan(userId) {
+  for (const item of wizardState.pendidikan.list) {
+    const formData = createFormData(item, null, userId);
+    if (item.idpenggunapendidikan) {
+      formData.append("_method", "PUT");
+      await updateUserEducation(item.idpenggunapendidikan, formData);
+    } else {
+      await addUserEducation(formData);
+    }
+  }
+}
+
+async function savePelatihan(userId) {
+  for (const item of wizardState.pelatihan.list) {
+    const formData = createFormData(item, "filesertifikat", userId);
+    if (item.idpenggunapelatihan) {
+      formData.append("_method", "PUT");
+      await updateUserTraining(item.idpenggunapelatihan, formData);
+    } else {
+      await addUserTraining(formData);
+    }
+  }
+}
+
+async function savePrestasi(userId) {
+  for (const item of wizardState.prestasi.list) {
+    const formData = createFormData(item, "filesertifikat", userId);
+    if (item.idpenggunaprestasi) {
+      formData.append("_method", "PUT");
+      await updateUserAchievement(item.idpenggunaprestasi, formData);
+    } else {
+      await addUserAchievement(formData);
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -580,67 +624,146 @@ watch(
   align-items: center;
   z-index: 1050;
 }
+
 .modal-content {
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 1000px;
+  max-width: 1200px;
   max-height: 90vh;
+  min-height: 90vh;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
 }
-.modal-header,
-.modal-footer {
-  padding: 1rem;
-  flex-shrink: 0;
-}
-.modal-body {
-  padding: 1rem;
-  overflow-y: auto;
-  flex-grow: 1;
-}
+
 .modal-header {
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #dee2e6;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
+
+.modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.btn-close {
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
 .modal-footer {
+  padding: 1rem 1.5rem;
   border-top: 1px solid #dee2e6;
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-}
-.invalid-feedback {
-  display: block;
-}
-.text-danger {
-  color: #dc3545 !important;
+  flex-shrink: 0;
 }
 
-/* Vue3 Form Wizard Custom Styling */
-:deep(.vue-form-wizard .wizard-navigation .wizard-progress-with-circle) {
+/* Wizard Steps */
+.wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
   margin-bottom: 2rem;
 }
 
-:deep(.vue-form-wizard .wizard-icon-circle) {
-  width: 50px;
-  height: 50px;
-  font-size: 18px;
+.wizard-steps::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e9ecef;
+  z-index: 0;
 }
 
-:deep(.vue-form-wizard .wizard-nav-pills > li > a) {
-  padding: 10px 15px;
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
-:deep(.vue-form-wizard .wizard-card-footer) {
-  display: none !important;
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s;
 }
 
-:deep(.vue-form-wizard .wizard-btn) {
-  padding: 0.5rem 1.5rem;
+.wizard-step.active .step-circle {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+.wizard-step.completed .step-circle {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.step-title {
+  font-size: 0.75rem;
+  text-align: center;
+  color: #6c757d;
   font-weight: 500;
-  border-radius: 6px;
+}
+
+.wizard-step.active .step-title {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.wizard-step.completed .step-title {
+  color: #28a745;
+}
+
+/* Clickable Steps */
+.wizard-step.clickable {
+  cursor: pointer;
+}
+
+.wizard-step.clickable:hover .step-circle {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.wizard-step.clickable:hover .step-title {
+  color: #1e7e34;
+  font-weight: 600;
+}
+
+/* Step Content */
+.step-content {
+  min-height: 300px;
 }
 </style>
