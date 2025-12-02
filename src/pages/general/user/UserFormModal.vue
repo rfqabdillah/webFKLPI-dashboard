@@ -42,7 +42,9 @@
         </div>
 
         <div class="col-12 mb-3">
-          <label class="form-label fw-semibold">NIK</label>
+          <label class="form-label fw-semibold"
+            >NIK<span class="text-danger">*</span></label
+          >
           <input
             type="text"
             class="form-control"
@@ -357,6 +359,11 @@ const validationSchema = yup.object().shape({
     .required("Email wajib diisi."),
   idlevel: yup.string().required("Level wajib dipilih."),
   status: yup.string().required("Status wajib dipilih."),
+  nik: yup
+    .string()
+    .matches(/^[0-9]+$/, "NIK hanya boleh berisi angka")
+    .length(16, "NIK harus terdiri dari 16 digit")
+    .required("NIK wajib diisi."),
   // password: yup
   //   .string()
   //   .test("required-on-create", "Password wajib diisi", function (value) {

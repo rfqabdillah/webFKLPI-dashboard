@@ -7,7 +7,6 @@
     @close="$emit('close')"
   >
     <template #detail="{ item }">
-      <!-- Header: Foto & Nama -->
       <div class="text-center mb-4">
         <img
           v-if="item.foto"
@@ -79,7 +78,6 @@
 
       <hr />
 
-      <!-- Riwayat Unit Kerja -->
       <div class="detail-section">
         <h4><i class="fa fa-building me-2"></i>Riwayat Unit Kerja</h4>
         <div v-if="riwayatUnitKerja.length > 0" class="table-responsive">
@@ -135,7 +133,6 @@
         </div>
       </div>
 
-      <!-- Riwayat Jabatan -->
       <div class="detail-section">
         <h4><i class="fa fa-briefcase me-2"></i>Riwayat Jabatan</h4>
         <div v-if="riwayatJabatan.length > 0" class="table-responsive">
@@ -191,7 +188,6 @@
         </div>
       </div>
 
-      <!-- Riwayat Pangkat -->
       <div class="detail-section">
         <h4><i class="fa fa-star me-2"></i>Riwayat Pangkat</h4>
         <div v-if="riwayatPangkat.length > 0" class="table-responsive">
@@ -247,7 +243,6 @@
         </div>
       </div>
 
-      <!-- Riwayat Pendidikan -->
       <div class="detail-section">
         <h4><i class="fa fa-graduation-cap me-2"></i>Riwayat Pendidikan</h4>
         <div v-if="riwayatPendidikan.length > 0" class="table-responsive">
@@ -283,7 +278,6 @@
         </div>
       </div>
 
-      <!-- Riwayat Pelatihan -->
       <div class="detail-section">
         <h4><i class="fa fa-certificate me-2"></i>Riwayat Pelatihan</h4>
         <div v-if="riwayatPelatihan.length > 0" class="table-responsive">
@@ -341,7 +335,6 @@
         </div>
       </div>
 
-      <!-- Riwayat Prestasi -->
       <div class="detail-section">
         <h4><i class="fa fa-trophy me-2"></i>Riwayat Prestasi</h4>
         <div v-if="riwayatPrestasi.length > 0" class="table-responsive">
@@ -397,7 +390,6 @@
         </div>
       </div>
 
-      <!-- Info Sistem -->
       <hr />
       <div class="detail-section">
         <h4><i class="fa fa-clock-o me-2"></i>Informasi Sistem</h4>
@@ -449,7 +441,7 @@ const props = defineProps({
 
 defineEmits(["close"]);
 
-// State untuk riwayat
+// === State ===
 const riwayatUnitKerja = ref([]);
 const riwayatJabatan = ref([]);
 const riwayatPangkat = ref([]);
@@ -469,37 +461,31 @@ watch(
 
 async function loadAllRiwayat(userId) {
   try {
-    // Load Unit Kerja
     const ukRes = await getUserWorkUnits({ id_pengguna: userId });
     riwayatUnitKerja.value = extractData(ukRes).filter(
       (d) => d.idpengguna === userId
     );
 
-    // Load Jabatan
     const jabRes = await getUserLevels({ id_pengguna: userId });
     riwayatJabatan.value = extractData(jabRes).filter(
       (d) => d.idpengguna === userId
     );
 
-    // Load Pangkat
     const pktRes = await getUserRanks({ id_pengguna: userId });
     riwayatPangkat.value = extractData(pktRes).filter(
       (d) => d.idpengguna === userId
     );
 
-    // Load Pendidikan
     const pdkRes = await getUserEducations({ id_pengguna: userId });
     riwayatPendidikan.value = extractData(pdkRes).filter(
       (d) => d.idpengguna === userId
     );
 
-    // Load Pelatihan
     const pltRes = await getUserTrainings({ id_pengguna: userId });
     riwayatPelatihan.value = extractData(pltRes).filter(
       (d) => d.idpengguna === userId
     );
 
-    // Load Prestasi
     const prsRes = await getUserAchievements({ id_pengguna: userId });
     riwayatPrestasi.value = extractData(prsRes).filter(
       (d) => d.idpengguna === userId
@@ -603,7 +589,6 @@ function extractData(response) {
   font-size: 0.875rem;
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 3rem 1.5rem;

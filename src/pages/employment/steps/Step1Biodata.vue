@@ -1,9 +1,7 @@
 <template>
   <div class="step-biodata">
-    <!-- Mode Selection Cards - Only show when no mode selected -->
     <ModeSelectionCards v-if="!mode && !isEditMode" @select-mode="selectMode" />
 
-    <!-- User Selection Table - Replace cards when 'existing' mode selected -->
     <UserSelectionTable
       v-if="mode === 'existing' && !selectedUser && !isEditMode"
       :show="mode === 'existing'"
@@ -11,7 +9,6 @@
       @select-user="selectUser"
     />
 
-    <!-- Biodata Form - Show when user selected OR new mode OR edit mode -->
     <BiodataFormFields
       v-if="selectedUser || mode === 'new' || isEditMode"
       ref="formRef"
@@ -45,11 +42,9 @@ const emit = defineEmits([
 ]);
 
 const toast = useToast();
-
-// Refs
 const formRef = ref(null);
 
-// State
+// === State ===
 const mode = ref("");
 const selectionMade = ref(false);
 const selectedUser = ref(null);
@@ -58,7 +53,6 @@ const isLoadingUserData = ref(false);
 const selectedPhotoFile = ref(null);
 const isPhotoRemoved = ref(false);
 
-// Form Data - Initialize with default values
 const formData = reactive({
   idpengguna: null,
   idlevel: "",
@@ -79,10 +73,10 @@ const formData = reactive({
   status: "Aktif",
 });
 
-// Computed
+// === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
 
-// Watchers
+// === Watchers ===
 watch(
   () => props.fieldToEdit,
   (newData) => {
@@ -114,13 +108,12 @@ watch(
 
 // Lifecycle
 onMounted(() => {
-  // Initial data setup if editing
   if (props.fieldToEdit) {
     populateFormData(props.fieldToEdit);
   }
 });
 
-// Methods
+// === Methods ===
 function selectMode(selectedMode) {
   mode.value = selectedMode;
   if (selectedMode === "new") {
@@ -151,14 +144,11 @@ async function selectUser(user) {
 
   await nextTick();
 
-  // Populate form data
   populateFormData(user);
 
-  // Emit events
   emit("user-selected", user.idpengguna);
   emit("user-data-loaded", user);
 
-  // Validate immediately
   setTimeout(async () => {
     if (formRef.value) {
       const isValid = await formRef.value.validate();
@@ -186,14 +176,12 @@ function populateFormData(data) {
   formData.foto = data.foto || null;
   formData.status = data.status || "Aktif";
 
-  // Handle role/level
   if (data.roles && data.roles.idlevel) {
     formData.idlevel = String(data.roles.idlevel);
   } else if (data.idlevel) {
     formData.idlevel = String(data.idlevel);
   }
 
-  // Handle region data
   if (data.kodekabupaten) {
     formData.kodekabupaten = data.kodekabupaten;
     const kode = String(data.kodekabupaten);
@@ -213,21 +201,18 @@ function handlePhotoChange(file) {
 }
 
 async function validate() {
-  // Check if mode is selected
   if (!selectionMade.value && !isEditMode.value) {
     toast.error(
-      "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru."
+      "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru"
     );
     return false;
   }
 
-  // If mode 'existing' but no user selected
   if (mode.value === "existing" && !selectedUser.value && !isEditMode.value) {
-    toast.error("Silakan pilih pengguna dari daftar yang tersedia.");
+    toast.error("Silakan pilih pengguna dari daftar yang tersedia");
     return false;
   }
 
-  // Validate form fields
   if (formRef.value) {
     const isValid = await formRef.value.validate();
     emit("validation-change", isValid);
@@ -239,7 +224,3 @@ async function validate() {
 
 defineExpose({ validate });
 </script>
-
-<style scoped>
-/* Add any specific styles here if needed */
-</style>

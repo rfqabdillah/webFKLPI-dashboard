@@ -246,7 +246,9 @@ const isUrl = (string) => {
 };
 
 // === Lifecycle ===
-onMounted(() => {
+onMounted(async () => {
+  await fetchWorkUnits();
+
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     unitKerjaList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -265,7 +267,9 @@ onMounted(() => {
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    await fetchWorkUnits();
+    if (workUnitOptions.value.length === 0) {
+      await fetchWorkUnits();
+    }
 
     if (userId) {
       console.log("Step2UnitKerja - Loading data for userId:", userId);
@@ -282,7 +286,6 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
-      // Filter by userId only (tanpa filter data kosong)
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
 
       const apiData = filteredData.map((d) => ({
@@ -332,8 +335,6 @@ async function fetchWorkUnits() {
 }
 
 function addUnitKerja() {
-  unitKerjaList.value.forEach((item) => (item.status = "Tidak Aktif"));
-
   unitKerjaList.value.push({
     _tempId: Date.now(),
     idunitkerja: "",
@@ -341,7 +342,7 @@ function addUnitKerja() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    status: "Aktif",
+    status: "Tidak Aktif",
   });
 
   formErrors.value.push({});

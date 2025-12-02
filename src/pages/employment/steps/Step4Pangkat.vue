@@ -240,8 +240,8 @@ const isUrl = (string) => {
   );
 };
 
-onMounted(() => {
-  fetchRanks();
+onMounted(async () => {
+  await fetchRanks();
 
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pangkatList.value = props.modelValue.list.map((item) => ({
@@ -259,13 +259,14 @@ onMounted(() => {
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    await fetchRanks();
+    if (rankOptions.value.length === 0) {
+      await fetchRanks();
+    }
     if (userId) {
       console.log("Step4Pangkat - Loading data for userId:", userId);
       const res = await getUserRanks({ id_pengguna: userId });
       console.log("Step4P angkat - API Response:", res);
 
-      // Handle nested response structure
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -279,7 +280,6 @@ async function loadData(userId) {
 
       console.log("Step4Pangkat - Raw data extracted:", rawData);
 
-      // Filter by userId only
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
       console.log("Step4Pangkat - Filtered data:", filteredData);
 
@@ -330,7 +330,6 @@ async function fetchRanks() {
 }
 
 function addPangkat() {
-  pangkatList.value.forEach((item) => (item.status = "Tidak Aktif"));
   pangkatList.value.push({
     _tempId: Date.now(),
     idpangkat: "",
@@ -338,7 +337,7 @@ function addPangkat() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    status: "Aktif",
+    status: "Tidak Aktif",
   });
   formErrors.value.push({});
 }

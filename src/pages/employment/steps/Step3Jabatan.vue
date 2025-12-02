@@ -245,8 +245,8 @@ const isUrl = (string) => {
 };
 
 // === Lifecycle ===
-onMounted(() => {
-  fetchPositionLevels();
+onMounted(async () => {
+  await fetchPositionLevels();
 
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     jabatanList.value = props.modelValue.list.map((item) => ({
@@ -266,14 +266,15 @@ onMounted(() => {
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    await fetchPositionLevels();
+    if (positionLevelOptions.value.length === 0) {
+      await fetchPositionLevels();
+    }
 
     if (userId) {
       console.log("Step3Jabatan - Loading data for userId:", userId);
       const res = await getUserLevels({ id_pengguna: userId });
       console.log("Step3Jabatan - API Response:", res);
 
-      // Handle nested response structure: res.data is an array with [0].data containing actual records
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -287,7 +288,6 @@ async function loadData(userId) {
 
       console.log("Step3Jabatan - Raw data extracted:", rawData);
 
-      // Filter by userId only
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
       console.log("Step3Jabatan - Filtered data:", filteredData);
 
@@ -340,8 +340,6 @@ async function fetchPositionLevels() {
 }
 
 function addJabatan() {
-  jabatanList.value.forEach((item) => (item.status = "Tidak Aktif"));
-
   jabatanList.value.push({
     _tempId: Date.now(),
     idjenjang: "",
@@ -349,7 +347,7 @@ function addJabatan() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    status: "Aktif",
+    status: "Tidak Aktif",
   });
 
   formErrors.value.push({});

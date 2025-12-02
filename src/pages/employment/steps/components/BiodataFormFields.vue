@@ -342,7 +342,11 @@ const fileInput = ref(null);
 // Validation Schema
 const validationSchema = yup.object().shape({
   nama: yup.string().required("Nama wajib diisi."),
-  nik: yup.string().required("NIK wajib diisi."),
+  nik: yup
+    .string()
+    .matches(/^[0-9]+$/, "NIK hanya boleh berisi angka")
+    .length(16, "NIK harus terdiri dari 16 digit")
+    .required("NIK wajib diisi."),
   email: yup
     .string()
     .email("Format email salah")

@@ -254,8 +254,8 @@ const isUrl = (string) => {
   );
 };
 
-onMounted(() => {
-  fetchScales();
+onMounted(async () => {
+  await fetchScales();
 
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     prestasiList.value = props.modelValue.list.map((item) => ({
@@ -273,13 +273,14 @@ onMounted(() => {
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    await fetchScales();
+    if (scaleOptions.value.length === 0) {
+      await fetchScales();
+    }
     if (userId) {
       console.log("Step7Prestasi - Loading data for userId:", userId);
       const res = await getUserAchievements({ id_pengguna: userId });
       console.log("Step7Prestasi - API Response:", res);
 
-      // Handle nested response structure
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -293,7 +294,6 @@ async function loadData(userId) {
 
       console.log("Step7Prestasi - Raw data extracted:", rawData);
 
-      // Filter by userId only
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
       console.log("Step7Prestasi - Filtered data:", filteredData);
 
@@ -346,7 +346,6 @@ async function fetchScales() {
 }
 
 function addPrestasi() {
-  prestasiList.value.forEach((item) => (item.status = "Tidak Aktif"));
   prestasiList.value.push({
     _tempId: Date.now(),
     namaprestasi: "",
@@ -354,7 +353,7 @@ function addPrestasi() {
     namapenyelenggara: "",
     filesertifikat: null,
     filesertifikat_preview: "",
-    status: "Aktif",
+    status: "Tidak Aktif",
   });
   formErrors.value.push({});
 }

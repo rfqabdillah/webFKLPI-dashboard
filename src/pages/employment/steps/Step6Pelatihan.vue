@@ -278,7 +278,6 @@ async function loadData(userId) {
       const res = await getUserTrainings({ id_pengguna: userId });
       console.log("Step6Pelatihan - API Response:", res);
 
-      // Handle nested response structure
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -292,7 +291,6 @@ async function loadData(userId) {
 
       console.log("Step6Pelatihan - Raw data extracted:", rawData);
 
-      // Filter by userId only
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
       console.log("Step6Pelatihan - Filtered data:", filteredData);
 
@@ -325,7 +323,6 @@ async function loadData(userId) {
 }
 
 function addPelatihan() {
-  pelatihanList.value.forEach((item) => (item.status = "Tidak Aktif"));
   pelatihanList.value.push({
     _tempId: Date.now(),
     namapelatihan: "",
@@ -334,7 +331,7 @@ function addPelatihan() {
     tglselesai: "",
     filesertifikat: null,
     filesertifikat_preview: "",
-    status: "Aktif",
+    status: "Tidak Aktif",
   });
   formErrors.value.push({});
 }

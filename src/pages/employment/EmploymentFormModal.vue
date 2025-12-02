@@ -1,7 +1,6 @@
 <template>
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
-      <!-- Modal Header -->
       <div class="modal-header">
         <h5 class="modal-title">{{ modalTitle }}</h5>
         <button
@@ -12,9 +11,7 @@
         ></button>
       </div>
 
-      <!-- Modal Body -->
       <div class="modal-body">
-        <!-- Step Indicator -->
         <div class="wizard-steps mb-4">
           <div
             v-for="(step, index) in steps"
@@ -34,9 +31,7 @@
           </div>
         </div>
 
-        <!-- Step Content -->
         <div class="step-content">
-          <!-- Step 1: Biodata -->
           <div v-show="currentStepIndex === 0">
             <Step1Biodata
               ref="step1Ref"
@@ -47,7 +42,6 @@
             />
           </div>
 
-          <!-- Step 2: Unit Kerja -->
           <div v-show="currentStepIndex === 1">
             <Step2UnitKerja
               ref="step2Ref"
@@ -57,7 +51,6 @@
             />
           </div>
 
-          <!-- Step 3: Jabatan -->
           <div v-show="currentStepIndex === 2">
             <Step3Jabatan
               ref="step3Ref"
@@ -67,7 +60,6 @@
             />
           </div>
 
-          <!-- Step 4: Pangkat -->
           <div v-show="currentStepIndex === 3">
             <Step4Pangkat
               ref="step4Ref"
@@ -77,7 +69,6 @@
             />
           </div>
 
-          <!-- Step 5: Pendidikan -->
           <div v-show="currentStepIndex === 4">
             <Step5Pendidikan
               ref="step5Ref"
@@ -87,7 +78,6 @@
             />
           </div>
 
-          <!-- Step 6: Pelatihan -->
           <div v-show="currentStepIndex === 5">
             <Step6Pelatihan
               ref="step6Ref"
@@ -97,7 +87,6 @@
             />
           </div>
 
-          <!-- Step 7: Prestasi -->
           <div v-show="currentStepIndex === 6">
             <Step7Prestasi
               ref="step7Ref"
@@ -108,13 +97,11 @@
           </div>
         </div>
 
-        <!-- Error Message -->
         <div v-if="errorMessage" class="alert alert-danger mt-3">
           <i class="fa fa-exclamation-circle me-2"></i>{{ errorMessage }}
         </div>
       </div>
 
-      <!-- Modal Footer -->
       <div class="modal-footer">
         <button
           v-if="currentStepIndex > 0"
@@ -205,13 +192,13 @@ const toast = useToast();
 
 // === Steps Configuration ===
 const steps = [
-  { title: "Biodata", icon: "fa fa-user" },
-  { title: "Unit Kerja", icon: "fa fa-building" },
-  { title: "Jabatan", icon: "fa fa-briefcase" },
-  { title: "Pangkat", icon: "fa fa-star" },
-  { title: "Pendidikan", icon: "fa fa-graduation-cap" },
-  { title: "Pelatihan", icon: "fa fa-certificate" },
-  { title: "Prestasi", icon: "fa fa-trophy" },
+  { title: "Biodata", icon: "fa-solid fa-id-card" },
+  { title: "Unit Kerja", icon: "fa-solid fa-building-user" },
+  { title: "Jabatan", icon: "fa-solid fa-user-tie" },
+  { title: "Pangkat", icon: "fa-solid fa-ranking-star" },
+  { title: "Pendidikan", icon: "fa-solid fa-graduation-cap" },
+  { title: "Pelatihan", icon: "fa-solid fa-chalkboard-user" },
+  { title: "Prestasi", icon: "fa-solid fa-award" },
 ];
 
 // === Refs ===
@@ -225,7 +212,7 @@ const step7Ref = ref(null);
 
 // === State ===
 const currentStepIndex = ref(0);
-const visitedSteps = ref(new Set([0])); // Track which steps have been visited
+const visitedSteps = ref(new Set([0]));
 const isLoading = ref(false);
 const errorMessage = ref(null);
 const createdUserId = ref(null);
@@ -345,7 +332,6 @@ async function loadStepData(stepIndex) {
 }
 
 async function nextStep() {
-  // Validate current step
   const stepRefs = [
     step1Ref,
     step2Ref,
@@ -360,8 +346,6 @@ async function nextStep() {
   if (currentRef.value && typeof currentRef.value.validate === "function") {
     const isValid = await currentRef.value.validate();
     if (!isValid) {
-      // Validation messages are handled by each step component
-      // No need for additional toasts here
       return;
     }
   }
@@ -372,11 +356,10 @@ async function nextStep() {
   }
 
   currentStepIndex.value++;
-  visitedSteps.value.add(currentStepIndex.value); // Mark new step as visited
+  visitedSteps.value.add(currentStepIndex.value);
 }
 
 function goToStep(targetIndex) {
-  // Only allow navigation to visited steps or the current step
   if (visitedSteps.value.has(targetIndex)) {
     currentStepIndex.value = targetIndex;
   }
@@ -395,7 +378,6 @@ async function submitForm() {
   try {
     let userId = null;
 
-    // Step 1: Save/Update User
     if (isEditMode.value) {
       userId = props.fieldToEdit.idpengguna;
       await saveBiodataUpdate(userId);
@@ -410,10 +392,8 @@ async function submitForm() {
 
     if (!userId) throw new Error("Gagal mendapatkan ID pengguna");
 
-    // Validate single active status
     validateSingleActiveStatus();
 
-    // Save all repeater data
     await saveUnitKerja(userId);
     await saveJabatan(userId);
     await savePangkat(userId);
@@ -747,7 +727,6 @@ async function savePrestasi(userId) {
   color: #28a745;
 }
 
-/* Clickable Steps */
 .wizard-step.clickable {
   cursor: pointer;
 }

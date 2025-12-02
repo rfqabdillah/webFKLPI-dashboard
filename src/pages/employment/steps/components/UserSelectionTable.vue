@@ -31,16 +31,17 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="bg-light">
             <tr>
-              <th style="width: 50px" class="text-center">#</th>
-              <th>Nama Pegawai</th>
-              <th>NIP / NIK</th>
+              <th style="width: 50px" class="text-center">Nomor</th>
+              <th style="width: 80px" class="text-center">Foto</th>
+              <th>Nama</th>
+              <th>NIP</th>
               <th>Email</th>
               <th style="width: 100px" class="text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="5" class="text-center py-4">
+              <td colspan="6" class="text-center py-4">
                 <div
                   class="spinner-border text-primary spinner-border-sm"
                   role="status"
@@ -49,7 +50,7 @@
               </td>
             </tr>
             <tr v-else-if="filteredUsers.length === 0">
-              <td colspan="5" class="text-center py-4 text-muted">
+              <td colspan="6" class="text-center py-4 text-muted">
                 <i class="fa fa-info-circle me-1"></i>
                 {{
                   searchQuery
@@ -64,42 +65,36 @@
               :key="user.idpengguna"
             >
               <td class="text-center">{{ index + 1 }}</td>
-              <td>
-                <div class="d-flex align-items-center">
-                  <div v-if="user.foto" class="me-2">
-                    <img
-                      :src="user.foto"
-                      class="rounded-circle"
-                      style="width: 32px; height: 32px; object-fit: cover"
-                      alt="Foto"
-                    />
-                  </div>
-                  <div
-                    v-else
-                    class="avatar-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center rounded-circle"
-                    style="width: 32px; height: 32px; font-size: 12px"
-                  >
-                    {{ user.nama ? user.nama.charAt(0).toUpperCase() : "?" }}
-                  </div>
-                  <div>
-                    <div class="fw-bold">{{ user.nama }}</div>
-                    <div class="small text-muted">
-                      {{ user.jabatan || "-" }}
-                    </div>
-                  </div>
+              <td class="text-center">
+                <div v-if="user.foto">
+                  <img
+                    :src="user.foto"
+                    class="rounded-circle"
+                    style="width: 40px; height: 40px; object-fit: cover"
+                    alt="Foto"
+                  />
+                </div>
+                <div
+                  v-else
+                  class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle mx-auto"
+                  style="width: 40px; height: 40px; font-size: 14px"
+                >
+                  {{ user.nama ? user.nama.charAt(0).toUpperCase() : "?" }}
                 </div>
               </td>
               <td>
-                <div class="small">{{ user.nip || "-" }}</div>
-                <div class="small text-muted">{{ user.nik || "-" }}</div>
+                <div class="fw-bold">{{ user.nama }}</div>
+              </td>
+              <td>
+                {{ user.nip || "-" }}
               </td>
               <td>{{ user.email }}</td>
               <td class="text-center">
                 <button
-                  class="btn btn-primary btn-sm"
+                  class="btn btn-primary btn-sm d-inline-flex align-items-center"
                   @click="$emit('select-user', user)"
                 >
-                  Pilih
+                  <i class="fa fa-check-circle me-1"></i>Pilih
                 </button>
               </td>
             </tr>
@@ -148,10 +143,6 @@ const filteredUsers = computed(() => {
     );
   });
 });
-
-function onSearch() {
-  // Search is handled by computed property
-}
 
 async function fetchUsers() {
   loading.value = true;
@@ -202,9 +193,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style scoped>
-.existing-user-section {
-  /* Add any specific styles here */
-}
-</style>

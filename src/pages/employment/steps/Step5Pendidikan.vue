@@ -178,8 +178,8 @@ const educationLevelOptions = ref([]);
 const pendidikanList = ref([]);
 const formErrors = ref([]);
 
-onMounted(() => {
-  fetchEducationLevels();
+onMounted(async () => {
+  await fetchEducationLevels();
 
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     pendidikanList.value = props.modelValue.list.map((item) => ({
@@ -197,13 +197,14 @@ onMounted(() => {
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    await fetchEducationLevels();
+    if (educationLevelOptions.value.length === 0) {
+      await fetchEducationLevels();
+    }
     if (userId) {
       console.log("Step5Pendidikan - Loading data for userId:", userId);
       const res = await getUserEducations({ id_pengguna: userId });
       console.log("Step5Pendidikan - API Response:", res);
 
-      // Handle nested response structure
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -217,7 +218,6 @@ async function loadData(userId) {
 
       console.log("Step5Pendidikan - Raw data extracted:", rawData);
 
-      // Filter by userId only
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
       console.log("Step5Pendidikan - Filtered data:", filteredData);
 
