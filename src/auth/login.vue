@@ -16,7 +16,6 @@
                     @error="handleImageError"
                   />
 
-                  <!-- Loading indicator -->
                   <div
                     v-else-if="isLoadingLogo"
                     class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
@@ -123,7 +122,11 @@
                       </button>
                     </div>
                   </div>
-                  <p class="mt-4 mb-0 text-center">Belum punya akun?<router-link to="/register" class="ms-2">Buat Akun</router-link></p>
+                  <p class="mt-4 mb-0 text-center">
+                    Belum punya akun?<router-link to="/register" class="ms-2"
+                      >Buat Akun</router-link
+                    >
+                  </p>
                 </Form>
               </div>
             </div>
