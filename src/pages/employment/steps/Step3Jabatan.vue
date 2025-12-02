@@ -11,10 +11,10 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-briefcase me-2"></i>Riwayat Jenjang Jabatan
+            <i class="fa fa-briefcase me-2"></i>Riwayat Jabatan
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat jenjang jabatan pegawai jika ada.
+            Tambahkan riwayat jabatan pegawai jika ada.
           </p>
         </div>
         <button class="btn btn-primary btn-sm" @click="addJabatan">
@@ -23,11 +23,22 @@
       </div>
 
       <div
+        class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
+      >
+        <i class="fa fa-info-circle text-primary me-1"></i>
+        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong class="text-success"
+          ><i class="fa fa-check-circle"></i> Aktif</strong
+        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
+        menjadi "Tidak Aktif".
+      </div>
+
+      <div
         v-if="jabatanList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-briefcase text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data jenjang jabatan.</p>
+        <p class="text-muted mb-2 small">Belum ada data jabatan.</p>
         <button class="btn btn-outline-primary btn-sm" @click="addJabatan">
           <i class="fa fa-plus me-1"></i> Tambah Jabatan
         </button>
@@ -69,11 +80,11 @@
                 >
                   <option value="" disabled>Pilih Jenjang Jabatan</option>
                   <option
-                    v-for="level in positionLevelOptions"
-                    :key="level.idjenjang"
-                    :value="level.idjenjang"
+                    v-for="jenjang in positionLevelOptions"
+                    :key="jenjang.idjenjang"
+                    :value="jenjang.idjenjang"
                   >
-                    {{ level.namajenjang }}
+                    {{ jenjang.namajenjang }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
@@ -111,15 +122,61 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">File SK</label>
+
                 <input
                   type="file"
                   class="form-control"
                   @change="(e) => handleFileUpload(index, e)"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
-                <div v-if="item.filesk_preview" class="mt-2 small text-success">
-                  <i class="fa fa-check-circle me-1"></i> File terpilih:
-                  {{ item.filesk_preview }}
+
+                <div
+                  v-if="isUrl(item.filesk)"
+                  class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
+                >
+                  <div class="d-flex align-items-center overflow-hidden">
+                    <div class="me-3 text-danger">
+                      <i class="fa fa-file-pdf-o fa-2x"></i>
+                    </div>
+                    <div class="text-truncate">
+                      <small
+                        class="text-muted d-block"
+                        style="font-size: 0.75rem"
+                        >File Tersimpan:</small
+                      >
+                      <span
+                        class="fw-bold text-dark text-truncate d-block"
+                        :title="item.filesk_preview"
+                      >
+                        {{ item.filesk_preview }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a
+                    :href="item.filesk"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
+                  >
+                    <i class="fa fa-external-link me-1"></i> Buka
+                  </a>
+                </div>
+
+                <div
+                  v-else-if="item.filesk_preview"
+                  class="mt-2 p-2 border border-success rounded bg-white text-success"
+                >
+                  <div class="d-flex align-items-center">
+                    <i class="fa fa-check-circle fa-lg me-2"></i>
+                    <div class="overflow-hidden">
+                      <small class="d-block text-muted"
+                        >File baru dipilih:</small
+                      >
+                      <strong class="text-truncate d-block">{{
+                        item.filesk_preview
+                      }}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -130,13 +187,13 @@
                     class="form-check-input"
                     type="checkbox"
                     role="switch"
-                    :id="'statusSwitchJabatan-' + index"
+                    :id="'statusSwitch-' + index"
                     :checked="item.status === 'Aktif'"
                     @change="(e) => handleStatusChange(index, e.target.checked)"
                   />
                   <label
                     class="form-check-label"
-                    :for="'statusSwitchJabatan-' + index"
+                    :for="'statusSwitch-' + index"
                   >
                     {{ item.status || "Tidak Aktif" }}
                   </label>
@@ -154,11 +211,20 @@
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { getPositionLevels } from "@/services/referensi/positionLevels";
+import {
+  getUserLevels,
+  deleteUserLevel,
+} from "@/services/general/personnel/userLevels";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({ list: [] }),
+  },
+  currentUserId: {
+    type: String,
+    default: "",
   },
 });
 
@@ -171,8 +237,17 @@ const positionLevelOptions = ref([]);
 const jabatanList = ref([]);
 const formErrors = ref([]);
 
+// === Helper Functions ===
+const isUrl = (string) => {
+  return (
+    typeof string === "string" && string.length > 0 && string.startsWith("http")
+  );
+};
+
 // === Lifecycle ===
 onMounted(() => {
+  fetchPositionLevels();
+
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
     jabatanList.value = props.modelValue.list.map((item) => ({
       ...item,
@@ -188,14 +263,61 @@ onMounted(() => {
 });
 
 // === Methods ===
-async function loadData() {
-  if (isDataLoaded.value) return;
-  await fetchPositionLevels();
-  isDataLoaded.value = true;
+async function loadData(userId) {
+  isLoading.value = true;
+  try {
+    await fetchPositionLevels();
+
+    if (userId) {
+      console.log("Step3Jabatan - Loading data for userId:", userId);
+      const res = await getUserLevels({ id_pengguna: userId });
+      console.log("Step3Jabatan - API Response:", res);
+
+      // Handle nested response structure: res.data is an array with [0].data containing actual records
+      let rawData = [];
+      if (Array.isArray(res.data)) {
+        if (res.data[0] && res.data[0].data) {
+          rawData = res.data[0].data;
+        } else if (res.data.length > 0 && res.data[0].idpenggunajenjang) {
+          rawData = res.data;
+        }
+      } else if (res.data && res.data.data) {
+        rawData = res.data.data;
+      }
+
+      console.log("Step3Jabatan - Raw data extracted:", rawData);
+
+      // Filter by userId only
+      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      console.log("Step3Jabatan - Filtered data:", filteredData);
+
+      const apiData = filteredData.map((d) => ({
+        idpenggunajenjang: d.idpenggunajenjang,
+        idjenjang: d.idjenjang,
+        tglmulai: d.tglmulai,
+        tglselesai: d.tglselesai,
+        status: d.status,
+        filesk: d.filesk,
+        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        _tempId: Date.now() + Math.random(),
+      }));
+
+      console.log("Step3Jabatan - Mapped data:", apiData);
+
+      jabatanList.value = apiData;
+      formErrors.value = jabatanList.value.map(() => ({}));
+      emit("update:modelValue", { list: jabatanList.value });
+    }
+
+    isDataLoaded.value = true;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function fetchPositionLevels() {
-  isLoading.value = true;
   try {
     const params = { page: 1, limit: 999, sort: "namajenjang", dir: "asc" };
     const response = await getPositionLevels(params);
@@ -214,8 +336,6 @@ async function fetchPositionLevels() {
   } catch (error) {
     console.error("Error fetching position levels:", error);
     toast.error("Gagal memuat data jenjang jabatan.");
-  } finally {
-    isLoading.value = false;
   }
 }
 
@@ -236,8 +356,38 @@ function addJabatan() {
 }
 
 function removeJabatan(index) {
-  jabatanList.value.splice(index, 1);
-  formErrors.value.splice(index, 1);
+  const item = jabatanList.value[index];
+
+  Swal.fire({
+    title: "Hapus Data?",
+    text: item.idpenggunajenjang
+      ? "Data jabatan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data jabatan ini akan dihapus.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        if (item.idpenggunajenjang) {
+          await deleteUserLevel(item.idpenggunajenjang);
+          toast.success("Data jabatan berhasil dihapus dari database");
+        } else {
+          toast.success("Data jabatan berhasil dihapus");
+        }
+
+        jabatanList.value.splice(index, 1);
+        formErrors.value.splice(index, 1);
+      } catch (error) {
+        console.error("Error deleting jabatan:", error);
+        toast.error("Gagal menghapus data jabatan");
+      }
+    }
+  });
 }
 
 function handleFileUpload(index, event) {
@@ -248,6 +398,7 @@ function handleFileUpload(index, event) {
       event.target.value = "";
       return;
     }
+
     jabatanList.value[index].filesk = file;
     jabatanList.value[index].filesk_preview = file.name;
   }
@@ -266,7 +417,7 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
-// === Validation ===
+// === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
@@ -320,16 +471,16 @@ function validate() {
   return isValid;
 }
 
-// === Watchers ===
+// === Sync & Watch ===
 watch(
   jabatanList,
   (newList) => {
     emit("update:modelValue", { list: newList });
-
     let isValid = true;
     if (newList.length > 0) {
       isValid = newList.every((item) => item.idjenjang && item.tglmulai);
     }
+
     emit("validation-change", isValid);
   },
   { deep: true }

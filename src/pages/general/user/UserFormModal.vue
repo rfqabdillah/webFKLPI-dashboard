@@ -473,6 +473,25 @@ async function fetchKabupaten(provCode) {
     } else if (response.data && response.data.data) {
       kabupatenOptions.value = response.data.data;
     }
+
+    // Fix for mismatched data formats (e.g. "3201" vs "32.01")
+    if (formData.kodekabupaten && kabupatenOptions.value.length > 0) {
+      const currentVal = String(formData.kodekabupaten);
+      const exists = kabupatenOptions.value.some(
+        (k) => k.kodewilayah === currentVal
+      );
+
+      if (!exists) {
+        // Try to match by removing dots
+        const cleanCurrent = currentVal.replace(/\./g, "");
+        const match = kabupatenOptions.value.find(
+          (k) => k.kodewilayah.replace(/\./g, "") === cleanCurrent
+        );
+        if (match) {
+          formData.kodekabupaten = match.kodewilayah;
+        }
+      }
+    }
   } catch (error) {
     console.error("Gagal memuat data kabupaten:", error);
     toast.error("Gagal memuat daftar kabupaten.");
@@ -504,9 +523,17 @@ watch(
       formData.gelarbelakang = newData.gelarbelakang;
       formData.alamat = newData.alamat;
       formData.kodekabupaten = newData.kodekabupaten;
-      formData.kodepropinsi = newData.kodekabupaten
-        ? newData.kodekabupaten.split(".")[0]
-        : "";
+      if (newData.kodekabupaten) {
+        const kode = String(newData.kodekabupaten);
+        formData.kodepropinsi = kode.includes(".")
+          ? kode.split(".")[0]
+          : kode.substring(0, 2);
+
+        // Explicitly fetch kabupaten to ensure options are loaded
+        fetchKabupaten(formData.kodepropinsi);
+      } else {
+        formData.kodepropinsi = "";
+      }
       formData.nip = newData.nip;
       formData.no_karpeg = newData.no_karpeg;
       formData.tempatlahir = newData.tempatlahir;

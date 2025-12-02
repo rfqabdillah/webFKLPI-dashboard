@@ -63,9 +63,9 @@
       {{ item.roles?.namalevel || "-" }}
     </template>
 
-    <template #cell(namakejuruan)="{ item }">
+    <!-- <template #cell(namakejuruan)="{ item }">
       {{ item["vocational-fields"]?.namakejuruan || "-" }}
-    </template>
+    </template> -->
   </BaseTable>
   <Teleport to="body">
     <vue-easy-lightbox

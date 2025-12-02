@@ -7,10 +7,9 @@
       proxy: {
         '/api': {
           target: 'http://37.44.244.19',
-          //target: 'http://localhost:8089',
           changeOrigin: true,
           pathRewrite: {
-            '^/api': '/api_website_produktivitas',
+            '^/api': '/api_website_produktivitas', 
           },
         },
       },
