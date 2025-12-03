@@ -12,122 +12,102 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { QuillEditor } from '@vueup/vue-quill';
-import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import { ref, watch } from "vue";
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: ''
+    default: "",
   },
   isInvalid: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  placeholder: { 
+  placeholder: {
     type: String,
-    default: 'Masukkan konten...' 
-  }
+    default: "Masukkan konten...",
+  },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 const internalContent = ref(props.modelValue);
 const editorOptions = {
   placeholder: props.placeholder,
   modules: {
     toolbar: [
-    ['bold', 'italic', 'underline', 'strike'],
-    ['blockquote', 'code-block'],
-    [{ header: 1 }, { header: 2 }],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    [{ script: 'sub' }, { script: 'super' }],
-    [{ indent: '-1' }, { indent: '+1' }],
-    [{ direction: 'rtl' }],
-    [{ size: ['small', false, 'large', 'huge'] }],
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    [{ color: [] }, { background: [] }],
-    [{ font: [] }],
-    [{ align: [] }],
-    ['clean'],
-    ['link', 'image', 'video']
-  ]
-  }
+      ["bold", "italic", "underline", "strike"],
+      ["blockquote", "code-block"],
+      [{ header: 1 }, { header: 2 }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ script: "sub" }, { script: "super" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ direction: "rtl" }],
+      [{ size: ["small", false, "large", "huge"] }],
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ color: [] }, { background: [] }],
+      [{ font: [] }],
+      [{ align: [] }],
+      ["clean"],
+      ["link"],
+    ],
+  },
 };
 
-// Saat v-model dari luar berubah, update editor
-watch(() => props.modelValue, (newValue) => {
-  if (newValue !== internalContent.value) {
-    internalContent.value = newValue;
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue !== internalContent.value) {
+      internalContent.value = newValue;
+    }
   }
-});
+);
 
-// Saat editor berubah, kirim (emit) data ke luar
 function onContentChange(content) {
-  // Jika editor dikosongkan, Quill terkadang menghasilkan '<p><br></p>'
-  // Kita anggap ini sebagai string kosong.
-  if (content === '<p><br></p>') {
-    content = '';
+  if (content === "<p><br></p>") {
+    content = "";
   }
-  emit('update:modelValue', content);
+  emit("update:modelValue", content);
 }
 </script>
 
 <style scoped>
-/* * 1. Buat wrapper yang meniru input Bootstrap.
- * Ini adalah 'bingkai' luar untuk editor.
-*/
 .editor-wrapper {
-  border: 1px solid #ced4da; /* Warna border default Bootstrap */
-  border-radius: 0.375rem;  /* Radius default Bootstrap */
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-/* * 2. Ini adalah bagian utamanya:
- * Saat elemen APAPUN di dalam .editor-wrapper di-fokus...
- * (misalnya, saat Anda mengklik area teks .ql-editor)
- * ...terapkan gaya 'focus' Bootstrap ke wrapper.
-*/
 .editor-wrapper:focus-within {
-  border-color: #86b7fe; /* Warna border focus Bootstrap */
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Efek 'glow' biru */
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* * 3. Hapus border default Quill agar tidak tumpang tindih.
- * Kita menggunakan :deep() untuk menata gaya komponen anak.
-*/
-
-/* Atur Toolbar (bagian atas) */
 :deep(.ql-toolbar.ql-snow) {
-  border: none; /* Hapus border default */
-  border-bottom: 1px solid #ced4da; /* Tambahkan garis pemisah */
-  border-top-left-radius: 0.375rem; /* Cocokkan radius wrapper */
+  border: none;
+  border-bottom: 1px solid #ced4da;
+  border-top-left-radius: 0.375rem;
   border-top-right-radius: 0.375rem;
 }
 
-/* Atur Kontainer (area pengetikan, bagian bawah) */
 :deep(.ql-container.ql-snow) {
-  border: none; /* Hapus border default */
-  border-bottom-left-radius: 0.375rem; /* Cocokkan radius wrapper */
+  border: none;
+  border-bottom-left-radius: 0.375rem;
   border-bottom-right-radius: 0.375rem;
 }
 
-/* Pastikan area editor memiliki tinggi minimum */
 :deep(.ql-editor) {
   min-height: 200px;
 }
 
-/*
- * 4. Tambahkan style 'is-invalid' (border merah)
- * jika prop isInvalid bernilai true.
-*/
 .editor-wrapper.is-invalid {
-  border-color: #dc3545; /* Warna 'danger' Bootstrap */
+  border-color: #dc3545;
 }
 
 .editor-wrapper.is-invalid:focus-within {
   border-color: #dc3545;
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); /* Glow merah */
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
 :deep(.editor-wrapper.is-invalid .ql-toolbar.ql-snow) {
