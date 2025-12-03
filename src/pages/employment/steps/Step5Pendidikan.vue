@@ -157,6 +157,7 @@ import {
   deleteUserEducation,
 } from "@/services/general/personnel/userEducation";
 import Swal from "sweetalert2";
+import * as yup from "yup";
 
 const props = defineProps({
   modelValue: {
@@ -177,6 +178,22 @@ const isDataLoaded = ref(false);
 const educationLevelOptions = ref([]);
 const pendidikanList = ref([]);
 const formErrors = ref([]);
+
+// === Yup Validation Schema ===
+const validationSchema = yup.object().shape({
+  idjenjangpendidikan: yup
+    .string()
+    .required("Jenjang Pendidikan wajib dipilih."),
+  programstudi: yup.string().required("Program Studi wajib diisi."),
+  namaperguruantinggi: yup
+    .string()
+    .required("Nama Perguruan Tinggi wajib diisi."),
+  tahunlulus: yup
+    .number()
+    .required("Tahun Lulus wajib diisi.")
+    .min(1900, "Tahun tidak valid")
+    .max(2100, "Tahun tidak valid"),
+});
 
 onMounted(async () => {
   await fetchEducationLevels();
@@ -200,11 +217,7 @@ async function loadData(userId) {
     if (educationLevelOptions.value.length === 0) {
       await fetchEducationLevels();
     }
-    if (userId) {
-      console.log("Step5Pendidikan - Loading data for userId:", userId);
-      const res = await getUserEducations({ id_pengguna: userId });
-      console.log("Step5Pendidikan - API Response:", res);
-
+    if (userId) {      const res = await getUserEducations({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -215,12 +228,7 @@ async function loadData(userId) {
       } else if (res.data && res.data.data) {
         rawData = res.data.data;
       }
-
-      console.log("Step5Pendidikan - Raw data extracted:", rawData);
-
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step5Pendidikan - Filtered data:", filteredData);
-
       const apiData = filteredData.map((d) => ({
         idpenggunapendidikan: d.idpenggunapendidikan,
         idjenjangpendidikan: d.idjenjangpendidikan,
@@ -229,9 +237,6 @@ async function loadData(userId) {
         tahunlulus: d.tahunlulus,
         _tempId: Date.now() + Math.random(),
       }));
-
-      console.log("Step5Pendidikan - Mapped data:", apiData);
-
       pendidikanList.value = apiData;
       formErrors.value = pendidikanList.value.map(() => ({}));
       emit("update:modelValue", { list: pendidikanList.value });
@@ -315,58 +320,51 @@ function removePendidikan(index) {
     }
   });
 }
-
+// === Validation Logic (Yup-based) ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-function validateField(index, field) {
+async function validateField(index, field) {
   const item = pendidikanList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
-  if (field === "idjenjangpendidikan") {
-    formErrors.value[index].idjenjangpendidikan = !item.idjenjangpendidikan
-      ? "Jenjang Pendidikan wajib dipilih."
-      : "";
-  }
-  if (field === "programstudi") {
-    formErrors.value[index].programstudi = !item.programstudi
-      ? "Program Studi wajib diisi."
-      : "";
-  }
-  if (field === "namaperguruantinggi") {
-    formErrors.value[index].namaperguruantinggi = !item.namaperguruantinggi
-      ? "Nama Perguruan Tinggi wajib diisi."
-      : "";
-  }
-  if (field === "tahunlulus") {
-    formErrors.value[index].tahunlulus = !item.tahunlulus
-      ? "Tahun Lulus wajib diisi."
-      : "";
+  try {
+    await validationSchema.validateAt(field, item);
+    formErrors.value[index][field] = "";
+  } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      formErrors.value[index][field] = error.message;
+    }
   }
 }
 
-function validate() {
-  let isValid = true;
+async function validate() {
   if (pendidikanList.value.length === 0) return true;
 
-  pendidikanList.value.forEach((item, index) => {
+  let isValid = true;
+
+  for (let index = 0; index < pendidikanList.value.length; index++) {
+    const item = pendidikanList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
-    const required = [
-      "idjenjangpendidikan",
-      "programstudi",
-      "namaperguruantinggi",
-      "tahunlulus",
-    ];
-    required.forEach((field) => {
-      if (!item[field]) {
-        formErrors.value[index][field] = `Field ini wajib diisi.`;
-        isValid = false;
-      } else {
+
+    try {
+      await validationSchema.validate(item, { abortEarly: false });
+      Object.keys(validationSchema.fields).forEach((field) => {
         formErrors.value[index][field] = "";
+      });
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        isValid = false;
+        error.inner.forEach((err) => {
+          if (err.path) {
+            formErrors.value[index][err.path] = err.message;
+          }
+        });
       }
-    });
-  });
+    }
+  }
+
   return isValid;
 }
 

@@ -216,6 +216,7 @@ import {
   deleteUserLevel,
 } from "@/services/general/personnel/userLevels";
 import Swal from "sweetalert2";
+import * as yup from "yup";
 
 const props = defineProps({
   modelValue: {
@@ -236,6 +237,12 @@ const isDataLoaded = ref(false);
 const positionLevelOptions = ref([]);
 const jabatanList = ref([]);
 const formErrors = ref([]);
+
+// === Yup Validation Schema ===
+const validationSchema = yup.object().shape({
+  idjenjang: yup.string().required("Jenjang Jabatan wajib dipilih."),
+  tglmulai: yup.string().required("Tanggal Mulai wajib diisi."),
+});
 
 // === Helper Functions ===
 const isUrl = (string) => {
@@ -271,9 +278,7 @@ async function loadData(userId) {
     }
 
     if (userId) {
-      console.log("Step3Jabatan - Loading data for userId:", userId);
       const res = await getUserLevels({ id_pengguna: userId });
-      console.log("Step3Jabatan - API Response:", res);
 
       let rawData = [];
       if (Array.isArray(res.data)) {
@@ -286,10 +291,7 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
-      console.log("Step3Jabatan - Raw data extracted:", rawData);
-
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step3Jabatan - Filtered data:", filteredData);
 
       const apiData = filteredData.map((d) => ({
         idpenggunajenjang: d.idpenggunajenjang,
@@ -301,8 +303,6 @@ async function loadData(userId) {
         filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
         _tempId: Date.now() + Math.random(),
       }));
-
-      console.log("Step3Jabatan - Mapped data:", apiData);
 
       jabatanList.value = apiData;
       formErrors.value = jabatanList.value.map(() => ({}));
@@ -415,56 +415,50 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
-// === Validation Logic ===
+// === Validation Logic (Yup-based) ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-function validateField(index, field) {
+async function validateField(index, field) {
   const item = jabatanList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
-  if (field === "idjenjang") {
-    if (!item.idjenjang) {
-      formErrors.value[index].idjenjang = "Jenjang Jabatan wajib dipilih.";
-    } else {
-      formErrors.value[index].idjenjang = "";
-    }
-  }
-
-  if (field === "tglmulai") {
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-    } else {
-      formErrors.value[index].tglmulai = "";
+  try {
+    await validationSchema.validateAt(field, item);
+    formErrors.value[index][field] = "";
+  } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      formErrors.value[index][field] = error.message;
     }
   }
 }
 
-function validate() {
+async function validate() {
+  if (jabatanList.value.length === 0) return true;
+
   let isValid = true;
 
-  if (jabatanList.value.length === 0) {
-    return true;
-  }
-
-  jabatanList.value.forEach((item, index) => {
+  for (let index = 0; index < jabatanList.value.length; index++) {
+    const item = jabatanList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
-    if (!item.idjenjang) {
-      formErrors.value[index].idjenjang = "Jenjang Jabatan wajib dipilih.";
-      isValid = false;
-    } else {
-      formErrors.value[index].idjenjang = "";
+    try {
+      await validationSchema.validate(item, { abortEarly: false });
+      Object.keys(validationSchema.fields).forEach((field) => {
+        formErrors.value[index][field] = "";
+      });
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        isValid = false;
+        error.inner.forEach((err) => {
+          if (err.path) {
+            formErrors.value[index][err.path] = err.message;
+          }
+        });
+      }
     }
-
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
-  });
+  }
 
   return isValid;
 }

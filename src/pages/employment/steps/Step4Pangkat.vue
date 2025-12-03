@@ -212,6 +212,7 @@ import {
   deleteUserRank,
 } from "@/services/general/personnel/userRanks";
 import Swal from "sweetalert2";
+import * as yup from "yup";
 
 const props = defineProps({
   modelValue: {
@@ -232,6 +233,12 @@ const isDataLoaded = ref(false);
 const rankOptions = ref([]);
 const pangkatList = ref([]);
 const formErrors = ref([]);
+
+// === Yup Validation Schema ===
+const validationSchema = yup.object().shape({
+  idpangkat: yup.string().required("Pangkat wajib dipilih."),
+  tglmulai: yup.string().required("Tanggal Mulai wajib diisi."),
+});
 
 // === Helper Functions ===
 const isUrl = (string) => {
@@ -262,11 +269,7 @@ async function loadData(userId) {
     if (rankOptions.value.length === 0) {
       await fetchRanks();
     }
-    if (userId) {
-      console.log("Step4Pangkat - Loading data for userId:", userId);
-      const res = await getUserRanks({ id_pengguna: userId });
-      console.log("Step4P angkat - API Response:", res);
-
+    if (userId) {      const res = await getUserRanks({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -277,12 +280,7 @@ async function loadData(userId) {
       } else if (res.data && res.data.data) {
         rawData = res.data.data;
       }
-
-      console.log("Step4Pangkat - Raw data extracted:", rawData);
-
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step4Pangkat - Filtered data:", filteredData);
-
       const apiData = filteredData.map((d) => ({
         idpenggunapangkat: d.idpenggunapangkat,
         idpangkat: d.idpangkat,
@@ -293,9 +291,6 @@ async function loadData(userId) {
         filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
         _tempId: Date.now() + Math.random(),
       }));
-
-      console.log("Step4Pangkat - Mapped data:", apiData);
-
       pangkatList.value = apiData;
       formErrors.value = pangkatList.value.map(() => ({}));
       emit("update:modelValue", { list: pangkatList.value });
@@ -402,49 +397,51 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
+// === Validation Logic (Yup-based) ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-function validateField(index, field) {
+async function validateField(index, field) {
   const item = pangkatList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
-  if (field === "idpangkat") {
-    if (!item.idpangkat) {
-      formErrors.value[index].idpangkat = "Pangkat wajib dipilih.";
-    } else {
-      formErrors.value[index].idpangkat = "";
-    }
-  }
-  if (field === "tglmulai") {
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-    } else {
-      formErrors.value[index].tglmulai = "";
+
+  try {
+    await validationSchema.validateAt(field, item);
+    formErrors.value[index][field] = "";
+  } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      formErrors.value[index][field] = error.message;
     }
   }
 }
 
-function validate() {
+async function validate() {
+  if (pangkatList.value.length === 0) return true;
+
   let isValid = true;
-  if (pangkatList.value.length === 0) {
-    return true;
-  }
-  pangkatList.value.forEach((item, index) => {
+
+  for (let index = 0; index < pangkatList.value.length; index++) {
+    const item = pangkatList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
-    if (!item.idpangkat) {
-      formErrors.value[index].idpangkat = "Pangkat wajib dipilih.";
-      isValid = false;
-    } else {
-      formErrors.value[index].idpangkat = "";
+
+    try {
+      await validationSchema.validate(item, { abortEarly: false });
+      Object.keys(validationSchema.fields).forEach((field) => {
+        formErrors.value[index][field] = "";
+      });
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        isValid = false;
+        error.inner.forEach((err) => {
+          if (err.path) {
+            formErrors.value[index][err.path] = err.message;
+          }
+        });
+      }
     }
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
-  });
+  }
+
   return isValid;
 }
 

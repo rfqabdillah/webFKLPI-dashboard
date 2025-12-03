@@ -272,7 +272,6 @@ async function loadData(userId) {
     }
 
     if (userId) {
-      console.log("Step2UnitKerja - Loading data for userId:", userId);
       const res = await getUserWorkUnits({ id_pengguna: userId });
 
       let rawData = [];

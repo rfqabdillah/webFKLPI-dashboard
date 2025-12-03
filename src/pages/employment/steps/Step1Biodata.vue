@@ -136,7 +136,6 @@ function resetSelection() {
 }
 
 async function selectUser(user) {
-  console.log("User selected:", user);
   selectedUser.value = user;
   selectedUserId.value = user.idpengguna || user.email;
   selectionMade.value = true;
@@ -191,8 +190,6 @@ function populateFormData(data) {
       formData.kodepropinsi = kode.substring(0, 2);
     }
   }
-
-  console.log("Form populated with data:", formData);
 }
 
 function handlePhotoChange(file) {

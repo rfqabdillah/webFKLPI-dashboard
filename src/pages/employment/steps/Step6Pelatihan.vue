@@ -229,6 +229,7 @@ import {
   deleteUserTraining,
 } from "@/services/general/personnel/userTrainings";
 import Swal from "sweetalert2";
+import * as yup from "yup";
 
 const props = defineProps({
   modelValue: {
@@ -248,6 +249,13 @@ const isLoading = ref(false);
 const isDataLoaded = ref(false);
 const pelatihanList = ref([]);
 const formErrors = ref([]);
+
+// === Yup Validation Schema ===
+const validationSchema = yup.object().shape({
+  namapelatihan: yup.string().required("Nama Pelatihan wajib diisi."),
+  namapenyelenggara: yup.string().required("Nama Penyelenggara wajib diisi."),
+  tglmulai: yup.string().required("Tanggal Mulai wajib diisi."),
+});
 
 // === Helper Functions ===
 const isUrl = (string) => {
@@ -273,11 +281,7 @@ onMounted(() => {
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    if (userId) {
-      console.log("Step6Pelatihan - Loading data for userId:", userId);
-      const res = await getUserTrainings({ id_pengguna: userId });
-      console.log("Step6Pelatihan - API Response:", res);
-
+    if (userId) {      const res = await getUserTrainings({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -288,12 +292,7 @@ async function loadData(userId) {
       } else if (res.data && res.data.data) {
         rawData = res.data.data;
       }
-
-      console.log("Step6Pelatihan - Raw data extracted:", rawData);
-
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
-      console.log("Step6Pelatihan - Filtered data:", filteredData);
-
       const apiData = filteredData.map((d) => ({
         idpenggunapelatihan: d.idpenggunapelatihan,
         namapelatihan: d.namapelatihan,
@@ -307,9 +306,6 @@ async function loadData(userId) {
           : "",
         _tempId: Date.now() + Math.random(),
       }));
-
-      console.log("Step6Pelatihan - Mapped data:", apiData);
-
       pelatihanList.value = apiData;
       formErrors.value = pelatihanList.value.map(() => ({}));
       emit("update:modelValue", { list: pelatihanList.value });
@@ -396,57 +392,51 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
+// === Validation Logic (Yup-based) ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-function validateField(index, field) {
+async function validateField(index, field) {
   const item = pelatihanList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
-  if (field === "namapelatihan") {
-    formErrors.value[index].namapelatihan = !item.namapelatihan
-      ? "Nama Pelatihan wajib diisi."
-      : "";
-  }
-  if (field === "namapenyelenggara") {
-    formErrors.value[index].namapenyelenggara = !item.namapenyelenggara
-      ? "Nama Penyelenggara wajib diisi."
-      : "";
-  }
-  if (field === "tglmulai") {
-    formErrors.value[index].tglmulai = !item.tglmulai
-      ? "Tanggal Mulai wajib diisi."
-      : "";
+  try {
+    await validationSchema.validateAt(field, item);
+    formErrors.value[index][field] = "";
+  } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      formErrors.value[index][field] = error.message;
+    }
   }
 }
 
-function validate() {
-  let isValid = true;
+async function validate() {
   if (pelatihanList.value.length === 0) return true;
 
-  pelatihanList.value.forEach((item, index) => {
+  let isValid = true;
+
+  for (let index = 0; index < pelatihanList.value.length; index++) {
+    const item = pelatihanList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
-    if (!item.namapelatihan) {
-      formErrors.value[index].namapelatihan = "Nama Pelatihan wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].namapelatihan = "";
+
+    try {
+      await validationSchema.validate(item, { abortEarly: false });
+      Object.keys(validationSchema.fields).forEach((field) => {
+        formErrors.value[index][field] = "";
+      });
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        isValid = false;
+        error.inner.forEach((err) => {
+          if (err.path) {
+            formErrors.value[index][err.path] = err.message;
+          }
+        });
+      }
     }
-    if (!item.namapenyelenggara) {
-      formErrors.value[index].namapenyelenggara =
-        "Nama Penyelenggara wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].namapenyelenggara = "";
-    }
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
-      isValid = false;
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
-  });
+  }
+
   return isValid;
 }
 
