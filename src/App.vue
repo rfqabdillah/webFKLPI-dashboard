@@ -5,13 +5,13 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
 import { useIdleLogout } from "@/utils/useIdleLogout";
-import { getApplication } from "@/services/general/website/settings/applications";
+import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 
 useIdleLogout(30);
 
 async function setupAppIdentity() {
   try {
-    const response = await getApplication();
+    const response = await getApplicationPub();
     let sourceData = null;
 
     if (response.data && Array.isArray(response.data)) {

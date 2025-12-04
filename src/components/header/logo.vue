@@ -53,8 +53,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useStore } from "vuex";
-// Import service API
-import { getApplication } from "@/services/general/website/settings/applications";
+import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 
 const store = useStore();
 
@@ -65,14 +64,11 @@ const isLoadingLogo = ref(true);
 
 // === Methods ===
 
-// Fungsi Toggle Sidebar (Konversi ke Composition API)
 function toggle_sidebar() {
   store.dispatch("menu/opensidebar");
 }
 
-// Handle jika gambar rusak (404)
 function handleImageError() {
-  // console.warn("Gambar logo rusak/tidak ditemukan, beralih ke teks default.");
   dynamicLogoUrl.value = null;
 }
 
@@ -80,32 +76,26 @@ function handleImageError() {
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplication();
+    const response = await getApplicationPub();
 
-    // Logika Drill Down (Sesuai struktur JSON API Anda)
     let sourceData = null;
 
-    // Cek Array Luar
     if (response.data && Array.isArray(response.data)) {
-      // Cek Object 'data' didalamnya
       if (response.data[0] && response.data[0].data) {
         const innerArray = response.data[0].data;
-        // Ambil record pertama
         if (Array.isArray(innerArray) && innerArray.length > 0) {
           sourceData = innerArray[0];
         }
       }
     }
 
-    // Mapping Data
     if (sourceData) {
       appName.value = sourceData.namainstansi || "Aplikasi";
 
-      // Cek apakah field logo ada isinya
       if (sourceData.logo && sourceData.logo !== "") {
         dynamicLogoUrl.value = sourceData.logo;
       } else {
-        dynamicLogoUrl.value = null; // Kosong -> Tampilkan teks "LOGO"
+        dynamicLogoUrl.value = null;
       }
     } else {
       dynamicLogoUrl.value = null;
@@ -123,7 +113,3 @@ onMounted(() => {
   fetchLogoData();
 });
 </script>
-
-<style scoped>
-/* Anda bisa menambahkan style khusus di sini jika diperlukan */
-</style>

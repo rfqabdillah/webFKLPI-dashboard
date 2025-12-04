@@ -144,7 +144,7 @@ import { useToast } from "vue-toastification";
 import { Form, Field } from "vee-validate";
 import * as yup from "yup";
 import { login as loginAPI } from "@/services/auth";
-import { getApplication } from "@/services/general/website/settings/applications";
+import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 
 const router = useRouter();
 const toast = useToast();
@@ -223,7 +223,7 @@ async function onSubmit() {
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplication();
+    const response = await getApplicationPub();
     let sourceData = null;
 
     if (response.data && Array.isArray(response.data)) {

@@ -40,7 +40,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { getApplication } from "@/services/general/website/settings/applications";
+import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 
 // State
 const dynamicLogoUrl = ref(null);
@@ -56,9 +56,10 @@ function handleImageError() {
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplication();
+    const response = await getApplicationPub();
     let sourceData = null;
 
+    // Karena di frontend hanya ada 1 data aplikasi, langsung ambil data pertama
     if (response.data && Array.isArray(response.data)) {
       if (response.data[0] && response.data[0].data) {
         const innerArray = response.data[0].data;
