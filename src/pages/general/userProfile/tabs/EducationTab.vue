@@ -4,7 +4,7 @@
       v-for="item in items"
       :key="item.idpenggunapendidikan"
       class="col-12"
-      style="margin-bottom: 15px"
+      style="margin-bottom: 5px"
     >
       <div class="card shadow-sm border hover-lift">
         <div class="card-body p-4">
