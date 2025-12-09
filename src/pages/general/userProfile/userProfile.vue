@@ -254,6 +254,14 @@
           </div>
         </div>
       </div>
+      <!-- Edit Profile Modal -->
+      <UserProfileFormModal
+        v-if="isEditModalOpen"
+        :fieldToEdit="user"
+        entityName="Profil"
+        @close="closeModal"
+        @save-successful="handleSaveSuccessful"
+      />
     </div>
   </div>
 </template>
@@ -279,7 +287,11 @@ const userEducations = ref([]);
 const userTrainings = ref([]);
 const userAchievements = ref([]);
 
+// Modal
+import UserProfileFormModal from "./UserProfileFormModal.vue";
+
 const activeTab = ref("pribadi");
+const isEditModalOpen = ref(false);
 const defaultAvatar = "https://placehold.co/150/EBF4FF/7F9CF5?text=Foto";
 
 const fullName = computed(() => {
@@ -317,9 +329,16 @@ function handleImageError(e) {
 }
 
 function handleEditData() {
-  // Logic to handle edit data, e.g., open a modal or navigate to edit page
-  console.log("Edit Data Clicked");
-  alert("Fitur Edit Data akan segera hadir!");
+  isEditModalOpen.value = true;
+}
+
+function closeModal() {
+  isEditModalOpen.value = false;
+}
+
+function handleSaveSuccessful() {
+  closeModal();
+  fetchUserProfile();
 }
 
 // === API Fetchers ===
