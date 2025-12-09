@@ -27,10 +27,10 @@
         v-for="(menuItem, index) in menuItems"
         :key="index"
         class="sidebar-list"
-        :class="
-          ({ ' sidebar-main-title': menuItem.type == 'headtitle' },
-          menuItem.showPin ? 'pined' : '')
-        "
+        :class="[
+          { 'sidebar-main-title': menuItem.type == 'headtitle' },
+          menuItem.showPin ? 'pined' : '',
+        ]"
       >
         <div v-if="menuItem.type == 'headtitle'">
           <h6 class="lan-1">{{ menuItem.headTitle1 }}</h6>

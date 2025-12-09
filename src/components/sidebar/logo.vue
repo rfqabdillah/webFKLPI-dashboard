@@ -5,7 +5,7 @@
       class="img-fluid for-light"
       :src="sidebarType ? dynamicLogoUrl : faviconUrl || dynamicLogoUrl"
       :alt="appName"
-      style="max-height: 55px; width: auto; object-fit: contain"
+      style="max-height: 45px; width: auto; object-fit: contain"
       @error="handleImageError"
     />
 
