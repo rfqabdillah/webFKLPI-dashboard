@@ -3,7 +3,7 @@
     <img
       v-if="dynamicLogoUrl && !isLoadingLogo"
       class="img-fluid for-light"
-      :src="dynamicLogoUrl"
+      :src="sidebarType ? dynamicLogoUrl : faviconUrl || dynamicLogoUrl"
       :alt="appName"
       style="max-height: 55px; width: auto; object-fit: contain"
       @error="handleImageError"
@@ -51,11 +51,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useStore } from "vuex";
 import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+
+const store = useStore();
+const sidebarType = computed(() => store.state.menu.togglesidebar);
 
 // State
 const dynamicLogoUrl = ref(null);
+const faviconUrl = ref(null);
 const appName = ref("Aplikasi");
 const isLoadingLogo = ref(true);
 
@@ -89,8 +94,15 @@ async function fetchLogoData() {
       } else {
         dynamicLogoUrl.value = null;
       }
+
+      if (sourceData.favicon && sourceData.favicon !== "") {
+        faviconUrl.value = sourceData.favicon;
+      } else {
+        faviconUrl.value = null;
+      }
     } else {
       dynamicLogoUrl.value = null;
+      faviconUrl.value = null;
     }
   } catch (error) {
     console.error("Error fetching logo data:", error);
