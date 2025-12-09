@@ -187,6 +187,12 @@ export var menuItems = {
           "type": "link",
           "active":false
         },
+        {
+          "path": "/general/user-profile",
+          "title": "Profil Pengguna",
+          "type": "link",
+          "active":false
+        },
       ]
     },
     {

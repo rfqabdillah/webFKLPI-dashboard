@@ -27,6 +27,7 @@ import IndexContacts from "@/pages/settings/contacts/index.vue";
 
 // Mulai Referensi
 import IndexUsers from "@/pages/general/user/index.vue";
+import IndexUsersProfile from "@/pages/general/userProfile/userProfile.vue";
 import IndexRegions from "@/pages/general/regions/index.vue";
 
 import IndexVocationalFields from "@/pages/personnel/vocationalFields/index.vue";
@@ -41,6 +42,7 @@ import IndexEmployeeStatuses from "@/pages/personnel/employeeStatuses/index.vue"
 import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
 
 
+import IndexUserProfile from "@/pages/general/userProfile/index.vue";
 
 const routes =[
     {
@@ -260,6 +262,14 @@ const routes =[
             component: IndexUsers,
             meta: {
               title: "Pengguna",
+            },
+          },
+          {
+            path: "user-profile",
+            name: "General_user_profile",
+            component: IndexUserProfile,
+            meta: {
+              title: "Profil Pengguna",
             },
           },
           {
