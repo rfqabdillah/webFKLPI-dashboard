@@ -29,11 +29,7 @@
 
                   <div class="text-muted small mb-1">
                     <i class="fa fa-user-tie me-1"></i>
-                    {{
-                      item.namapenyelenggaraprestasi ||
-                      item.namapenyelenggara ||
-                      "-"
-                    }}
+                    {{ item.namapenyelenggaraprestasi || "-" }}
                   </div>
 
                   <div class="d-flex align-items-center mt-2 text-muted small">
@@ -86,8 +82,8 @@ const props = defineProps({
 });
 
 function getScaleName(item) {
-  if (item.nama_skala || item.namaskala)
-    return item.nama_skala || item.namaskala;
+  if (item.namaskala) return item.namaskala;
+
   if (props.user["scale"]) {
     const scale = props.user["scale"].find((s) => s.idskala === item.idskala);
     return scale ? scale.namaskala : "-";
