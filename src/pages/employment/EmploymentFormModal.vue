@@ -275,16 +275,36 @@ const canProceed = computed(() => {
   return stepValidations[currentStepIndex.value];
 });
 
+// === Reset Function ===
+function resetWizardState() {
+  // Reset all list data
+  wizardState.unitKerja.list = [];
+  wizardState.jabatan.list = [];
+  wizardState.pangkat.list = [];
+  wizardState.pendidikan.list = [];
+  wizardState.pelatihan.list = [];
+  wizardState.prestasi.list = [];
+
+  // Reset step loaded flags
+  stepLoaded.fill(false);
+
+  // Reset step index
+  currentStepIndex.value = 0;
+  visitedSteps.value = new Set([0]);
+}
+
 // === Watchers ===
 watch(
   () => props.fieldToEdit,
   (newData) => {
     if (newData) {
+      // Reset state first to prevent data mixing
+      resetWizardState();
+
       wizardState.biodata.mode = "existing";
       wizardState.biodata.isExisting = true;
       wizardState.biodata.userId = newData.idpengguna;
       Object.assign(wizardState.biodata.userData, newData);
-      stepLoaded.fill(false);
     }
   },
   { immediate: true }
@@ -441,22 +461,36 @@ function createBiodataFormData() {
   const data = new FormData();
   const biodata = wizardState.biodata.userData;
 
-  Object.keys(biodata).forEach((key) => {
-    if (
-      biodata[key] !== null &&
-      biodata[key] !== undefined &&
-      key !== "foto" &&
-      key !== "roles" &&
-      key !== "permissions" &&
-      key !== "created_at" &&
-      key !== "updated_at" &&
-      key !== "deleted_at" &&
-      key !== "email_verified_at" &&
-      key !== "remember_token" &&
-      key !== "lastlogin" &&
-      key !== "kodepropinsi"
-    ) {
-      data.append(`record[${key}]`, biodata[key]);
+  // Whitelist of allowed biodata fields - only these will be sent to the backend
+  const allowedFields = [
+    "idpengguna",
+    "idlevel",
+    "email",
+    "nama",
+    "telp",
+    "nik",
+    "gelardepan",
+    "gelarbelakang",
+    "alamat",
+    "kodekabupaten",
+    "nip",
+    "no_karpeg",
+    "tempatlahir",
+    "tanggallahir",
+    "status",
+    // Active relation IDs
+    "idpenggunajenjang",
+    "idpenggunapangkat",
+    "idpenggunapendidikan",
+    "idpenggunapelatihan",
+    "idpenggunaprestasi",
+    "idpenggunaunitkerja",
+  ];
+
+  allowedFields.forEach((key) => {
+    const value = biodata[key];
+    if (value !== null && value !== undefined && value !== "") {
+      data.append(`record[${key}]`, value);
     }
   });
 
@@ -505,7 +539,12 @@ function createFormData(item, fileKey, userId) {
       !systemFields.includes(key)
     ) {
       const value = item[key];
-      if (value !== null && value !== undefined) {
+      if (
+        value !== null &&
+        value !== undefined &&
+        typeof value !== "object" &&
+        !Array.isArray(value)
+      ) {
         formData.append(`record[${key}]`, value);
       }
     }

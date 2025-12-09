@@ -35,7 +35,7 @@ export const createCrudClient = (resourceName, resourceLabel) => ({
     if (!primaryId)
       return Promise.reject(new Error(`ID ${resourceLabel} tidak tersedia.`));
     return apiClient.delete('', {
-      params: { act: resourceName, key: primaryId },
+      data: { act: resourceName, key: primaryId },
     });
   },
 });

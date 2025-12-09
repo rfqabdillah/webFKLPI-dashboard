@@ -278,13 +278,31 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
+    }
+    if (keyValue) {
+      seen.add(keyValue);
+    }
+    return true;
+  });
+}
+
 async function loadData(userId) {
   isLoading.value = true;
   try {
     if (scaleOptions.value.length === 0) {
       await fetchScales();
     }
-    if (userId) {      const res = await getUserAchievements({ id_pengguna: userId });
+    if (userId) {
+      const res = await getUserAchievements({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -301,14 +319,18 @@ async function loadData(userId) {
         namaprestasi: d.namaprestasi,
         idskala: d.idskala,
         namapenyelenggara: d.namapenyelenggara,
-        status: d.status,
+        status: d.statusprestasi || d.status,
         filesertifikat: d.filesertifikat,
         filesertifikat_preview: d.filesertifikat
           ? d.filesertifikat.split("/").pop()
           : "",
         _tempId: Date.now() + Math.random(),
       }));
-      prestasiList.value = apiData;
+
+      // Deduplicate by ID
+      const uniqueData = uniqueByKey(apiData, "idpenggunaprestasi");
+
+      prestasiList.value = uniqueData;
       formErrors.value = prestasiList.value.map(() => ({}));
       emit("update:modelValue", { list: prestasiList.value });
     }

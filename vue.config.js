@@ -6,13 +6,12 @@
     devServer: {
       proxy: {
         '/api': {
-          target: 'http://37.44.244.19',
+          target: process.env.VUE_APP_ENDPOINT_API_SERVER,
           changeOrigin: true,
           pathRewrite: {
-            '^/api': '/api_website_produktivitas', 
+            '^/api': process.env.VUE_APP_PROXY_PATH_REWRITE,
           },
         },
       },
     }
   });
-  

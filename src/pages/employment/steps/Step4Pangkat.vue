@@ -263,13 +263,31 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
+    }
+    if (keyValue) {
+      seen.add(keyValue);
+    }
+    return true;
+  });
+}
+
 async function loadData(userId) {
   isLoading.value = true;
   try {
     if (rankOptions.value.length === 0) {
       await fetchRanks();
     }
-    if (userId) {      const res = await getUserRanks({ id_pengguna: userId });
+    if (userId) {
+      const res = await getUserRanks({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -284,14 +302,21 @@ async function loadData(userId) {
       const apiData = filteredData.map((d) => ({
         idpenggunapangkat: d.idpenggunapangkat,
         idpangkat: d.idpangkat,
-        tglmulai: d.tglmulai,
-        tglselesai: d.tglselesai,
-        status: d.status,
-        filesk: d.filesk,
-        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        tglmulai: d.tglmulaipangkat || d.tglmulai,
+        tglselesai: d.tglselesaipangkat || d.tglselesai,
+        status: d.statuspangkat || d.status,
+        filesk: d.fileskpangkat || d.filesk,
+        filesk_preview:
+          d.fileskpangkat || d.filesk
+            ? (d.fileskpangkat || d.filesk).split("/").pop()
+            : "",
         _tempId: Date.now() + Math.random(),
       }));
-      pangkatList.value = apiData;
+
+      // Deduplicate by ID
+      const uniqueData = uniqueByKey(apiData, "idpenggunapangkat");
+
+      pangkatList.value = uniqueData;
       formErrors.value = pangkatList.value.map(() => ({}));
       emit("update:modelValue", { list: pangkatList.value });
     }

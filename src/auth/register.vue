@@ -12,7 +12,7 @@
                     class="img-fluid for-light"
                     :src="dynamicLogoUrl"
                     :alt="appName"
-                    style="width: 110px; height: 110px; object-fit: contain"
+                    style="max-height: 100px; width: auto; object-fit: contain"
                     @error="handleImageError"
                   />
 

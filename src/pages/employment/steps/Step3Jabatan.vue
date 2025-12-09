@@ -1,5 +1,5 @@
 <template>
-  <div class="step-jabatan">
+  <div class="step-jenjang">
     <div v-if="isLoading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -11,13 +11,13 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-briefcase me-2"></i>Riwayat Jabatan
+            <i class="fa fa-graduation-cap me-2"></i>Riwayat Jenjang
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat jabatan pegawai jika ada.
+            Tambahkan riwayat jenjang/tingkatan pegawai jika ada.
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addJabatan">
+        <button class="btn btn-primary btn-sm" @click="addJenjang">
           <i class="fa fa-plus me-1"></i> Tambah Data
         </button>
       </div>
@@ -34,19 +34,19 @@
       </div>
 
       <div
-        v-if="jabatanList.length === 0"
+        v-if="jenjangList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
       >
-        <i class="fa fa-briefcase text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data jabatan.</p>
-        <button class="btn btn-outline-primary btn-sm" @click="addJabatan">
-          <i class="fa fa-plus me-1"></i> Tambah Jabatan
+        <i class="fa fa-layer-group text-muted fa-2x mb-2"></i>
+        <p class="text-muted mb-2 small">Belum ada data jenjang jabatan.</p>
+        <button class="btn btn-outline-primary btn-sm" @click="addJenjang">
+          <i class="fa fa-plus me-1"></i> Tambah Jenjang
         </button>
       </div>
 
       <transition-group name="list" tag="div">
         <div
-          v-for="(item, index) in jabatanList"
+          v-for="(item, index) in jenjangList"
           :key="item._tempId"
           class="card mb-3 shadow-sm border-0"
         >
@@ -55,11 +55,11 @@
           >
             <h6 class="mb-0 fw-bold text-primary">
               <span class="badge bg-primary me-2">{{ index + 1 }}</span>
-              Data Jabatan
+              Data Jenjang
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
-              @click="removeJabatan(index)"
+              @click="removeJenjang(index)"
               title="Hapus data ini"
             >
               <i class="fa fa-trash"></i>
@@ -69,7 +69,7 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Jenjang Jabatan <span class="text-danger">*</span>
+                  Jenjang <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -78,13 +78,13 @@
                   required
                   @blur="validateField(index, 'idjenjang')"
                 >
-                  <option value="" disabled>Pilih Jenjang Jabatan</option>
+                  <option value="" disabled>Pilih Jenjang</option>
                   <option
-                    v-for="jenjang in positionLevelOptions"
-                    :key="jenjang.idjenjang"
-                    :value="jenjang.idjenjang"
+                    v-for="opt in levelOptions"
+                    :key="opt.idjenjang"
+                    :value="opt.idjenjang"
                   >
-                    {{ jenjang.namajenjang }}
+                    {{ opt.namajenjang }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
@@ -108,6 +108,7 @@
                   {{ getError(index, "tglmulai") }}
                 </div>
               </div>
+
               <div class="col-md-6">
                 <label class="form-label fw-semibold">Tanggal Selesai</label>
                 <input
@@ -115,9 +116,7 @@
                   class="form-control"
                   v-model="item.tglselesai"
                 />
-                <div class="form-text small">
-                  Kosongkan jika masih aktif menjabat.
-                </div>
+                <div class="form-text small">Kosongkan jika masih aktif.</div>
               </div>
 
               <div class="col-md-6">
@@ -210,13 +209,14 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import Swal from "sweetalert2";
+
+// === UPDATE IMPORT SESUAI PERMINTAAN ===
 import { getPositionLevels } from "@/services/referensi/positionLevels";
 import {
   getUserLevels,
   deleteUserLevel,
 } from "@/services/general/personnel/userLevels";
-import Swal from "sweetalert2";
-import * as yup from "yup";
 
 const props = defineProps({
   modelValue: {
@@ -234,15 +234,9 @@ const toast = useToast();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
-const positionLevelOptions = ref([]);
-const jabatanList = ref([]);
+const levelOptions = ref([]); // Menyimpan data dari positionLevels
+const jenjangList = ref([]); // Menyimpan data input user
 const formErrors = ref([]);
-
-// === Yup Validation Schema ===
-const validationSchema = yup.object().shape({
-  idjenjang: yup.string().required("Jenjang Jabatan wajib dipilih."),
-  tglmulai: yup.string().required("Tanggal Mulai wajib diisi."),
-});
 
 // === Helper Functions ===
 const isUrl = (string) => {
@@ -253,16 +247,17 @@ const isUrl = (string) => {
 
 // === Lifecycle ===
 onMounted(async () => {
-  await fetchPositionLevels();
+  // Load referensi terlebih dahulu
+  await fetchReferenceLevels();
 
   if (props.modelValue && Array.isArray(props.modelValue.list)) {
-    jabatanList.value = props.modelValue.list.map((item) => ({
+    jenjangList.value = props.modelValue.list.map((item) => ({
       ...item,
       _tempId: Date.now() + Math.random(),
     }));
-    formErrors.value = jabatanList.value.map(() => ({}));
+    formErrors.value = jenjangList.value.map(() => ({}));
   } else {
-    jabatanList.value = [];
+    jenjangList.value = [];
     formErrors.value = [];
   }
 
@@ -270,17 +265,61 @@ onMounted(async () => {
 });
 
 // === Methods ===
+
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
+    }
+    if (keyValue) {
+      seen.add(keyValue);
+    }
+    return true;
+  });
+}
+
+// Fungsi mengambil data referensi positionLevels
+async function fetchReferenceLevels() {
+  try {
+    const params = { page: 1, limit: 999, sort: "namajenjang", dir: "asc" };
+    const response = await getPositionLevels(params);
+
+    if (response.data && Array.isArray(response.data)) {
+      if (response.data[0] && response.data[0].data) {
+        levelOptions.value = response.data[0].data;
+      } else {
+        levelOptions.value = response.data;
+      }
+    } else if (response.data?.data && Array.isArray(response.data.data)) {
+      levelOptions.value = response.data.data;
+    } else {
+      levelOptions.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching position levels:", error);
+    toast.error("Gagal memuat data referensi jenjang jabatan.");
+  }
+}
+
+// Fungsi load data user-levels dari database
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    if (positionLevelOptions.value.length === 0) {
-      await fetchPositionLevels();
+    // Pastikan referensi sudah termuat
+    if (levelOptions.value.length === 0) {
+      await fetchReferenceLevels();
     }
 
     if (userId) {
       const res = await getUserLevels({ id_pengguna: userId });
 
       let rawData = [];
+      // Handle variasi respon backend
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
           rawData = res.data[0].data;
@@ -291,11 +330,17 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
+      console.log("[DEBUG] Step3 rawData count:", rawData.length);
+
+      // Filter berdasarkan idpengguna jika perlu
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
 
+      console.log("[DEBUG] Step3 filteredData count:", filteredData.length);
+
+      // Mapping sesuai struktur JSON yang diminta
       const apiData = filteredData.map((d) => ({
-        idpenggunajenjang: d.idpenggunajenjang,
-        idjenjang: d.idjenjang,
+        idpenggunajenjang: d.idpenggunajenjang, // Primary Key
+        idjenjang: d.idjenjang, // Foreign Key Jenjang
         tglmulai: d.tglmulai,
         tglselesai: d.tglselesai,
         status: d.status,
@@ -304,9 +349,18 @@ async function loadData(userId) {
         _tempId: Date.now() + Math.random(),
       }));
 
-      jabatanList.value = apiData;
-      formErrors.value = jabatanList.value.map(() => ({}));
-      emit("update:modelValue", { list: jabatanList.value });
+      // Deduplicate by ID
+      const uniqueData = uniqueByKey(apiData, "idpenggunajenjang");
+
+      console.log("[DEBUG] Step3 uniqueData count:", uniqueData.length);
+      console.log(
+        "[DEBUG] Step3 uniqueData IDs:",
+        uniqueData.map((d) => d.idpenggunajenjang)
+      );
+
+      jenjangList.value = uniqueData;
+      formErrors.value = jenjangList.value.map(() => ({}));
+      emit("update:modelValue", { list: jenjangList.value });
     }
 
     isDataLoaded.value = true;
@@ -317,30 +371,8 @@ async function loadData(userId) {
   }
 }
 
-async function fetchPositionLevels() {
-  try {
-    const params = { page: 1, limit: 999, sort: "namajenjang", dir: "asc" };
-    const response = await getPositionLevels(params);
-
-    if (response.data && Array.isArray(response.data)) {
-      if (response.data[0] && response.data[0].data) {
-        positionLevelOptions.value = response.data[0].data;
-      } else {
-        positionLevelOptions.value = response.data;
-      }
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      positionLevelOptions.value = response.data.data;
-    } else {
-      positionLevelOptions.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching position levels:", error);
-    toast.error("Gagal memuat data jenjang jabatan.");
-  }
-}
-
-function addJabatan() {
-  jabatanList.value.push({
+function addJenjang() {
+  jenjangList.value.push({
     _tempId: Date.now(),
     idjenjang: "",
     tglmulai: "",
@@ -353,14 +385,14 @@ function addJabatan() {
   formErrors.value.push({});
 }
 
-function removeJabatan(index) {
-  const item = jabatanList.value[index];
+function removeJenjang(index) {
+  const item = jenjangList.value[index];
 
   Swal.fire({
     title: "Hapus Data?",
     text: item.idpenggunajenjang
-      ? "Data jabatan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data jabatan ini akan dihapus.",
+      ? "Data jenjang ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      : "Data jenjang ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
@@ -373,16 +405,16 @@ function removeJabatan(index) {
       try {
         if (item.idpenggunajenjang) {
           await deleteUserLevel(item.idpenggunajenjang);
-          toast.success("Data jabatan berhasil dihapus dari database");
+          toast.success("Data jenjang berhasil dihapus dari database");
         } else {
-          toast.success("Data jabatan berhasil dihapus");
+          toast.success("Data jenjang berhasil dihapus");
         }
 
-        jabatanList.value.splice(index, 1);
+        jenjangList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
-        console.error("Error deleting jabatan:", error);
-        toast.error("Gagal menghapus data jabatan");
+        console.error("Error deleting user level:", error);
+        toast.error("Gagal menghapus data jenjang");
       }
     }
   });
@@ -397,17 +429,17 @@ function handleFileUpload(index, event) {
       return;
     }
 
-    jabatanList.value[index].filesk = file;
-    jabatanList.value[index].filesk_preview = file.name;
+    jenjangList.value[index].filesk = file;
+    jenjangList.value[index].filesk_preview = file.name;
   }
 }
 
 function handleStatusChange(index, isChecked) {
   const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
-  jabatanList.value[index].status = newStatus;
+  jenjangList.value[index].status = newStatus;
 
   if (newStatus === "Aktif") {
-    jabatanList.value.forEach((item, i) => {
+    jenjangList.value.forEach((item, i) => {
       if (i !== index) {
         item.status = "Tidak Aktif";
       }
@@ -415,57 +447,63 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
-// === Validation Logic (Yup-based) ===
+// === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-async function validateField(index, field) {
-  const item = jabatanList.value[index];
+function validateField(index, field) {
+  const item = jenjangList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
-  try {
-    await validationSchema.validateAt(field, item);
-    formErrors.value[index][field] = "";
-  } catch (error) {
-    if (error instanceof yup.ValidationError) {
-      formErrors.value[index][field] = error.message;
+  if (field === "idjenjang") {
+    if (!item.idjenjang) {
+      formErrors.value[index].idjenjang = "Jenjang wajib dipilih.";
+    } else {
+      formErrors.value[index].idjenjang = "";
+    }
+  }
+
+  if (field === "tglmulai") {
+    if (!item.tglmulai) {
+      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+    } else {
+      formErrors.value[index].tglmulai = "";
     }
   }
 }
 
-async function validate() {
-  if (jabatanList.value.length === 0) return true;
-
+function validate() {
   let isValid = true;
 
-  for (let index = 0; index < jabatanList.value.length; index++) {
-    const item = jabatanList.value[index];
+  if (jenjangList.value.length === 0) {
+    return true;
+  }
+
+  jenjangList.value.forEach((item, index) => {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
-    try {
-      await validationSchema.validate(item, { abortEarly: false });
-      Object.keys(validationSchema.fields).forEach((field) => {
-        formErrors.value[index][field] = "";
-      });
-    } catch (error) {
-      if (error instanceof yup.ValidationError) {
-        isValid = false;
-        error.inner.forEach((err) => {
-          if (err.path) {
-            formErrors.value[index][err.path] = err.message;
-          }
-        });
-      }
+    if (!item.idjenjang) {
+      formErrors.value[index].idjenjang = "Jenjang wajib dipilih.";
+      isValid = false;
+    } else {
+      formErrors.value[index].idjenjang = "";
     }
-  }
+
+    if (!item.tglmulai) {
+      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+      isValid = false;
+    } else {
+      formErrors.value[index].tglmulai = "";
+    }
+  });
 
   return isValid;
 }
 
 // === Sync & Watch ===
 watch(
-  jabatanList,
+  jenjangList,
   (newList) => {
     emit("update:modelValue", { list: newList });
     let isValid = true;
@@ -482,7 +520,7 @@ defineExpose({ validate, loadData });
 </script>
 
 <style scoped>
-.step-jabatan {
+.step-jenjang {
   padding: 0;
 }
 

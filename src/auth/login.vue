@@ -12,7 +12,7 @@
                     class="img-fluid for-light"
                     :src="dynamicLogoUrl"
                     :alt="appName"
-                    style="width: 110px; height: 110px; object-fit: contain"
+                    style="max-height: 100px; width: auto; object-fit: contain"
                     @error="handleImageError"
                   />
 
@@ -20,8 +20,10 @@
                     v-else-if="isLoadingLogo"
                     class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
                     style="
-                      width: 110px;
-                      height: 110px;
+                      min-height: 110px;
+                      max-height: 120px;
+                      width: auto;
+                      min-width: 110px;
                       border: 1px solid #dee2e6;
                     "
                   >
@@ -38,8 +40,10 @@
                     v-else
                     class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
                     style="
-                      width: 110px;
-                      height: 110px;
+                      min-height: 110px;
+                      max-height: 120px;
+                      width: auto;
+                      min-width: 110px;
                       border: 1px solid #dee2e6;
                     "
                   >

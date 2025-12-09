@@ -264,6 +264,24 @@ onMounted(async () => {
 });
 
 // === Methods ===
+
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
+    }
+    if (keyValue) {
+      seen.add(keyValue);
+    }
+    return true;
+  });
+}
+
 async function loadData(userId) {
   isLoading.value = true;
   try {
@@ -290,15 +308,21 @@ async function loadData(userId) {
       const apiData = filteredData.map((d) => ({
         idpenggunaunitkerja: d.idpenggunaunitkerja,
         idunitkerja: d.idunitkerja,
-        tglmulai: d.tglmulai,
-        tglselesai: d.tglselesai,
-        status: d.status,
-        filesk: d.filesk,
-        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        tglmulai: d.tglmulaiunitkerja || d.tglmulai,
+        tglselesai: d.tglselesaiunitkerja || d.tglselesai,
+        status: d.statusunitkerja || d.status,
+        filesk: d.fileskunitkerja || d.filesk,
+        filesk_preview:
+          d.fileskunitkerja || d.filesk
+            ? (d.fileskunitkerja || d.filesk).split("/").pop()
+            : "",
         _tempId: Date.now() + Math.random(),
       }));
 
-      unitKerjaList.value = apiData;
+      // Deduplicate by ID
+      const uniqueData = uniqueByKey(apiData, "idpenggunaunitkerja");
+
+      unitKerjaList.value = uniqueData;
       formErrors.value = unitKerjaList.value.map(() => ({}));
       emit("update:modelValue", { list: unitKerjaList.value });
     }
@@ -365,7 +389,6 @@ function removeUnitKerja(index) {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        // Jika ada ID, hapus dari database
         if (item.idpenggunaunitkerja) {
           await deleteUserWorkUnit(item.idpenggunaunitkerja);
           toast.success("Data unit kerja berhasil dihapus dari database");
@@ -373,7 +396,6 @@ function removeUnitKerja(index) {
           toast.success("Data unit kerja berhasil dihapus");
         }
 
-        // Hapus dari array lokal
         unitKerjaList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {

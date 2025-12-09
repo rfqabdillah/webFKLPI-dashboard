@@ -3,7 +3,12 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+        <button
+          type="button"
+          class="btn-close"
+          @click="closeModal"
+          aria-label="Close"
+        ></button>
       </div>
 
       <div class="modal-body">
@@ -20,7 +25,9 @@
           <i class="fa fa-exclamation-triangle fa-3x mb-3"></i>
           <h4>Terjadi Kesalahan</h4>
           <p>{{ error }}</p>
-          <small class="text-muted" v-if="debugMessage">Detail: {{ debugMessage }}</small>
+          <small class="text-muted" v-if="debugMessage"
+            >Detail: {{ debugMessage }}</small
+          >
         </div>
 
         <!-- Data Loaded -->
@@ -38,33 +45,35 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="closeModal">Tutup</button>
+        <button type="button" class="btn btn-secondary" @click="closeModal">
+          Tutup
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
-import { useToast } from 'vue-toastification';
+import { ref, watch, onMounted } from "vue";
+import { useToast } from "vue-toastification";
 
 const props = defineProps({
-  title: { type: String, default: 'Detail Data' },
+  title: { type: String, default: "Detail Data" },
   itemToView: { type: Object, required: true }, // data dari tabel
   apiDetailFn: { type: Function, required: true }, // fungsi async yang return detail
-  idKey: { type: String, default: 'id' } // nama field id
+  idKey: { type: String, default: "id" }, // nama field id
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close", "loaded"]);
 
 const isLoading = ref(false);
 const error = ref(null);
-const debugMessage = ref('');
+const debugMessage = ref("");
 const item = ref(null);
 const toast = useToast();
 
 function closeModal() {
-  emit('close');
+  emit("close");
 }
 
 function handleOverlayClick(e) {
@@ -80,23 +89,26 @@ async function fetchDetail() {
 
   isLoading.value = true;
   error.value = null;
-  debugMessage.value = '';
+  debugMessage.value = "";
   try {
     const res = await props.apiDetailFn(idValue);
     const data = res?.data?.[0]?.data?.[0];
     if (!data) {
-      error.value = 'Data detail tidak ditemukan.';
+      error.value = "Data detail tidak ditemukan.";
       debugMessage.value = JSON.stringify(res?.data);
       return;
     }
     item.value = data;
+    emit("loaded", data);
   } catch (err) {
     console.error(err);
-    error.value = err.message || 'Gagal memuat detail data.';
+    error.value = err.message || "Gagal memuat detail data.";
     if (err.response) {
-      debugMessage.value = `Status ${err.response.status}: ${JSON.stringify(err.response.data)}`;
+      debugMessage.value = `Status ${err.response.status}: ${JSON.stringify(
+        err.response.data
+      )}`;
     }
-    toast.error('Gagal memuat detail data.');
+    toast.error("Gagal memuat detail data.");
   } finally {
     isLoading.value = false;
   }
@@ -126,7 +138,7 @@ watch(() => props.itemToView, fetchDetail, { deep: true });
   width: 90%;
   max-width: 1200px;
   max-height: 90vh;
-  box-shadow: 0 5px 15px rgba(0,0,0,.5);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
 }

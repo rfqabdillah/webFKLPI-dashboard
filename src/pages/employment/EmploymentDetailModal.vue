@@ -5,6 +5,7 @@
     :api-detail-fn="getDetailUser"
     id-key="idpengguna"
     @close="$emit('close')"
+    @loaded="processDetailItem"
   >
     <template #detail="{ item }">
       <div class="text-center mb-4">
@@ -27,7 +28,7 @@
         </h2>
         <p class="text-muted">
           <i class="fa fa-id-badge me-1"></i>
-          {{ item.roles?.namalevel || "Level" }}
+          {{ item.roles?.[0]?.namalevel || "Level" }}
         </p>
         <span
           class="badge"
@@ -95,16 +96,22 @@
             <tbody>
               <tr
                 v-for="(uk, index) in riwayatUnitKerja"
-                :key="uk.idpenggunaunitkerja"
+                :key="uk.idpenggunaunitkerja || index"
               >
                 <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ uk["work-units"]?.namaunitkerja || "-" }}</td>
-                <td>{{ formatDate(uk.tglmulai) }}</td>
-                <td>{{ uk.tglselesai ? formatDate(uk.tglselesai) : "-" }}</td>
+                <td>{{ uk._refData?.namaunitkerja || "-" }}</td>
+                <td>{{ formatDate(uk.tglmulaiunitkerja) }}</td>
+                <td>
+                  {{
+                    uk.tglselesaiunitkerja
+                      ? formatDate(uk.tglselesaiunitkerja)
+                      : "-"
+                  }}
+                </td>
                 <td class="text-center">
                   <a
-                    v-if="uk.filesk"
-                    :href="uk.filesk"
+                    v-if="uk.fileskunitkerja"
+                    :href="uk.fileskunitkerja"
                     target="_blank"
                     class="btn btn-sm btn-outline-primary"
                   >
@@ -116,11 +123,11 @@
                   <span
                     class="badge"
                     :class="{
-                      'bg-success': uk.status === 'Aktif',
-                      'bg-secondary': uk.status !== 'Aktif',
+                      'bg-success': uk.statusunitkerja === 'Aktif',
+                      'bg-secondary': uk.statusunitkerja !== 'Aktif',
                     }"
                   >
-                    {{ uk.status || "-" }}
+                    {{ uk.statusunitkerja || "-" }}
                   </span>
                 </td>
               </tr>
@@ -150,16 +157,22 @@
             <tbody>
               <tr
                 v-for="(jab, index) in riwayatJabatan"
-                :key="jab.idpenggunajenjang"
+                :key="jab.idepnggunajenjang || index"
               >
                 <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ jab["position-levels"]?.namajenjang || "-" }}</td>
-                <td>{{ formatDate(jab.tglmulai) }}</td>
-                <td>{{ jab.tglselesai ? formatDate(jab.tglselesai) : "-" }}</td>
+                <td>{{ jab._refData?.namajenjang || "-" }}</td>
+                <td>{{ formatDate(jab.tglmulaijenjang) }}</td>
+                <td>
+                  {{
+                    jab.tglselesaijenjang
+                      ? formatDate(jab.tglselesaijenjang)
+                      : "-"
+                  }}
+                </td>
                 <td class="text-center">
                   <a
-                    v-if="jab.filesk"
-                    :href="jab.filesk"
+                    v-if="jab.fileskjenjang"
+                    :href="jab.fileskjenjang"
                     target="_blank"
                     class="btn btn-sm btn-outline-primary"
                   >
@@ -171,11 +184,11 @@
                   <span
                     class="badge"
                     :class="{
-                      'bg-success': jab.status === 'Aktif',
-                      'bg-secondary': jab.status !== 'Aktif',
+                      'bg-success': jab.statusjenjang === 'Aktif',
+                      'bg-secondary': jab.statusjenjang !== 'Aktif',
                     }"
                   >
-                    {{ jab.status || "-" }}
+                    {{ jab.statusjenjang || "-" }}
                   </span>
                 </td>
               </tr>
@@ -205,16 +218,22 @@
             <tbody>
               <tr
                 v-for="(pkt, index) in riwayatPangkat"
-                :key="pkt.idpenggunapangkat"
+                :key="pkt.idpenggunapangkat || index"
               >
                 <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ pkt.ranks?.pangkat || "-" }}</td>
-                <td>{{ formatDate(pkt.tglmulai) }}</td>
-                <td>{{ pkt.tglselesai ? formatDate(pkt.tglselesai) : "-" }}</td>
+                <td>{{ pkt._refData?.pangkat || "-" }}</td>
+                <td>{{ formatDate(pkt.tglmulaipangkat) }}</td>
+                <td>
+                  {{
+                    pkt.tglselesaipangkat
+                      ? formatDate(pkt.tglselesaipangkat)
+                      : "-"
+                  }}
+                </td>
                 <td class="text-center">
                   <a
-                    v-if="pkt.filesk"
-                    :href="pkt.filesk"
+                    v-if="pkt.fileskpangkat"
+                    :href="pkt.fileskpangkat"
                     target="_blank"
                     class="btn btn-sm btn-outline-primary"
                   >
@@ -259,11 +278,11 @@
             <tbody>
               <tr
                 v-for="(pdk, index) in riwayatPendidikan"
-                :key="pdk.idpenggunapendidikan"
+                :key="pdk.idpenggunapendidikan || index"
               >
                 <td class="text-center">{{ index + 1 }}</td>
                 <td>
-                  {{ pdk["education-levels"]?.namajenjangpendidikan || "-" }}
+                  {{ pdk._refData?.namajenjangpendidikan || "-" }}
                 </td>
                 <td>{{ pdk.programstudi || "-" }}</td>
                 <td>{{ pdk.namaperguruantinggi || "-" }}</td>
@@ -286,9 +305,6 @@
               <tr>
                 <th width="5%">No</th>
                 <th>Nama Pelatihan</th>
-                <th>Penyelenggara</th>
-                <th width="12%">Tanggal Mulai</th>
-                <th width="12%">Tanggal Selesai</th>
                 <th width="10%">Sertifikat</th>
                 <th width="10%">Status</th>
               </tr>
@@ -296,17 +312,14 @@
             <tbody>
               <tr
                 v-for="(plt, index) in riwayatPelatihan"
-                :key="plt.idpenggunapelatihan"
+                :key="plt.idpenggunapelatihan || index"
               >
                 <td class="text-center">{{ index + 1 }}</td>
                 <td>{{ plt.namapelatihan || "-" }}</td>
-                <td>{{ plt.namapenyelenggara || "-" }}</td>
-                <td>{{ formatDate(plt.tglmulai) }}</td>
-                <td>{{ plt.tglselesai ? formatDate(plt.tglselesai) : "-" }}</td>
                 <td class="text-center">
                   <a
-                    v-if="plt.filesertifikat"
-                    :href="plt.filesertifikat"
+                    v-if="plt.filesertifikatpelatihan"
+                    :href="plt.filesertifikatpelatihan"
                     target="_blank"
                     class="btn btn-sm btn-outline-primary"
                   >
@@ -352,11 +365,11 @@
             <tbody>
               <tr
                 v-for="(prs, index) in riwayatPrestasi"
-                :key="prs.idpenggunaprestasi"
+                :key="prs.idpenggunaprestasi || index"
               >
                 <td class="text-center">{{ index + 1 }}</td>
                 <td>{{ prs.namaprestasi || "-" }}</td>
-                <td>{{ prs.scales?.namaskala || "-" }}</td>
+                <td>{{ prs._refData?.namaskala || "-" }}</td>
                 <td>{{ prs.namapenyelenggara || "-" }}</td>
                 <td class="text-center">
                   <a
@@ -373,11 +386,11 @@
                   <span
                     class="badge"
                     :class="{
-                      'bg-success': prs.status === 'Aktif',
-                      'bg-secondary': prs.status !== 'Aktif',
+                      'bg-success': prs.statusprestasi === 'Aktif',
+                      'bg-secondary': prs.statusprestasi !== 'Aktif',
                     }"
                   >
-                    {{ prs.status || "-" }}
+                    {{ prs.statusprestasi || "-" }}
                   </span>
                 </td>
               </tr>
@@ -424,12 +437,6 @@
 import { ref, watch } from "vue";
 import BaseDetailModal from "@/components/base/BaseDetailModal.vue";
 import { getDetailUser } from "@/services/referensi/users";
-import { getUserWorkUnits } from "@/services/general/personnel/userWorkUnits";
-import { getUserLevels } from "@/services/general/personnel/userLevels";
-import { getUserRanks } from "@/services/general/personnel/userRanks";
-import { getUserEducations } from "@/services/general/personnel/userEducation";
-import { getUserTrainings } from "@/services/general/personnel/userTrainings";
-import { getUserAchievements } from "@/services/general/personnel/userAchievments";
 import { formatDate } from "@/utils/formatDate";
 
 const props = defineProps({
@@ -448,65 +455,135 @@ const riwayatPangkat = ref([]);
 const riwayatPendidikan = ref([]);
 const riwayatPelatihan = ref([]);
 const riwayatPrestasi = ref([]);
+const detailItem = ref(null);
 
-watch(
-  () => props.itemToView,
-  async (newItem) => {
-    if (newItem && newItem.idpengguna) {
-      await loadAllRiwayat(newItem.idpengguna);
+// === Helper Functions ===
+
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  if (!Array.isArray(array)) return [];
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
     }
-  },
-  { immediate: true }
-);
-
-async function loadAllRiwayat(userId) {
-  try {
-    const ukRes = await getUserWorkUnits({ id_pengguna: userId });
-    riwayatUnitKerja.value = extractData(ukRes).filter(
-      (d) => d.idpengguna === userId
-    );
-
-    const jabRes = await getUserLevels({ id_pengguna: userId });
-    riwayatJabatan.value = extractData(jabRes).filter(
-      (d) => d.idpengguna === userId
-    );
-
-    const pktRes = await getUserRanks({ id_pengguna: userId });
-    riwayatPangkat.value = extractData(pktRes).filter(
-      (d) => d.idpengguna === userId
-    );
-
-    const pdkRes = await getUserEducations({ id_pengguna: userId });
-    riwayatPendidikan.value = extractData(pdkRes).filter(
-      (d) => d.idpengguna === userId
-    );
-
-    const pltRes = await getUserTrainings({ id_pengguna: userId });
-    riwayatPelatihan.value = extractData(pltRes).filter(
-      (d) => d.idpengguna === userId
-    );
-
-    const prsRes = await getUserAchievements({ id_pengguna: userId });
-    riwayatPrestasi.value = extractData(prsRes).filter(
-      (d) => d.idpengguna === userId
-    );
-  } catch (error) {
-    console.error("Error loading riwayat:", error);
-  }
+    if (keyValue) seen.add(keyValue);
+    return true;
+  });
 }
 
-function extractData(response) {
-  let rawData = [];
-  if (Array.isArray(response.data)) {
-    if (response.data[0] && response.data[0].data) {
-      rawData = response.data[0].data;
-    } else if (response.data.length > 0) {
-      rawData = response.data;
-    }
-  } else if (response.data && response.data.data) {
-    rawData = response.data.data;
+/**
+ * Combine user relation data with reference data
+ * e.g., combine user-work-units with work-units by matching idunitkerja
+ */
+function combineRelationData(
+  userRelations,
+  referenceData,
+  userKey,
+  refKey,
+  refIdKey
+) {
+  if (!Array.isArray(userRelations) || !Array.isArray(referenceData)) {
+    return [];
   }
-  return rawData;
+
+  // Remove duplicates from user relations
+  const uniqueUserRelations = uniqueByKey(userRelations, userKey);
+
+  // Create a map of reference data by ID
+  const refMap = new Map();
+  referenceData.forEach((item, index) => {
+    if (item[refIdKey] && !refMap.has(item[refIdKey])) {
+      refMap.set(item[refIdKey], item);
+    }
+  });
+
+  // Combine data
+  return uniqueUserRelations.map((relation, index) => {
+    const refId = relation[refKey];
+    const refData = refMap.get(refId);
+    return {
+      ...relation,
+      _refData: refData || null,
+      _index: index,
+    };
+  });
+}
+
+/**
+ * Process detail item and extract riwayat data
+ */
+function processDetailItem(item) {
+  if (!item) return;
+
+  detailItem.value = item;
+
+  // Process Riwayat Unit Kerja
+  const userWorkUnits = item["user-work-units"] || [];
+  const workUnits = item["work-units"] || [];
+  riwayatUnitKerja.value = combineRelationData(
+    userWorkUnits,
+    workUnits,
+    "idpenggunaunitkerja",
+    "idunitkerja",
+    "idunitkerja"
+  );
+
+  // Process Riwayat Jabatan (user-levels with level)
+  const userLevels = item["user-levels"] || [];
+  const levels = item["level"] || [];
+  riwayatJabatan.value = combineRelationData(
+    userLevels,
+    levels,
+    "idepnggunajenjang",
+    "idjenjang",
+    "idjenjang"
+  );
+
+  // Process Riwayat Pangkat (user-ranks with ranks)
+  const userRanks = item["user-ranks"] || [];
+  const ranks = item["ranks"] || [];
+  riwayatPangkat.value = combineRelationData(
+    userRanks,
+    ranks,
+    "idpenggunapangkat",
+    "idpangkat",
+    "idpangkat"
+  );
+
+  // Process Riwayat Pendidikan (user-educations with education-levels)
+  const userEducations = item["user-educations"] || [];
+  const educationLevels = item["education-levels"] || [];
+  riwayatPendidikan.value = combineRelationData(
+    userEducations,
+    educationLevels,
+    "idpenggunapendidikan",
+    "id_jenjang_pendidikan",
+    "idjenjangpendidikan"
+  );
+
+  // Process Riwayat Pelatihan
+  const userTrainings = item["user-trainings"] || [];
+  riwayatPelatihan.value = uniqueByKey(
+    userTrainings,
+    "idpenggunapelatihan"
+  ).filter(
+    (t) => t.namapelatihan // Only include trainings with a name
+  );
+
+  // Process Riwayat Prestasi (user-achievments with scale)
+  const userAchievements = item["user-achievments"] || [];
+  const scales = item["scale"] || [];
+  riwayatPrestasi.value = combineRelationData(
+    userAchievements,
+    scales,
+    "idpenggunaprestasi",
+    "idskala",
+    "idskala"
+  );
 }
 </script>
 

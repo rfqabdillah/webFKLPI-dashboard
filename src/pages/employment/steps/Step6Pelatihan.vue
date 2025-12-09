@@ -278,10 +278,28 @@ onMounted(() => {
   emit("validation-change", true);
 });
 
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
+    }
+    if (keyValue) {
+      seen.add(keyValue);
+    }
+    return true;
+  });
+}
+
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    if (userId) {      const res = await getUserTrainings({ id_pengguna: userId });
+    if (userId) {
+      const res = await getUserTrainings({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -306,7 +324,11 @@ async function loadData(userId) {
           : "",
         _tempId: Date.now() + Math.random(),
       }));
-      pelatihanList.value = apiData;
+
+      // Deduplicate by ID
+      const uniqueData = uniqueByKey(apiData, "idpenggunapelatihan");
+
+      pelatihanList.value = uniqueData;
       formErrors.value = pelatihanList.value.map(() => ({}));
       emit("update:modelValue", { list: pelatihanList.value });
     }
@@ -352,7 +374,7 @@ function removePelatihan(index) {
       try {
         if (item.idpenggunapelatihan) {
           await deleteUserTraining(item.idpenggunapelatihan);
-          toast.success("Data pelatihan berhasil dihapus dari database");
+          toast.success("Data pelatihan berhasil dihapus");
         } else {
           toast.success("Data pelatihan berhasil dihapus");
         }

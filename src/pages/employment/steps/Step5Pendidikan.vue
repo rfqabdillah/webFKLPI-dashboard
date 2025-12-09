@@ -211,13 +211,31 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
+/**
+ * Remove duplicates from array based on a key
+ */
+function uniqueByKey(array, key) {
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
+    if (keyValue && seen.has(keyValue)) {
+      return false;
+    }
+    if (keyValue) {
+      seen.add(keyValue);
+    }
+    return true;
+  });
+}
+
 async function loadData(userId) {
   isLoading.value = true;
   try {
     if (educationLevelOptions.value.length === 0) {
       await fetchEducationLevels();
     }
-    if (userId) {      const res = await getUserEducations({ id_pengguna: userId });
+    if (userId) {
+      const res = await getUserEducations({ id_pengguna: userId });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -231,13 +249,17 @@ async function loadData(userId) {
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
       const apiData = filteredData.map((d) => ({
         idpenggunapendidikan: d.idpenggunapendidikan,
-        idjenjangpendidikan: d.idjenjangpendidikan,
+        idjenjangpendidikan: d.idjenjangpendidikan || d.id_jenjang_pendidikan,
         programstudi: d.programstudi,
         namaperguruantinggi: d.namaperguruantinggi,
         tahunlulus: d.tahunlulus,
         _tempId: Date.now() + Math.random(),
       }));
-      pendidikanList.value = apiData;
+
+      // Deduplicate by ID
+      const uniqueData = uniqueByKey(apiData, "idpenggunapendidikan");
+
+      pendidikanList.value = uniqueData;
       formErrors.value = pendidikanList.value.map(() => ({}));
       emit("update:modelValue", { list: pendidikanList.value });
     }

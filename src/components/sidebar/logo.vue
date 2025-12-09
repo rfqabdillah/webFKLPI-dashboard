@@ -5,14 +5,20 @@
       class="img-fluid for-light"
       :src="dynamicLogoUrl"
       :alt="appName"
-      style="width: 45px; height: 45px; object-fit: contain"
+      style="max-height: 55px; width: auto; object-fit: contain"
       @error="handleImageError"
     />
 
     <div
       v-else-if="isLoadingLogo"
       class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm"
-      style="width: 45px; height: 45px; border: 1px solid #dee2e6"
+      style="
+        min-height: 45px;
+        max-height: 55px;
+        width: auto;
+        min-width: 45px;
+        border: 1px solid #dee2e6;
+      "
     >
       <div
         class="spinner-border text-primary"
@@ -26,7 +32,13 @@
     <div
       v-else
       class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm"
-      style="width: 45px; height: 45px; border: 1px solid #dee2e6"
+      style="
+        min-height: 45px;
+        max-height: 55px;
+        width: auto;
+        min-width: 45px;
+        border: 1px solid #dee2e6;
+      "
     >
       <span
         class="fw-bold text-secondary"
