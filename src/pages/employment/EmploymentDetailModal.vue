@@ -55,6 +55,8 @@
               <dd>{{ item.nip || "-" }}</dd>
               <dt>No. Karpeg</dt>
               <dd>{{ item.no_karpeg || "-" }}</dd>
+              <dt>Jenis Kelamin</dt>
+              <dd>{{ item.genders?.[0]?.namajeniskelamin || "-" }}</dd>
               <dt>Tempat Lahir</dt>
               <dd>{{ item.tempatlahir || "-" }}</dd>
               <dt>Tanggal Lahir</dt>
@@ -72,6 +74,8 @@
               <dd>{{ item.alamat || "-" }}</dd>
               <dt>Kabupaten</dt>
               <dd>{{ item.kodekabupaten || "-" }}</dd>
+              <dt>Jenis Pengguna</dt>
+              <dd>{{ item["user-types"]?.[0]?.namajenispengguna || "-" }}</dd>
             </dl>
           </div>
         </div>
@@ -245,11 +249,11 @@
                   <span
                     class="badge"
                     :class="{
-                      'bg-success': pkt.status === 'Aktif',
-                      'bg-secondary': pkt.status !== 'Aktif',
+                      'bg-success': pkt.statuspangkat === 'Aktif',
+                      'bg-secondary': pkt.statuspangkat !== 'Aktif',
                     }"
                   >
-                    {{ pkt.status || "-" }}
+                    {{ pkt.statuspangkat || "-" }}
                   </span>
                 </td>
               </tr>

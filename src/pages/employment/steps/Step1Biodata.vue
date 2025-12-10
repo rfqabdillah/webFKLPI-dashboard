@@ -56,6 +56,8 @@ const isPhotoRemoved = ref(false);
 const formData = reactive({
   idpengguna: null,
   idlevel: "",
+  idjeniskelamin: "",
+  idjenispengguna: "",
   email: "",
   nama: "",
   telp: "",
@@ -174,6 +176,8 @@ function populateFormData(data) {
   formData.alamat = data.alamat || "";
   formData.foto = data.foto || null;
   formData.status = data.status || "Aktif";
+  formData.idjeniskelamin = data.idjeniskelamin || "";
+  formData.idjenispengguna = data.idjenispengguna || "";
 
   if (data.roles && data.roles.idlevel) {
     formData.idlevel = String(data.roles.idlevel);

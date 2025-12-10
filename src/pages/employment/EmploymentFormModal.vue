@@ -227,6 +227,8 @@ const wizardState = reactive({
     userData: {
       idpengguna: null,
       idlevel: "",
+      idjeniskelamin: "",
+      idjenispengguna: "",
       email: "",
       nama: "",
       telp: "",
@@ -465,6 +467,8 @@ function createBiodataFormData() {
   const allowedFields = [
     "idpengguna",
     "idlevel",
+    "idjeniskelamin",
+    "idjenispengguna",
     "email",
     "nama",
     "telp",

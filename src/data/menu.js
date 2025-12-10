@@ -187,6 +187,18 @@ export var menuItems = {
           "type": "link",
           "active":false
         },
+        {
+          "path": "/general/genders",
+          "title": "Jenis Kelamin",
+          "type": "link",
+          "active":false
+        },
+        {
+          "path": "/general/user-types",
+          "title": "Jenis Pengguna",
+          "type": "link",
+          "active":false
+        },
       ]
     },
     {

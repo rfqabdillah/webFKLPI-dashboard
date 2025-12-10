@@ -23,12 +23,13 @@
           class="foto rounded-circle"
           style="width: 150px; height: 150px; object-fit: cover"
         />
-        <h2 class="nama-barang mt-3">
+        <h2 class="nama-lengkap mt-3">
           {{ [item.gelardepan, item.nama].filter(Boolean).join(" ")
           }}{{ item.gelarbelakang ? ", " + item.gelarbelakang : "" }}
         </h2>
-        <h5 class="nama-barang-en text-muted fw-normal">
-          {{ item.roles?.namalevel || "Role tidak diketahui" }}
+        <h5 class="nama-lengkap-en text-muted fw-normal">
+          <i class="fa fa-id-badge me-1"></i>
+          {{ item.roles?.[0]?.namalevel || "Role tidak diketahui" }}
         </h5>
         <span
           class="badge mt-2"
@@ -53,6 +54,9 @@
 
               <dt>No. Karpeg</dt>
               <dd>{{ item.no_karpeg || "-" }}</dd>
+
+              <dt>Jenis Kelamin</dt>
+              <dd>{{ item.genders?.[0]?.namajeniskelamin || "-" }}</dd>
             </dl>
           </div>
 
@@ -65,13 +69,8 @@
                 }}{{ formatDate(item.tanggallahir) || "-" }}
               </dd>
 
-              <!-- <dt>Kejuruan</dt>
-              <dd>{{ item["vocational-fields"]?.namakejuruan || "-" }}</dd>
-
-              <dt>Sub Kejuruan</dt>
-              <dd>
-                {{ item["vocational-subfields"]?.namasubkejuruan || "-" }}
-              </dd> -->
+              <dt>Jenis Pengguna</dt>
+              <dd>{{ item["user-types"]?.[0]?.namajenispengguna || "-" }}</dd>
             </dl>
           </div>
         </div>
@@ -145,20 +144,14 @@ defineEmits(["close"]);
   object-fit: contain;
   border-radius: 6px;
 }
-.nama-barang {
+.nama-lengkap {
   font-weight: 600;
   color: #333;
   margin-bottom: 0.25rem;
 }
-.nama-barang-en {
+.nama-lengkap-en {
   font-size: 1.1rem;
-  font-style: italic;
   margin-top: 0;
-}
-.merk {
-  color: #6c757d;
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
 }
 .detail-section {
   margin-top: 1rem;

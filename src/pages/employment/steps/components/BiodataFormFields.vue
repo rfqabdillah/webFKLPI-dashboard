@@ -157,6 +157,46 @@
       </div>
 
       <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Jenis Kelamin</label>
+        <select
+          class="form-select"
+          v-model="formData.idjeniskelamin"
+          :disabled="gendersLoading || isLoading"
+        >
+          <option value="">
+            {{ gendersLoading ? "Memuat..." : "Pilih Jenis Kelamin" }}
+          </option>
+          <option
+            v-for="gender in genderOptions"
+            :key="gender.idjeniskelamin"
+            :value="gender.idjeniskelamin"
+          >
+            {{ gender.namajeniskelamin }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Jenis Pengguna</label>
+        <select
+          class="form-select"
+          v-model="formData.idjenispengguna"
+          :disabled="userTypesLoading || isLoading"
+        >
+          <option value="">
+            {{ userTypesLoading ? "Memuat..." : "Pilih Jenis Pengguna" }}
+          </option>
+          <option
+            v-for="userType in userTypeOptions"
+            :key="userType.idjenispengguna"
+            :value="userType.idjenispengguna"
+          >
+            {{ userType.namajenispengguna }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-6 mb-3">
         <label class="form-label fw-semibold d-block">Status Akun</label>
         <div class="form-check form-switch mt-2">
           <input
@@ -301,6 +341,8 @@
 import { ref, reactive, watch, onMounted } from "vue";
 import { getRoles } from "@/services/referensi/roles";
 import { getRegions } from "@/services/referensi/regions";
+import { getGenders } from "@/services/referensi/genders";
+import { getUserTypes } from "@/services/referensi/userTypes";
 import { compressImage } from "@/utils/imageCompressor";
 import { useToast } from "vue-toastification";
 import * as yup from "yup";
@@ -331,9 +373,13 @@ const toast = useToast();
 const formData = reactive(props.modelValue);
 const formErrors = reactive({});
 const roleOptions = ref([]);
+const genderOptions = ref([]);
+const userTypeOptions = ref([]);
 const provinceOptions = ref([]);
 const kabupatenOptions = ref([]);
 const rolesLoading = ref(false);
+const gendersLoading = ref(false);
+const userTypesLoading = ref(false);
 const regionsLoading = ref(false);
 const kabupatenLoading = ref(false);
 const photoPreviewUrl = ref(null);
@@ -377,6 +423,8 @@ watch(
 // Lifecycle
 onMounted(() => {
   fetchRoles();
+  fetchGenders();
+  fetchUserTypes();
   fetchProvinces();
 
   // Set photo preview if exists
@@ -401,6 +449,43 @@ async function fetchRoles() {
     toast.error("Gagal memuat daftar level/role");
   } finally {
     rolesLoading.value = false;
+  }
+}
+
+async function fetchGenders() {
+  gendersLoading.value = true;
+  try {
+    const response = await getGenders({
+      page: 1,
+      limit: 999,
+      sort: "namajeniskelamin",
+      dir: "asc",
+    });
+    genderOptions.value = response.data?.[0]?.data || response.data?.data || [];
+  } catch (error) {
+    console.error(error);
+    toast.error("Gagal memuat daftar jenis kelamin");
+  } finally {
+    gendersLoading.value = false;
+  }
+}
+
+async function fetchUserTypes() {
+  userTypesLoading.value = true;
+  try {
+    const response = await getUserTypes({
+      page: 1,
+      limit: 999,
+      sort: "namajenispengguna",
+      dir: "asc",
+    });
+    userTypeOptions.value =
+      response.data?.[0]?.data || response.data?.data || [];
+  } catch (error) {
+    console.error(error);
+    toast.error("Gagal memuat daftar jenis pengguna");
+  } finally {
+    userTypesLoading.value = false;
   }
 }
 

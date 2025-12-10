@@ -60,7 +60,10 @@
     </template>
 
     <template #cell(namalevel)="{ item }">
-      {{ item.roles?.namalevel || "-" }}
+      <span v-if="item['roles'] && item['roles'].length > 0">
+        {{ item["roles"][0]?.namalevel }}
+      </span>
+      <span v-else class="text-muted">-</span>
     </template>
 
     <!-- <template #cell(namakejuruan)="{ item }">

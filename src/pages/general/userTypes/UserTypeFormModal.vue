@@ -9,20 +9,20 @@
       @submit.prevent="submitForm"
       novalidate
       :class="{ 'was-validated': wasValidated }"
-      id="agendaCategoryForm"
+      id="userTypeForm"
     >
       <div class="mb-3">
-        <label class="form-label fw-semibold">Nama Jenis Dokumen</label>
+        <label class="form-label fw-semibold">Nama Jenis Pengguna</label>
         <input
           type="text"
           class="form-control"
-          v-model="formData.namajenisdokumen"
-          :class="{ 'is-invalid': formErrors.namajenisdokumen }"
-          placeholder="Masukkan nama jenis dokumen"
+          v-model="formData.namajenispengguna"
+          :class="{ 'is-invalid': formErrors.namajenispengguna }"
+          placeholder="Masukkan nama jenis pengguna"
           required
         />
         <div class="invalid-feedback">
-          {{ formErrors.namajenisdokumen }}
+          {{ formErrors.namajenispengguna }}
         </div>
       </div>
 
@@ -35,10 +35,7 @@
 
 <script setup>
 import BaseFormModal from "@/components/base/BaseFormModal.vue";
-import {
-  addDocumentType,
-  updateDocumentType,
-} from "@/services/general/website/documentTypes/documentTypes";
+import { addUserType, updateUserType } from "@/services/referensi/userTypes";
 import { reactive, ref, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
 import * as yup from "yup";
@@ -53,11 +50,11 @@ const toast = useToast();
 
 // === State ===
 const formData = reactive({
-  namajenisdokumen: "",
+  namajenispengguna: "",
 });
 
 const formErrors = reactive({
-  namajenisdokumen: "",
+  namajenispengguna: "",
 });
 
 const isLoading = ref(false);
@@ -66,7 +63,7 @@ const wasValidated = ref(false);
 
 // === Validation Schema ===
 const validationSchema = yup.object().shape({
-  namajenisdokumen: yup.string().required("Nama jenis dokumen wajib diisi."),
+  namajenispengguna: yup.string().required("Nama jenis pengguna wajib diisi."),
 });
 
 // === Computed ===
@@ -86,24 +83,13 @@ watch(
     errorMessage.value = null;
 
     if (newData) {
-      formData.namajenisdokumen = newData.namajenisdokumen;
+      formData.namajenispengguna = newData.namajenispengguna;
     } else {
-      formData.namajenisdokumen = "";
+      formData.namajenispengguna = "";
     }
   },
   { immediate: true, deep: true }
 );
-
-function slugify(text) {
-  if (!text) return "";
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "")
-    .replace(/--+/g, "-");
-}
 
 // === Methods ===
 function closeModal() {
@@ -142,16 +128,16 @@ async function submitForm() {
   errorMessage.value = null;
 
   const data = new FormData();
-  data.append("record[namajenisdokumen]", formData.namajenisdokumen);
+  data.append("record[namajenispengguna]", formData.namajenispengguna);
 
   try {
     if (isEditMode.value) {
-      const fieldId = props.fieldToEdit.idjenisdokumen;
+      const fieldId = props.fieldToEdit.idjenispengguna;
       data.append("_method", "PUT");
-      await updateDocumentType(fieldId, data);
+      await updateUserType(fieldId, data);
       toast.success(`Data ${props.entityName} berhasil diperbarui`);
     } else {
-      await addDocumentType(data);
+      await addUserType(data);
       toast.success(`Data ${props.entityName} berhasil ditambah`);
     }
 
