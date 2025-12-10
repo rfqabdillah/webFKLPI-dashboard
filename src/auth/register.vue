@@ -168,7 +168,7 @@
                   </div>
                   <p class="mt-4 mb-0 text-center">
                     Sudah punya akun?<router-link to="/auth" class="ms-2"
-                      >Login</router-link
+                      >Masuk Sekarang</router-link
                     >
                   </p>
                 </Form>

@@ -27,8 +27,9 @@ import IndexContacts from "@/pages/settings/contacts/index.vue";
 
 // Mulai Referensi
 import IndexUsers from "@/pages/general/user/index.vue";
-import IndexUsersProfile from "@/pages/general/userProfile/userProfile.vue";
 import IndexRegions from "@/pages/general/regions/index.vue";
+import IndexGenders from "@/pages/general/genders/index.vue";
+import IndexUserTypes from "@/pages/general/userTypes/index.vue";
 
 import IndexVocationalFields from "@/pages/personnel/vocationalFields/index.vue";
 import IndexVocationalSubfields from "@/pages/personnel/vocationalSubfields/index.vue";
@@ -250,6 +251,24 @@ const routes =[
         ]
       },
       {
+        path: '/my-profile',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "MyProfile",
+            component: IndexUserProfile,
+            meta: {
+              title: "Profil Saya",
+            },
+          },
+        ]
+      },
+
+      {
         path: '/general',
         component: Body,
         meta: {
@@ -265,19 +284,27 @@ const routes =[
             },
           },
           {
-            path: "user-profile",
-            name: "General_user_profile",
-            component: IndexUserProfile,
-            meta: {
-              title: "Profil Pengguna",
-            },
-          },
-          {
             path: "regions",
             name: "General_regions",
             component: IndexRegions,
             meta: {
               title: "Wilayah",
+            },
+          },
+          {
+            path: "genders",
+            name: "General_genders",
+            component: IndexGenders,
+            meta: {
+              title: "Jenis Kelamin",
+            },
+          },
+          {
+            path: "user-types",
+            name: "General_userTypes",
+            component: IndexUserTypes,
+            meta: {
+              title: "Jenis Pengguna",
             },
           },
         ]

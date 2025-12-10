@@ -14,21 +14,26 @@
           alt="Foto Pengguna"
           class="foto rounded-circle"
           style="width: 150px; height: 150px; object-fit: cover"
-          onerror="this.src='https://placehold.co/150/EBF4FF/7F9CF5?text=Foto'"
+          @error="(e) => (e.target.style.display = 'none')"
         />
-        <img
+        <div
           v-else
-          src="https://placehold.co/150/EBF4FF/7F9CF5?text=Foto"
-          alt="Foto Default"
-          class="foto rounded-circle"
-          style="width: 150px; height: 150px; object-fit: cover"
-        />
-        <h2 class="nama-barang mt-3">
+          class="foto rounded-circle d-inline-flex align-items-center justify-content-center text-white fw-bold"
+          :style="{
+            backgroundColor: getRandomColor(item.nama),
+            width: '150px',
+            height: '150px',
+          }"
+        >
+          <span style="font-size: 3rem">{{ getInitials(item.nama) }}</span>
+        </div>
+        <h2 class="nama-lengkap mt-3">
           {{ [item.gelardepan, item.nama].filter(Boolean).join(" ")
           }}{{ item.gelarbelakang ? ", " + item.gelarbelakang : "" }}
         </h2>
-        <h5 class="nama-barang-en text-muted fw-normal">
-          {{ item.roles?.namalevel || "Role tidak diketahui" }}
+        <h5 class="nama-lengkap-en text-muted fw-normal">
+          <i class="fa fa-id-badge me-1"></i>
+          {{ item.roles?.[0]?.namalevel || "Role tidak diketahui" }}
         </h5>
         <span
           class="badge mt-2"
@@ -53,6 +58,9 @@
 
               <dt>No. Karpeg</dt>
               <dd>{{ item.no_karpeg || "-" }}</dd>
+
+              <dt>Jenis Kelamin</dt>
+              <dd>{{ item.genders?.[0]?.namajeniskelamin || "-" }}</dd>
             </dl>
           </div>
 
@@ -65,13 +73,8 @@
                 }}{{ formatDate(item.tanggallahir) || "-" }}
               </dd>
 
-              <!-- <dt>Kejuruan</dt>
-              <dd>{{ item["vocational-fields"]?.namakejuruan || "-" }}</dd>
-
-              <dt>Sub Kejuruan</dt>
-              <dd>
-                {{ item["vocational-subfields"]?.namasubkejuruan || "-" }}
-              </dd> -->
+              <dt>Jenis Pengguna</dt>
+              <dd>{{ item["user-types"]?.[0]?.namajenispengguna || "-" }}</dd>
             </dl>
           </div>
         </div>
@@ -125,6 +128,7 @@
 import BaseDetailModal from "@/components/base/BaseDetailModal.vue";
 import { getDetailUser } from "@/services/referensi/users";
 import { formatDate } from "@/utils/formatDate";
+import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 defineProps({
   itemToView: {
@@ -145,20 +149,14 @@ defineEmits(["close"]);
   object-fit: contain;
   border-radius: 6px;
 }
-.nama-barang {
+.nama-lengkap {
   font-weight: 600;
   color: #333;
   margin-bottom: 0.25rem;
 }
-.nama-barang-en {
+.nama-lengkap-en {
   font-size: 1.1rem;
-  font-style: italic;
   margin-top: 0;
-}
-.merk {
-  color: #6c757d;
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
 }
 .detail-section {
   margin-top: 1rem;

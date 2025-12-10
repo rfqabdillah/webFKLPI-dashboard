@@ -145,8 +145,8 @@
         <hr class="my-3 text-muted opacity-25" />
       </div>
 
-      <!-- NIP -->
-      <div class="col-md-6">
+      <!-- NIP (ASN Only) -->
+      <div v-if="!isNonAsn" class="col-md-6">
         <div class="d-flex align-items-start">
           <div class="flex-shrink-0 me-3">
             <div
@@ -164,8 +164,8 @@
         <hr class="my-3 text-muted opacity-25" />
       </div>
 
-      <!-- No. Karpeg -->
-      <div class="col-md-6">
+      <!-- No. Karpeg (ASN Only) -->
+      <div v-if="!isNonAsn" class="col-md-6">
         <div class="d-flex align-items-start">
           <div class="flex-shrink-0 me-3">
             <div
@@ -178,6 +178,50 @@
           <div class="flex-grow-1">
             <label class="text-muted small fw-medium mb-1">No. Karpeg</label>
             <div class="fw-medium text-dark">{{ user.no_karpeg || "-" }}</div>
+          </div>
+        </div>
+        <hr class="my-3 text-muted opacity-25" />
+      </div>
+
+      <!-- Jenis Kelamin -->
+      <div class="col-md-6">
+        <div class="d-flex align-items-start">
+          <div class="flex-shrink-0 me-3">
+            <div
+              class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+              style="width: 50px; height: 50px"
+            >
+              <i class="fa fa-venus-mars fa-lg"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1">
+            <label class="text-muted small fw-medium mb-1">Jenis Kelamin</label>
+            <div class="fw-medium text-dark">
+              {{ user.genders?.[0]?.namajeniskelamin || "-" }}
+            </div>
+          </div>
+        </div>
+        <hr class="my-3 text-muted opacity-25" />
+      </div>
+
+      <!-- Jenis Pengguna -->
+      <div class="col-md-6">
+        <div class="d-flex align-items-start">
+          <div class="flex-shrink-0 me-3">
+            <div
+              class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+              style="width: 50px; height: 50px"
+            >
+              <i class="fa fa-user-tag fa-lg"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1">
+            <label class="text-muted small fw-medium mb-1"
+              >Jenis Pengguna</label
+            >
+            <div class="fw-medium text-dark">
+              {{ user["user-types"]?.[0]?.namajenispengguna || "-" }}
+            </div>
           </div>
         </div>
         <hr class="my-3 text-muted opacity-25" />
@@ -195,6 +239,10 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({}),
+  },
+  isNonAsn: {
+    type: Boolean,
+    default: false,
   },
 });
 

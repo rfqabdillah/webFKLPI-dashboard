@@ -119,6 +119,50 @@
         </div>
 
         <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Jenis Kelamin</label>
+          <select
+            class="form-select"
+            v-model="formData.idjeniskelamin"
+            :class="{ 'is-invalid': formErrors.idjeniskelamin }"
+            :disabled="gendersLoading"
+          >
+            <option value="">
+              {{ gendersLoading ? "Memuat..." : "Pilih Jenis Kelamin" }}
+            </option>
+            <option
+              v-for="gender in genderOptions"
+              :key="gender.idjeniskelamin"
+              :value="gender.idjeniskelamin"
+            >
+              {{ gender.namajeniskelamin }}
+            </option>
+          </select>
+          <div class="invalid-feedback">{{ formErrors.idjeniskelamin }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Jenis Pengguna</label>
+          <select
+            class="form-select"
+            v-model="formData.idjenispengguna"
+            :class="{ 'is-invalid': formErrors.idjenispengguna }"
+            :disabled="userTypesLoading"
+          >
+            <option value="">
+              {{ userTypesLoading ? "Memuat..." : "Pilih Jenis Pengguna" }}
+            </option>
+            <option
+              v-for="userType in userTypeOptions"
+              :key="userType.idjenispengguna"
+              :value="userType.idjenispengguna"
+            >
+              {{ userType.namajenispengguna }}
+            </option>
+          </select>
+          <div class="invalid-feedback">{{ formErrors.idjenispengguna }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
           <label class="form-label fw-semibold d-block">Status Akun</label>
           <div class="form-check form-switch mt-2">
             <input
@@ -294,6 +338,8 @@ import BaseFormModal from "@/components/base/BaseFormModal.vue";
 import { addUser, updateUser } from "@/services/referensi/users";
 import { getRoles } from "@/services/referensi/roles";
 import { getRegions } from "@/services/referensi/regions";
+import { getGenders } from "@/services/referensi/genders";
+import { getUserTypes } from "@/services/referensi/userTypes";
 import { reactive, ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useToast } from "vue-toastification";
 import * as yup from "yup";
@@ -309,6 +355,10 @@ const toast = useToast();
 // === State ===
 const roleOptions = ref([]);
 const rolesLoading = ref(false);
+const genderOptions = ref([]);
+const gendersLoading = ref(false);
+const userTypeOptions = ref([]);
+const userTypesLoading = ref(false);
 const provinceOptions = ref([]);
 const kabupatenOptions = ref([]);
 const regionsLoading = ref(false);
@@ -316,6 +366,8 @@ const kabupatenLoading = ref(false);
 
 const formData = reactive({
   idlevel: "",
+  idjeniskelamin: "",
+  idjenispengguna: "",
   email: "",
   // password: "",
   nama: "",
@@ -336,6 +388,8 @@ const formData = reactive({
 
 const formErrors = reactive({
   idlevel: "",
+  idjeniskelamin: "",
+  idjenispengguna: "",
   email: "",
   // password: "",
   nama: "",
@@ -383,6 +437,8 @@ const modalTitle = computed(() => {
 // === Lifecycle ===
 onMounted(() => {
   fetchRolesData();
+  fetchGenders();
+  fetchUserTypes();
   fetchProvinces();
 });
 
@@ -425,6 +481,72 @@ async function fetchRolesData() {
     toast.error("Gagal memuat daftar level/role.");
   } finally {
     rolesLoading.value = false;
+  }
+}
+
+async function fetchGenders() {
+  gendersLoading.value = true;
+  try {
+    const params = {
+      page: 1,
+      limit: 999,
+      sort: "namajeniskelamin",
+      dir: "asc",
+    };
+    const response = await getGenders(params);
+    if (response.data && Array.isArray(response.data)) {
+      if (response.data[0] && response.data[0].data) {
+        genderOptions.value = response.data[0].data;
+      } else {
+        genderOptions.value = response.data;
+      }
+    } else if (
+      response.data &&
+      response.data.data &&
+      Array.isArray(response.data.data)
+    ) {
+      genderOptions.value = response.data.data;
+    } else {
+      genderOptions.value = [];
+    }
+  } catch (error) {
+    console.error("Gagal memuat data jenis kelamin:", error);
+    toast.error("Gagal memuat daftar jenis kelamin.");
+  } finally {
+    gendersLoading.value = false;
+  }
+}
+
+async function fetchUserTypes() {
+  userTypesLoading.value = true;
+  try {
+    const params = {
+      page: 1,
+      limit: 999,
+      sort: "namajenispengguna",
+      dir: "asc",
+    };
+    const response = await getUserTypes(params);
+    if (response.data && Array.isArray(response.data)) {
+      if (response.data[0] && response.data[0].data) {
+        userTypeOptions.value = response.data[0].data;
+      } else {
+        userTypeOptions.value = response.data;
+      }
+    } else if (
+      response.data &&
+      response.data.data &&
+      Array.isArray(response.data.data)
+    ) {
+      userTypeOptions.value = response.data.data;
+    } else {
+      userTypeOptions.value = [];
+    }
+  } catch (error) {
+    console.error("Gagal memuat data jenis pengguna:", error);
+    toast.error("Gagal memuat daftar jenis pengguna.");
+  } finally {
+    userTypesLoading.value = false;
   }
 }
 
@@ -521,6 +643,8 @@ watch(
 
     if (newData) {
       formData.idlevel = newData.idlevel;
+      formData.idjeniskelamin = newData.idjeniskelamin || "";
+      formData.idjenispengguna = newData.idjenispengguna || "";
       formData.email = newData.email;
       // formData.password = "";
       formData.nama = newData.nama;
@@ -680,6 +804,8 @@ async function submitForm() {
   const data = new FormData();
 
   data.append("record[idlevel]", formData.idlevel);
+  data.append("record[idjeniskelamin]", formData.idjeniskelamin || "");
+  data.append("record[idjenispengguna]", formData.idjenispengguna || "");
   data.append("record[email]", formData.email);
   data.append("record[nama]", formData.nama);
   data.append("record[telp]", formData.telp || "");

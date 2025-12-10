@@ -128,7 +128,7 @@
                     Unit Kerja
                   </button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li v-if="!isNonAsn" class="nav-item" role="presentation">
                   <button
                     class="nav-link"
                     :class="{ active: activeTab === 'jabatan' }"
@@ -143,7 +143,7 @@
                     Jabatan
                   </button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li v-if="!isNonAsn" class="nav-item" role="presentation">
                   <button
                     class="nav-link"
                     :class="{ active: activeTab === 'pangkat' }"
@@ -212,7 +212,7 @@
                   :class="{ 'show active': activeTab === 'pribadi' }"
                   role="tabpanel"
                 >
-                  <PersonalDetailsTab :user="user" />
+                  <PersonalDetailsTab :user="user" :isNonAsn="isNonAsn" />
                 </div>
 
                 <!-- Tab Unit Kerja -->
@@ -226,6 +226,7 @@
 
                 <!-- Tab Jabatan -->
                 <div
+                  v-if="!isNonAsn"
                   class="tab-pane fade"
                   :class="{ 'show active': activeTab === 'jabatan' }"
                   role="tabpanel"
@@ -235,6 +236,7 @@
 
                 <!-- Tab Pangkat -->
                 <div
+                  v-if="!isNonAsn"
                   class="tab-pane fade"
                   :class="{ 'show active': activeTab === 'pangkat' }"
                   role="tabpanel"
@@ -317,12 +319,9 @@ const isEditModalOpen = ref(false);
 const isLoading = ref(true);
 
 const fullName = computed(() => {
-  const parts = [
-    user.value.gelar_depan || user.value.gelardepan,
-    user.value.nama,
-  ].filter(Boolean);
+  const parts = [user.value.gelardepan, user.value.nama].filter(Boolean);
   let name = parts.join(" ");
-  const gelarBelakang = user.value.gelar_belakang || user.value.gelarbelakang;
+  const gelarBelakang = user.value.gelarbelakang;
   if (gelarBelakang) {
     name += `, ${gelarBelakang}`;
   }
@@ -333,7 +332,6 @@ const isProfileIncomplete = computed(() => {
   const u = user.value;
   if (!u || Object.keys(u).length === 0) return false;
 
-  // Fields considered mandatory for a complete profile
   const checks = [
     u.nik,
     u.telp,
@@ -342,12 +340,16 @@ const isProfileIncomplete = computed(() => {
     u.tanggal_lahir || u.tanggallahir,
   ];
 
-  // Return true if any field is missing or empty
   return checks.some((val) => !val || val.toString().trim() === "");
 });
 
+// Check if user is Non-ASN based on user-types array
+const isNonAsn = computed(() => {
+  const userTypeName = user.value["user-types"]?.[0]?.namajenispengguna || "";
+  return userTypeName.toLowerCase().includes("non");
+});
+
 function handleImageError(e) {
-  // If image fails to load, clear the foto property so it falls back to initials
   user.value.foto = null;
 }
 
@@ -364,7 +366,6 @@ function handleSaveSuccessful() {
   fetchUserProfile();
 }
 
-// === API Fetchers ===
 async function fetchUserProfile() {
   isLoading.value = true;
   const userDataStr = localStorage.getItem("userData");
@@ -462,7 +463,8 @@ onMounted(() => {
   height: 200px;
   width: 100%;
   overflow: hidden;
-  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  background-color: #05e8ba;
+  background-image: linear-gradient(315deg, #05e8ba 0%, #087ee1 74%);
 }
 
 .profile-header {

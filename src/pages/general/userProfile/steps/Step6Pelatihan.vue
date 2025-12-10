@@ -299,7 +299,7 @@ async function loadData(userId) {
   isLoading.value = true;
   try {
     if (userId) {
-      const res = await getUserTrainings({ id_pengguna: userId });
+      const res = await getUserTrainings({ filter: `idpengguna=${userId}` });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -374,10 +374,8 @@ function removePelatihan(index) {
       try {
         if (item.idpenggunapelatihan) {
           await deleteUserTraining(item.idpenggunapelatihan);
-          toast.success("Data pelatihan berhasil dihapus");
-        } else {
-          toast.success("Data pelatihan berhasil dihapus");
         }
+        toast.success("Data pelatihan berhasil dihapus");
 
         pelatihanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);

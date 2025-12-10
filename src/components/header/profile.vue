@@ -41,6 +41,7 @@
 
 <script>
 import apiClient from "@/services/users";
+import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 export default {
   name: "Profile",
@@ -51,31 +52,14 @@ export default {
         nama_level: "Role",
         photo: null,
       },
-      colors: [
-        "#6c5ce7",
-        "#00b894",
-        "#0984e3",
-        "#e17055",
-        "#fdcb6e",
-        "#d63031",
-      ],
     };
   },
   computed: {
     userInitials() {
-      if (!this.user.nama) return "?";
-      const words = this.user.nama.trim().split(" ");
-      if (words.length === 1) {
-        return words[0][0].toUpperCase();
-      } else {
-        return (words[0][0] + words[1][0]).toUpperCase();
-      }
+      return getInitials(this.user.nama);
     },
     avatarColor() {
-      const index = this.user.nama
-        ? this.user.nama.charCodeAt(0) % this.colors.length
-        : 0;
-      return this.colors[index];
+      return getRandomColor(this.user.nama);
     },
   },
   mounted() {

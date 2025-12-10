@@ -235,7 +235,7 @@ async function loadData(userId) {
       await fetchEducationLevels();
     }
     if (userId) {
-      const res = await getUserEducations({ id_pengguna: userId });
+      const res = await getUserEducations({ filter: `idpengguna=${userId}` });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -328,10 +328,8 @@ function removePendidikan(index) {
       try {
         if (item.idpenggunapendidikan) {
           await deleteUserEducation(item.idpenggunapendidikan);
-          toast.success("Data pendidikan berhasil dihapus dari database");
-        } else {
-          toast.success("Data pendidikan berhasil dihapus");
         }
+        toast.success("Data pendidikan berhasil dihapus");
 
         pendidikanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);

@@ -53,14 +53,29 @@
         v-if="item.foto"
         :src="item.foto"
         alt="Foto"
-        style="width: 50px; height: 50px; cursor: pointer; border-radius: 4px"
+        style="width: 50px; height: 50px; cursor: pointer; border-radius: 50%"
         @click="showImage(item.foto)"
       />
-      <span v-else class="text-muted">-</span>
+      <div
+        v-else
+        class="d-inline-flex align-items-center justify-content-center text-white fw-bold"
+        :style="{
+          backgroundColor: getRandomColor(item.nama),
+          width: '50px',
+          height: '50px',
+          borderRadius: '50%',
+          fontSize: '16px',
+        }"
+      >
+        {{ getInitials(item.nama) }}
+      </div>
     </template>
 
     <template #cell(namalevel)="{ item }">
-      {{ item.roles?.namalevel || "-" }}
+      <span v-if="item['roles'] && item['roles'].length > 0">
+        {{ item["roles"][0]?.namalevel }}
+      </span>
+      <span v-else class="text-muted">-</span>
     </template>
 
     <!-- <template #cell(namakejuruan)="{ item }">
@@ -80,6 +95,7 @@
 import { defineAsyncComponent, ref, onMounted } from "vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import { deleteUser, getUsers } from "@/services/referensi/users";
+import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 import { getRoles } from "@/services/referensi/roles";
 import vueEasyLightbox from "vue-easy-lightbox";
 import { Teleport } from "vue";

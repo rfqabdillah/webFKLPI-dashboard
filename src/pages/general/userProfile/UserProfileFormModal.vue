@@ -14,8 +14,8 @@
       <div class="modal-body">
         <div class="wizard-steps mb-4">
           <div
-            v-for="(step, index) in steps"
-            :key="index"
+            v-for="(step, index) in filteredSteps"
+            :key="step.key"
             class="wizard-step"
             :class="{
               active: currentStepIndex === index,
@@ -32,67 +32,74 @@
         </div>
 
         <div class="step-content">
-          <div v-show="currentStepIndex === 0">
+          <div v-show="currentStepKey === 'biodata'">
             <Step1Biodata
               ref="step1Ref"
               v-model="wizardState.biodata"
               :fieldToEdit="fieldToEdit"
-              @validation-change="(valid) => (stepValidations[0] = valid)"
+              @validation-change="(valid) => (stepValidations.biodata = valid)"
               @user-selected="handleUserSelected"
+              @user-type-changed="handleUserTypeChanged"
             />
           </div>
 
-          <div v-show="currentStepIndex === 1">
+          <div v-show="currentStepKey === 'unitKerja'">
             <Step2UnitKerja
               ref="step2Ref"
               v-model="wizardState.unitKerja"
               :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[1] = valid)"
+              @validation-change="
+                (valid) => (stepValidations.unitKerja = valid)
+              "
             />
           </div>
 
-          <div v-show="currentStepIndex === 2">
+          <div v-if="!isNonAsn" v-show="currentStepKey === 'jabatan'">
             <Step3Jabatan
               ref="step3Ref"
               v-model="wizardState.jabatan"
               :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[2] = valid)"
+              @validation-change="(valid) => (stepValidations.jabatan = valid)"
             />
           </div>
 
-          <div v-show="currentStepIndex === 3">
+          <div v-if="!isNonAsn" v-show="currentStepKey === 'pangkat'">
             <Step4Pangkat
               ref="step4Ref"
               v-model="wizardState.pangkat"
               :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[3] = valid)"
+              @validation-change="(valid) => (stepValidations.pangkat = valid)"
             />
           </div>
 
-          <div v-show="currentStepIndex === 4">
+          <div v-show="currentStepKey === 'pendidikan'">
             <Step5Pendidikan
               ref="step5Ref"
               v-model="wizardState.pendidikan"
               :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[4] = valid)"
+              @validation-change="
+                (valid) => (stepValidations.pendidikan = valid)
+              "
             />
           </div>
 
-          <div v-show="currentStepIndex === 5">
+          <div v-show="currentStepKey === 'pelatihan'">
             <Step6Pelatihan
               ref="step6Ref"
               v-model="wizardState.pelatihan"
               :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[5] = valid)"
+              @validation-change="
+                (valid) => (stepValidations.pelatihan = valid)
+              "
             />
           </div>
 
-          <div v-show="currentStepIndex === 6">
+          <div v-show="currentStepKey === 'prestasi'">
             <Step7Prestasi
               ref="step7Ref"
               v-model="wizardState.prestasi"
               :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[6] = valid)"
+              @validation-change="(valid) => (stepValidations.prestasi = valid)"
             />
           </div>
         </div>
@@ -114,7 +121,7 @@
         </button>
 
         <button
-          v-if="currentStepIndex < steps.length - 1"
+          v-if="currentStepIndex < filteredSteps.length - 1"
           type="button"
           class="btn btn-primary"
           @click="nextStep"
@@ -124,7 +131,7 @@
         </button>
 
         <button
-          v-if="currentStepIndex === steps.length - 1"
+          v-if="currentStepIndex === filteredSteps.length - 1"
           type="button"
           class="btn btn-success"
           @click="submitForm"
@@ -191,15 +198,53 @@ const emit = defineEmits(["close", "save-successful"]);
 const toast = useToast();
 
 // === Steps Configuration ===
-const steps = [
-  { title: "Biodata", icon: "fa-solid fa-id-card" },
-  { title: "Unit Kerja", icon: "fa-solid fa-building-user" },
-  { title: "Jabatan", icon: "fa-solid fa-user-tie" },
-  { title: "Pangkat", icon: "fa-solid fa-ranking-star" },
-  { title: "Pendidikan", icon: "fa-solid fa-graduation-cap" },
-  { title: "Pelatihan", icon: "fa-solid fa-chalkboard-user" },
-  { title: "Prestasi", icon: "fa-solid fa-award" },
+const allSteps = [
+  {
+    key: "biodata",
+    title: "Biodata",
+    icon: "fa-solid fa-id-card",
+    asnOnly: false,
+  },
+  {
+    key: "unitKerja",
+    title: "Unit Kerja",
+    icon: "fa-solid fa-building-user",
+    asnOnly: false,
+  },
+  {
+    key: "jabatan",
+    title: "Jabatan",
+    icon: "fa-solid fa-user-tie",
+    asnOnly: true,
+  },
+  {
+    key: "pangkat",
+    title: "Pangkat",
+    icon: "fa-solid fa-ranking-star",
+    asnOnly: true,
+  },
+  {
+    key: "pendidikan",
+    title: "Pendidikan",
+    icon: "fa-solid fa-graduation-cap",
+    asnOnly: false,
+  },
+  {
+    key: "pelatihan",
+    title: "Pelatihan",
+    icon: "fa-solid fa-chalkboard-user",
+    asnOnly: false,
+  },
+  {
+    key: "prestasi",
+    title: "Prestasi",
+    icon: "fa-solid fa-award",
+    asnOnly: false,
+  },
 ];
+
+// State for user type
+const selectedUserTypeName = ref("");
 
 // === Refs ===
 const step1Ref = ref(null);
@@ -217,7 +262,15 @@ const isLoading = ref(false);
 const errorMessage = ref(null);
 const createdUserId = ref(null);
 
-const stepValidations = reactive([false, true, true, true, true, true, true]);
+const stepValidations = reactive({
+  biodata: false,
+  unitKerja: true,
+  jabatan: true,
+  pangkat: true,
+  pendidikan: true,
+  pelatihan: true,
+  prestasi: true,
+});
 
 const wizardState = reactive({
   biodata: {
@@ -226,6 +279,9 @@ const wizardState = reactive({
     userId: null,
     userData: {
       idpengguna: null,
+      idlevel: "",
+      idjeniskelamin: "",
+      idjenispengguna: "",
       email: "",
       nama: "",
       telp: "",
@@ -270,8 +326,28 @@ const currentUserId = computed(() => {
   return null;
 });
 
+// Check if user is Non-ASN based on selected user type name
+const isNonAsn = computed(() => {
+  const name = selectedUserTypeName.value?.toLowerCase() || "";
+  return name.includes("non");
+});
+
+// Filter steps based on user type
+const filteredSteps = computed(() => {
+  if (isNonAsn.value) {
+    return allSteps.filter((step) => !step.asnOnly);
+  }
+  return allSteps;
+});
+
+// Get current step key based on index
+const currentStepKey = computed(() => {
+  return filteredSteps.value[currentStepIndex.value]?.key || "biodata";
+});
+
 const canProceed = computed(() => {
-  return stepValidations[currentStepIndex.value];
+  const currentKey = currentStepKey.value;
+  return stepValidations[currentKey];
 });
 
 // === Reset Function ===
@@ -327,42 +403,51 @@ function handleUserSelected(userId) {
   stepLoaded[0] = true;
 }
 
-async function loadStepData(stepIndex) {
-  const stepRefs = [
-    null,
-    step2Ref,
-    step3Ref,
-    step4Ref,
-    step5Ref,
-    step6Ref,
-    step7Ref,
-  ];
-  const stepRef = stepRefs[stepIndex];
+function handleUserTypeChanged(userType) {
+  selectedUserTypeName.value = userType?.namajenispengguna || "";
+  // Reset step index if we're past the removed steps
+  if (isNonAsn.value && currentStepIndex.value >= filteredSteps.value.length) {
+    currentStepIndex.value = 0;
+  }
+}
 
-  if (stepRef.value && typeof stepRef.value.loadData === "function") {
+async function loadStepData(stepIndex) {
+  const currentKey = filteredSteps.value[stepIndex]?.key;
+  const stepRefMap = {
+    unitKerja: step2Ref,
+    jabatan: step3Ref,
+    pangkat: step4Ref,
+    pendidikan: step5Ref,
+    pelatihan: step6Ref,
+    prestasi: step7Ref,
+  };
+  const stepRef = stepRefMap[currentKey];
+
+  if (stepRef?.value && typeof stepRef.value.loadData === "function") {
     try {
       await stepRef.value.loadData(currentUserId.value);
       stepLoaded[stepIndex] = true;
     } catch (error) {
-      console.error(`Error loading data for step ${stepIndex}:`, error);
+      console.error(`Error loading data for step ${currentKey}:`, error);
       toast.error(`Gagal memuat data: ${error.message}`);
     }
   }
 }
 
 async function nextStep() {
-  const stepRefs = [
-    step1Ref,
-    step2Ref,
-    step3Ref,
-    step4Ref,
-    step5Ref,
-    step6Ref,
-    step7Ref,
-  ];
-  const currentRef = stepRefs[currentStepIndex.value];
+  const currentKey = currentStepKey.value;
+  const stepRefMap = {
+    biodata: step1Ref,
+    unitKerja: step2Ref,
+    jabatan: step3Ref,
+    pangkat: step4Ref,
+    pendidikan: step5Ref,
+    pelatihan: step6Ref,
+    prestasi: step7Ref,
+  };
+  const currentRef = stepRefMap[currentKey];
 
-  if (currentRef.value && typeof currentRef.value.validate === "function") {
+  if (currentRef?.value && typeof currentRef.value.validate === "function") {
     const isValid = await currentRef.value.validate();
     if (!isValid) {
       return;
@@ -414,8 +499,11 @@ async function submitForm() {
     validateSingleActiveStatus();
 
     await saveUnitKerja(userId);
-    await saveJabatan(userId);
-    await savePangkat(userId);
+    // Only save Jabatan and Pangkat for ASN users
+    if (!isNonAsn.value) {
+      await saveJabatan(userId);
+      await savePangkat(userId);
+    }
     await savePendidikan(userId);
     await savePelatihan(userId);
     await savePrestasi(userId);
@@ -463,6 +551,9 @@ function createBiodataFormData() {
   // Whitelist of allowed biodata fields - only these will be sent to the backend
   const allowedFields = [
     "idpengguna",
+    "idlevel",
+    "idjeniskelamin",
+    "idjenispengguna",
     "email",
     "nama",
     "telp",

@@ -14,14 +14,15 @@
           :src="item.foto"
           alt="Foto Pegawai"
           class="foto-pegawai"
-          onerror="this.src='https://placehold.co/200x200/EBF4FF/7F9CF5?text=Foto'"
+          @error="(e) => (e.target.style.display = 'none')"
         />
-        <img
+        <div
           v-else
-          src="https://placehold.co/200x200/EBF4FF/7F9CF5?text=Foto"
-          alt="Foto Default"
-          class="foto-pegawai"
-        />
+          class="foto-pegawai d-flex align-items-center justify-content-center text-white fw-bold"
+          :style="{ backgroundColor: getRandomColor(item.nama) }"
+        >
+          <span style="font-size: 3rem">{{ getInitials(item.nama) }}</span>
+        </div>
         <h2 class="nama-pegawai mt-3">
           {{ item.gelardepan }} {{ item.nama || "Nama Pegawai" }}
           {{ item.gelarbelakang }}
@@ -55,6 +56,8 @@
               <dd>{{ item.nip || "-" }}</dd>
               <dt>No. Karpeg</dt>
               <dd>{{ item.no_karpeg || "-" }}</dd>
+              <dt>Jenis Kelamin</dt>
+              <dd>{{ item.genders?.[0]?.namajeniskelamin || "-" }}</dd>
               <dt>Tempat Lahir</dt>
               <dd>{{ item.tempatlahir || "-" }}</dd>
               <dt>Tanggal Lahir</dt>
@@ -72,6 +75,8 @@
               <dd>{{ item.alamat || "-" }}</dd>
               <dt>Kabupaten</dt>
               <dd>{{ item.kodekabupaten || "-" }}</dd>
+              <dt>Jenis Pengguna</dt>
+              <dd>{{ item["user-types"]?.[0]?.namajenispengguna || "-" }}</dd>
             </dl>
           </div>
         </div>
@@ -245,11 +250,11 @@
                   <span
                     class="badge"
                     :class="{
-                      'bg-success': pkt.status === 'Aktif',
-                      'bg-secondary': pkt.status !== 'Aktif',
+                      'bg-success': pkt.statuspangkat === 'Aktif',
+                      'bg-secondary': pkt.statuspangkat !== 'Aktif',
                     }"
                   >
-                    {{ pkt.status || "-" }}
+                    {{ pkt.statuspangkat || "-" }}
                   </span>
                 </td>
               </tr>
@@ -438,6 +443,7 @@ import { ref, watch } from "vue";
 import BaseDetailModal from "@/components/base/BaseDetailModal.vue";
 import { getDetailUser } from "@/services/referensi/users";
 import { formatDate } from "@/utils/formatDate";
+import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 const props = defineProps({
   itemToView: {

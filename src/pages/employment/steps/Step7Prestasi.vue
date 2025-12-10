@@ -302,7 +302,7 @@ async function loadData(userId) {
       await fetchScales();
     }
     if (userId) {
-      const res = await getUserAchievements({ id_pengguna: userId });
+      const res = await getUserAchievements({ filter: `idpengguna=${userId}` });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -396,10 +396,8 @@ function removePrestasi(index) {
       try {
         if (item.idpenggunaprestasi) {
           await deleteUserAchievement(item.idpenggunaprestasi);
-          toast.success("Data prestasi berhasil dihapus dari database");
-        } else {
-          toast.success("Data prestasi berhasil dihapus");
         }
+        toast.success("Data prestasi berhasil dihapus");
 
         prestasiList.value.splice(index, 1);
         formErrors.value.splice(index, 1);

@@ -1,32 +1,29 @@
 <template>
   <div class="step-biodata">
-    <ModeSelectionCards v-if="!mode && !isEditMode" @select-mode="selectMode" />
-
-    <UserSelectionTable
-      v-if="mode === 'existing' && !selectedUser && !isEditMode"
-      :show="mode === 'existing'"
-      @back="resetSelection"
-      @select-user="selectUser"
+    <!-- Show User Type Selection if idjenispengguna is empty -->
+    <UserTypeSelectionCards
+      v-if="!formData.idjenispengguna"
+      @select-user-type="selectUserType"
     />
 
+    <!-- Show Biodata Form after user type is selected -->
     <BiodataFormFields
-      v-if="selectedUser || mode === 'new' || isEditMode"
+      v-if="formData.idjenispengguna"
       ref="formRef"
       v-model="formData"
-      :mode="mode"
       :isEditMode="isEditMode"
       :isLoading="isLoadingUserData"
-      @back="resetSelection"
+      :isNonAsn="isNonAsn"
+      @back="resetUserType"
       @photo-change="handlePhotoChange"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed, onMounted, nextTick } from "vue";
+import { ref, reactive, watch, computed, onMounted } from "vue";
 import { useToast } from "vue-toastification";
-import ModeSelectionCards from "./components/ModeSelectionCards.vue";
-import UserSelectionTable from "./components/UserSelectionTable.vue";
+import UserTypeSelectionCards from "./components/UserTypeSelectionCards.vue";
 import BiodataFormFields from "./components/BiodataFormFields.vue";
 
 const props = defineProps({
@@ -37,25 +34,23 @@ const props = defineProps({
 const emit = defineEmits([
   "update:modelValue",
   "validation-change",
-  "user-selected",
-  "user-data-loaded",
+  "user-type-changed",
 ]);
 
 const toast = useToast();
 const formRef = ref(null);
 
 // === State ===
-const mode = ref("");
-const selectionMade = ref(false);
-const selectedUser = ref(null);
-const selectedUserId = ref("");
 const isLoadingUserData = ref(false);
 const selectedPhotoFile = ref(null);
 const isPhotoRemoved = ref(false);
+const selectedUserTypeName = ref("");
 
 const formData = reactive({
   idpengguna: null,
   idlevel: "",
+  idjeniskelamin: "",
+  idjenispengguna: "",
   email: "",
   nama: "",
   telp: "",
@@ -76,13 +71,21 @@ const formData = reactive({
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
 
+const isNonAsn = computed(() => {
+  const name = selectedUserTypeName.value?.toLowerCase() || "";
+  return name.includes("non");
+});
+
 // === Watchers ===
 watch(
   () => props.fieldToEdit,
   (newData) => {
     if (newData) {
       populateFormData(newData);
-      selectionMade.value = true;
+      // Determine user type name from the data
+      if (newData["user-types"]?.[0]?.namajenispengguna) {
+        selectedUserTypeName.value = newData["user-types"][0].namajenispengguna;
+      }
     }
   },
   { immediate: true }
@@ -92,14 +95,14 @@ watch(
   formData,
   () => {
     const data = {
-      mode: isEditMode.value ? "edit" : mode.value,
-      isExisting: mode.value === "existing" && !isEditMode.value,
+      mode: isEditMode.value ? "edit" : "profile",
       userId: isEditMode.value
         ? props.fieldToEdit.idpengguna
-        : selectedUserId.value,
+        : formData.idpengguna,
       userData: { ...formData },
       photoFile: selectedPhotoFile.value,
       isPhotoRemoved: isPhotoRemoved.value,
+      isNonAsn: isNonAsn.value,
     };
     emit("update:modelValue", data);
   },
@@ -114,47 +117,15 @@ onMounted(() => {
 });
 
 // === Methods ===
-function selectMode(selectedMode) {
-  mode.value = selectedMode;
-  if (selectedMode === "new") {
-    selectionMade.value = true;
-  }
+function selectUserType(userType) {
+  formData.idjenispengguna = userType.idjenispengguna;
+  selectedUserTypeName.value = userType.namajenispengguna;
+  emit("user-type-changed", userType);
 }
 
-function resetSelection() {
-  selectionMade.value = false;
-  mode.value = "";
-  selectedUserId.value = "";
-  selectedUser.value = null;
-
-  // Reset Form
-  Object.keys(formData).forEach((key) => (formData[key] = ""));
-  formData.status = "Aktif";
-  formData.foto = null;
-  selectedPhotoFile.value = null;
-  isPhotoRemoved.value = false;
-}
-
-async function selectUser(user) {
-  selectedUser.value = user;
-  selectedUserId.value = user.idpengguna || user.email;
-  selectionMade.value = true;
-  isLoadingUserData.value = true;
-
-  await nextTick();
-
-  populateFormData(user);
-
-  emit("user-selected", user.idpengguna);
-  emit("user-data-loaded", user);
-
-  setTimeout(async () => {
-    if (formRef.value) {
-      const isValid = await formRef.value.validate();
-      emit("validation-change", isValid);
-    }
-    isLoadingUserData.value = false;
-  }, 300);
+function resetUserType() {
+  formData.idjenispengguna = "";
+  selectedUserTypeName.value = "";
 }
 
 function populateFormData(data) {
@@ -174,6 +145,8 @@ function populateFormData(data) {
   formData.alamat = data.alamat || "";
   formData.foto = data.foto || null;
   formData.status = data.status || "Aktif";
+  formData.idjeniskelamin = data.idjeniskelamin || "";
+  formData.idjenispengguna = data.idjenispengguna || "";
 
   if (data.roles && data.roles.idlevel) {
     formData.idlevel = String(data.roles.idlevel);
@@ -190,6 +163,11 @@ function populateFormData(data) {
       formData.kodepropinsi = kode.substring(0, 2);
     }
   }
+
+  // Get user type name from nested data
+  if (data["user-types"]?.[0]?.namajenispengguna) {
+    selectedUserTypeName.value = data["user-types"][0].namajenispengguna;
+  }
 }
 
 function handlePhotoChange(file) {
@@ -198,15 +176,8 @@ function handlePhotoChange(file) {
 }
 
 async function validate() {
-  if (!selectionMade.value && !isEditMode.value) {
-    toast.error(
-      "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru"
-    );
-    return false;
-  }
-
-  if (mode.value === "existing" && !selectedUser.value && !isEditMode.value) {
-    toast.error("Silakan pilih pengguna dari daftar yang tersedia");
+  if (!formData.idjenispengguna && !isEditMode.value) {
+    toast.error("Silakan pilih jenis pengguna terlebih dahulu");
     return false;
   }
 

@@ -82,7 +82,9 @@
                     :key="pangkat.idpangkat"
                     :value="pangkat.idpangkat"
                   >
-                    {{ pangkat.pangkat }}
+                    {{ pangkat.golongan }}/{{ pangkat.ruang }}-{{
+                      pangkat.pangkat
+                    }}
                   </option>
                 </select>
                 <div class="invalid-feedback">
@@ -287,7 +289,7 @@ async function loadData(userId) {
       await fetchRanks();
     }
     if (userId) {
-      const res = await getUserRanks({ id_pengguna: userId });
+      const res = await getUserRanks({ filter: `idpengguna=${userId}` });
       let rawData = [];
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
@@ -382,10 +384,8 @@ function removePangkat(index) {
       try {
         if (item.idpenggunapangkat) {
           await deleteUserRank(item.idpenggunapangkat);
-          toast.success("Data pangkat berhasil dihapus dari database");
-        } else {
-          toast.success("Data pangkat berhasil dihapus");
         }
+        toast.success("Data pangkat berhasil dihapus");
 
         pangkatList.value.splice(index, 1);
         formErrors.value.splice(index, 1);

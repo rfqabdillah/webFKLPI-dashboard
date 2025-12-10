@@ -76,10 +76,15 @@
                 </div>
                 <div
                   v-else
-                  class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle mx-auto"
-                  style="width: 40px; height: 40px; font-size: 14px"
+                  class="d-flex align-items-center justify-content-center rounded-circle mx-auto text-white fw-bold"
+                  :style="{
+                    backgroundColor: getRandomColor(user.nama),
+                    width: '40px',
+                    height: '40px',
+                    fontSize: '14px',
+                  }"
                 >
-                  {{ user.nama ? user.nama.charAt(0).toUpperCase() : "?" }}
+                  {{ getInitials(user.nama) }}
                 </div>
               </td>
               <td>
@@ -115,6 +120,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { getUsers } from "@/services/referensi/users";
 import { useToast } from "vue-toastification";
+import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 const props = defineProps({
   show: {

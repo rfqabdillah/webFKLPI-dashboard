@@ -2,30 +2,15 @@
   <div class="user-form-section">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h6 class="mb-0">
-        <i
-          class="fa"
-          :class="
-            isEditMode
-              ? 'fa-edit'
-              : mode === 'existing'
-              ? 'fa-user-check'
-              : 'fa-user-plus'
-          "
-        ></i>
-        {{
-          isEditMode
-            ? "Edit Biodata"
-            : mode === "existing"
-            ? "Konfirmasi Data Pengguna"
-            : "Input Biodata Baru"
-        }}
+        <i class="fa fa-edit me-2"></i>
+        {{ isEditMode ? "Edit Biodata" : "Input Biodata" }}
       </h6>
       <button
         v-if="!isEditMode"
         class="btn btn-outline-secondary btn-sm"
         @click="$emit('back')"
       >
-        <i class="fa fa-arrow-left me-1"></i> Kembali
+        <i class="fa fa-arrow-left me-1"></i> Ubah Jenis Pengguna
       </button>
     </div>
 
@@ -111,25 +96,67 @@
         />
       </div>
 
-      <!-- NIP & Karpeg -->
+      <!-- NIP & Karpeg (Only for ASN) -->
+      <template v-if="!isNonAsn">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">NIP</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="formData.nip"
+            placeholder="NIP"
+          />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">No. Karpeg</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="formData.no_karpeg"
+            placeholder="Kartu Pegawai"
+          />
+        </div>
+      </template>
+
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">NIP</label>
-        <input
-          type="text"
-          class="form-control"
-          v-model="formData.nip"
-          placeholder="NIP"
-        />
+        <label class="form-label fw-semibold">Jenis Kelamin</label>
+        <select
+          class="form-select"
+          v-model="formData.idjeniskelamin"
+          :disabled="gendersLoading || isLoading"
+        >
+          <option value="">
+            {{ gendersLoading ? "Memuat..." : "Pilih Jenis Kelamin" }}
+          </option>
+          <option
+            v-for="gender in genderOptions"
+            :key="gender.idjeniskelamin"
+            :value="gender.idjeniskelamin"
+          >
+            {{ gender.namajeniskelamin }}
+          </option>
+        </select>
       </div>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">No. Karpeg</label>
-        <input
-          type="text"
-          class="form-control"
-          v-model="formData.no_karpeg"
-          placeholder="Kartu Pegawai"
-        />
+        <label class="form-label fw-semibold">Jenis Pengguna</label>
+        <select
+          class="form-select"
+          v-model="formData.idjenispengguna"
+          :disabled="userTypesLoading || isLoading"
+        >
+          <option value="">
+            {{ userTypesLoading ? "Memuat..." : "Pilih Jenis Pengguna" }}
+          </option>
+          <option
+            v-for="userType in userTypeOptions"
+            :key="userType.idjenispengguna"
+            :value="userType.idjenispengguna"
+          >
+            {{ userType.namajenispengguna }}
+          </option>
+        </select>
       </div>
 
       <!-- Tempat & Tanggal Lahir -->
@@ -259,6 +286,8 @@
 import { ref, reactive, watch, onMounted } from "vue";
 import { getRoles } from "@/services/referensi/roles";
 import { getRegions } from "@/services/referensi/regions";
+import { getGenders } from "@/services/referensi/genders";
+import { getUserTypes } from "@/services/referensi/userTypes";
 import { compressImage } from "@/utils/imageCompressor";
 import { useToast } from "vue-toastification";
 import * as yup from "yup";
@@ -280,6 +309,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isNonAsn: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "back", "photo-change"]);
@@ -288,8 +321,14 @@ const toast = useToast();
 // State
 const formData = reactive(props.modelValue);
 const formErrors = reactive({});
+const roleOptions = ref([]);
+const genderOptions = ref([]);
+const userTypeOptions = ref([]);
 const provinceOptions = ref([]);
 const kabupatenOptions = ref([]);
+const rolesLoading = ref(false);
+const gendersLoading = ref(false);
+const userTypesLoading = ref(false);
 const regionsLoading = ref(false);
 const kabupatenLoading = ref(false);
 const photoPreviewUrl = ref(null);
@@ -331,20 +370,71 @@ watch(
 
 // Lifecycle
 onMounted(() => {
+  fetchRoles();
+  fetchGenders();
+  fetchUserTypes();
   fetchProvinces();
 
-  // Set photo preview if exists
   if (formData.foto) {
     photoPreviewUrl.value = formData.foto;
   }
 
-  // Fetch kabupaten if province is set
   if (formData.kodepropinsi) {
     fetchKabupaten(formData.kodepropinsi);
   }
 });
 
 // Methods
+async function fetchRoles() {
+  rolesLoading.value = true;
+  try {
+    const response = await getRoles({ page: 1, limit: 100 });
+    roleOptions.value = response.data?.[0]?.data || response.data?.data || [];
+  } catch (error) {
+    console.error(error);
+    toast.error("Gagal memuat daftar level/role");
+  } finally {
+    rolesLoading.value = false;
+  }
+}
+
+async function fetchGenders() {
+  gendersLoading.value = true;
+  try {
+    const response = await getGenders({
+      page: 1,
+      limit: 999,
+      sort: "namajeniskelamin",
+      dir: "asc",
+    });
+    genderOptions.value = response.data?.[0]?.data || response.data?.data || [];
+  } catch (error) {
+    console.error(error);
+    toast.error("Gagal memuat daftar jenis kelamin");
+  } finally {
+    gendersLoading.value = false;
+  }
+}
+
+async function fetchUserTypes() {
+  userTypesLoading.value = true;
+  try {
+    const response = await getUserTypes({
+      page: 1,
+      limit: 999,
+      sort: "namajenispengguna",
+      dir: "asc",
+    });
+    userTypeOptions.value =
+      response.data?.[0]?.data || response.data?.data || [];
+  } catch (error) {
+    console.error(error);
+    toast.error("Gagal memuat daftar jenis pengguna");
+  } finally {
+    userTypesLoading.value = false;
+  }
+}
+
 async function fetchProvinces() {
   regionsLoading.value = true;
   try {
@@ -369,7 +459,6 @@ async function fetchKabupaten(provCode) {
     kabupatenOptions.value =
       response.data?.[0]?.data || response.data?.data || [];
 
-    // Fix for mismatched data formats
     if (formData.kodekabupaten && kabupatenOptions.value.length > 0) {
       const currentVal = String(formData.kodekabupaten);
       const exists = kabupatenOptions.value.some(

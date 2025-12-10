@@ -163,6 +163,14 @@ export var menuItems = {
       },
     ]
     },
+    {
+      "title": "Profil Saya",
+      "icon": "stroke-user",
+      "iconf": "fill-user",
+      "type": "link",
+      "path": "/my-profile",
+      "active": false
+    },
   
     {
       "headTitle1": "Referensi",
@@ -188,8 +196,14 @@ export var menuItems = {
           "active":false
         },
         {
-          "path": "/general/user-profile",
-          "title": "Profil Pengguna",
+          "path": "/general/genders",
+          "title": "Jenis Kelamin",
+          "type": "link",
+          "active":false
+        },
+        {
+          "path": "/general/user-types",
+          "title": "Jenis Pengguna",
           "type": "link",
           "active":false
         },
