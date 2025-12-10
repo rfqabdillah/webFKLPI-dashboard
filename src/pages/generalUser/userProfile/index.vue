@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Breadcrumbs main="Umum" :title="$route.meta.title" />
+    <Breadcrumbs main="Profil Saya" :title="$route.meta.title" />
     <div class="container-fluid">
       <div class="row">
         <user-profile />
@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import UserProfile from "./userProfile.vue";
+import UserProfile from "./UserProfile.vue";
 
 export default {
   components: {

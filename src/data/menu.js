@@ -171,6 +171,14 @@ export var menuItems = {
       "path": "/my-profile",
       "active": false
     },
+    {
+      "title": "Jadwal Agenda",
+      "icon": "stroke-calendar",
+      "iconf": "fill-calendar",
+      "type": "link",
+      "path": "/list-agenda",
+      "active": false
+    },
   
     {
       "headTitle1": "Referensi",
