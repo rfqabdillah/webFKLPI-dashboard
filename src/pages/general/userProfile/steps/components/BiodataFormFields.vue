@@ -132,48 +132,6 @@
         />
       </div>
 
-      <!-- Level & Status -->
-      <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold"
-          >Level / Role <span class="text-danger">*</span></label
-        >
-        <select
-          class="form-select"
-          v-model="formData.idlevel"
-          :class="{ 'is-invalid': formErrors.idlevel }"
-          @blur="validateField('idlevel')"
-          :disabled="rolesLoading || isLoading"
-        >
-          <option value="" disabled>Pilih Level</option>
-          <option
-            v-for="role in roleOptions"
-            :key="role.idlevel"
-            :value="String(role.idlevel)"
-          >
-            {{ role.namalevel }}
-          </option>
-        </select>
-        <div class="invalid-feedback">{{ formErrors.idlevel }}</div>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold d-block">Status Akun</label>
-        <div class="form-check form-switch mt-2">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            role="switch"
-            id="statusSwitch"
-            v-model="formData.status"
-            true-value="Aktif"
-            false-value="Tidak Aktif"
-          />
-          <label class="form-check-label" for="statusSwitch">
-            {{ formData.status || "Tidak Aktif" }}
-          </label>
-        </div>
-      </div>
-
       <!-- Tempat & Tanggal Lahir -->
       <div class="col-md-6 mb-3">
         <label class="form-label fw-semibold">Tempat Lahir</label>
@@ -330,10 +288,8 @@ const toast = useToast();
 // State
 const formData = reactive(props.modelValue);
 const formErrors = reactive({});
-const roleOptions = ref([]);
 const provinceOptions = ref([]);
 const kabupatenOptions = ref([]);
-const rolesLoading = ref(false);
 const regionsLoading = ref(false);
 const kabupatenLoading = ref(false);
 const photoPreviewUrl = ref(null);
@@ -351,7 +307,6 @@ const validationSchema = yup.object().shape({
     .string()
     .email("Format email salah")
     .required("Email wajib diisi."),
-  idlevel: yup.string().required("Level wajib dipilih."),
 });
 
 // Watchers
@@ -376,7 +331,6 @@ watch(
 
 // Lifecycle
 onMounted(() => {
-  fetchRoles();
   fetchProvinces();
 
   // Set photo preview if exists
@@ -391,19 +345,6 @@ onMounted(() => {
 });
 
 // Methods
-async function fetchRoles() {
-  rolesLoading.value = true;
-  try {
-    const response = await getRoles({ page: 1, limit: 100 });
-    roleOptions.value = response.data?.[0]?.data || response.data?.data || [];
-  } catch (error) {
-    console.error(error);
-    toast.error("Gagal memuat daftar level/role");
-  } finally {
-    rolesLoading.value = false;
-  }
-}
-
 async function fetchProvinces() {
   regionsLoading.value = true;
   try {
@@ -485,7 +426,6 @@ async function validate() {
     formErrors.nama = "";
     formErrors.nik = "";
     formErrors.email = "";
-    formErrors.idlevel = "";
     return true;
   } catch (err) {
     const errors = {};

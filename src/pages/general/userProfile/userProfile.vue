@@ -29,8 +29,29 @@
             <!-- Profile Info Header -->
             <div class="text-center profile-header">
               <div class="profile-img-container mx-auto">
+                <!-- Loading Spinner -->
+                <div
+                  v-if="isLoading"
+                  class="profile-img rounded-circle border-white d-flex align-items-center justify-content-center bg-white shadow"
+                >
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+
+                <!-- Initial Avatar (Random Color) -->
+                <div
+                  v-else-if="!user.foto"
+                  class="profile-img rounded-circle border-white d-flex align-items-center justify-content-center text-white fw-bold display-4 shadow"
+                  :style="{ backgroundColor: getRandomColor(fullName) }"
+                >
+                  {{ getInitials(fullName) }}
+                </div>
+
+                <!-- Actual Photo -->
                 <img
-                  :src="user.foto || defaultAvatar"
+                  v-else
+                  :src="user.foto"
                   alt="Profile"
                   class="profile-img rounded-circle border-white"
                   @error="handleImageError"
@@ -269,6 +290,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { getDetailUser } from "@/services/referensi/users";
+import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 // Tab Components
 import PersonalDetailsTab from "./tabs/PersonalDetailsTab.vue";
@@ -292,7 +314,7 @@ import UserProfileFormModal from "./UserProfileFormModal.vue";
 
 const activeTab = ref("pribadi");
 const isEditModalOpen = ref(false);
-const defaultAvatar = "https://placehold.co/150/EBF4FF/7F9CF5?text=Foto";
+const isLoading = ref(true);
 
 const fullName = computed(() => {
   const parts = [
@@ -325,7 +347,8 @@ const isProfileIncomplete = computed(() => {
 });
 
 function handleImageError(e) {
-  e.target.src = defaultAvatar;
+  // If image fails to load, clear the foto property so it falls back to initials
+  user.value.foto = null;
 }
 
 function handleEditData() {
@@ -342,12 +365,8 @@ function handleSaveSuccessful() {
 }
 
 // === API Fetchers ===
-
-// Individual fetch functions are no longer needed for reading data,
-// but we might need them later if we implement direct specific updates.
-// For now, we rely on the main user profile fetch.
-
 async function fetchUserProfile() {
+  isLoading.value = true;
   const userDataStr = localStorage.getItem("userData");
   if (userDataStr) {
     try {
@@ -418,6 +437,7 @@ async function fetchUserProfile() {
   } else {
     console.warn("No userData found in localStorage");
   }
+  isLoading.value = false;
 }
 
 onMounted(() => {

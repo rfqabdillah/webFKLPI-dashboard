@@ -53,13 +53,19 @@
       </div>
     </div>
 
-    <div v-if="!items?.length" class="col-12 text-center py-5">
-      <img
-        src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png"
-        alt="Empty"
-        style="width: 150px; opacity: 0.5"
-      />
-      <p class="text-muted mt-3">Data pelatihan belum tersedia</p>
+    <div v-if="!items?.length" class="col-12">
+      <div
+        class="custom-warning-alert d-flex align-items-center mb-4 shadow-sm"
+      >
+        <div class="alert-icon-box me-3">
+          <i class="fa fa-exclamation text-white"></i>
+        </div>
+        <div class="alert-content">
+          <span class="fw-bold d-block" style="color: #ff5b57">
+            Data Pelatihan Tidak Ditemukan!
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -92,5 +98,23 @@ const props = defineProps({
 
 .bg-soft-secondary {
   background-color: rgba(108, 117, 125, 0.1);
+}
+
+.custom-warning-alert {
+  background-color: #fdecec;
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid #fadbd8;
+}
+
+.alert-icon-box {
+  background-color: #ff5b57;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 </style>

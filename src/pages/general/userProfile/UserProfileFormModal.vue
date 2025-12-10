@@ -226,7 +226,6 @@ const wizardState = reactive({
     userId: null,
     userData: {
       idpengguna: null,
-      idlevel: "",
       email: "",
       nama: "",
       telp: "",
@@ -464,7 +463,6 @@ function createBiodataFormData() {
   // Whitelist of allowed biodata fields - only these will be sent to the backend
   const allowedFields = [
     "idpengguna",
-    "idlevel",
     "email",
     "nama",
     "telp",
