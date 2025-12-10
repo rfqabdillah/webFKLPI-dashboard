@@ -290,7 +290,7 @@ async function loadData(userId) {
     }
 
     if (userId) {
-      const res = await getUserWorkUnits({ id_pengguna: userId });
+      const res = await getUserWorkUnits({ filter: `idpengguna=${userId}` });
 
       let rawData = [];
       if (Array.isArray(res.data)) {
@@ -391,10 +391,8 @@ function removeUnitKerja(index) {
       try {
         if (item.idpenggunaunitkerja) {
           await deleteUserWorkUnit(item.idpenggunaunitkerja);
-          toast.success("Data unit kerja berhasil dihapus dari database");
-        } else {
-          toast.success("Data unit kerja berhasil dihapus");
         }
+        toast.success("Data unit kerja berhasil dihapus");
 
         unitKerjaList.value.splice(index, 1);
         formErrors.value.splice(index, 1);

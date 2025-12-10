@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
-export function useIdleLogout(timeoutMinutes = 15) {
+export function useIdleLogout(timeoutMinutes = 30) {
   const router = useRouter();
   const route = useRoute();
   let timeoutId;

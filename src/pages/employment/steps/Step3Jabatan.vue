@@ -316,7 +316,7 @@ async function loadData(userId) {
     }
 
     if (userId) {
-      const res = await getUserLevels({ id_pengguna: userId });
+      const res = await getUserLevels({ filter: `idpengguna=${userId}` });
 
       let rawData = [];
       // Handle variasi respon backend
@@ -405,10 +405,8 @@ function removeJenjang(index) {
       try {
         if (item.idpenggunajenjang) {
           await deleteUserLevel(item.idpenggunajenjang);
-          toast.success("Data jenjang berhasil dihapus dari database");
-        } else {
-          toast.success("Data jenjang berhasil dihapus");
         }
+        toast.success("Data jenjang berhasil dihapus");
 
         jenjangList.value.splice(index, 1);
         formErrors.value.splice(index, 1);

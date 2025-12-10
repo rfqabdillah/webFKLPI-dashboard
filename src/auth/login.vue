@@ -122,7 +122,7 @@
                           v-if="isLoading"
                           class="spinner-border spinner-border-sm me-1"
                         ></span>
-                        Sign in
+                        Masuk
                       </button>
                     </div>
                   </div>
@@ -201,7 +201,8 @@ async function onSubmit() {
         JSON.stringify({ data: userDataToSave })
       );
 
-      toast.success("Login berhasil! Selamat datang");
+      const userName = userProfile?.nama || "Pengguna";
+      toast.success(`Login berhasil! Selamat datang, ${userName}`);
       router.push("/");
     } else {
       toast.error(
