@@ -125,3 +125,14 @@ onMounted(() => {
   fetchLogoData();
 });
 </script>
+
+<style>
+.page-wrapper.horizontal-wrapper .logo-wrapper img {
+  max-height: 60px !important;
+}
+
+.page-wrapper.horizontal-wrapper .logo-wrapper > a > div {
+  min-height: 60px !important;
+  max-height: 60px !important;
+}
+</style>

@@ -1,8 +1,58 @@
 <template>
   <div class="col-12">
     <div class="card">
-      <div class="card-header pb-0">
-        <h5>Agenda</h5>
+      <div class="card-header pb-3">
+        <h5 class="mb-3">Agenda</h5>
+
+        <!-- Search & Filter Row -->
+        <div class="row g-3">
+          <!-- Search by Title -->
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="input-group">
+              <span class="input-group-text bg-white">
+                <i class="fa fa-search text-muted"></i>
+              </span>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="form-control"
+                placeholder="Cari judul agenda..."
+                @input="onSearchChange"
+              />
+              <button
+                v-if="searchQuery"
+                class="btn btn-outline-secondary"
+                type="button"
+                @click="clearSearch"
+              >
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter by Category -->
+          <div class="col-12 col-md-4 col-lg-3">
+            <select
+              v-model="selectedCategory"
+              class="form-select"
+              @change="onCategoryChange"
+            >
+              <option value="">Semua Kategori</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Results Count -->
+          <div
+            class="col-12 col-md-2 col-lg-5 d-flex align-items-center justify-content-md-end"
+          >
+            <span class="text-muted" v-if="!isLoading">
+              <strong>{{ filteredAgenda.length }}</strong> agenda ditemukan
+            </span>
+          </div>
+        </div>
       </div>
       <div class="card-body">
         <!-- Loading State -->
@@ -23,9 +73,21 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="agendaList.length === 0" class="text-center py-5">
+        <div v-else-if="filteredAgenda.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
-          <p class="text-muted">Tidak ada agenda yang tersedia saat ini.</p>
+          <p class="text-muted" v-if="searchQuery || selectedCategory">
+            Tidak ada agenda yang sesuai dengan pencarian.
+          </p>
+          <p class="text-muted" v-else>
+            Tidak ada agenda yang tersedia saat ini.
+          </p>
+          <button
+            v-if="searchQuery || selectedCategory"
+            class="btn btn-outline-primary"
+            @click="resetFilters"
+          >
+            Reset Filter
+          </button>
         </div>
 
         <!-- Card Grid -->
@@ -44,7 +106,7 @@
 
         <!-- Pagination -->
         <div
-          v-if="totalPages >= 1 && agendaList.length > 0"
+          v-if="totalPages >= 1 && filteredAgenda.length > 0"
           class="d-flex justify-content-center mt-4"
         >
           <nav aria-label="Page navigation">
@@ -93,6 +155,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import AgendaCard from "@/components/base/default/agendaCard.vue";
 import { getEvents } from "@/services/public/eventsPublic";
+import { getEventCategories } from "@/services/general/events/eventsCategories";
 
 const router = useRouter();
 
@@ -102,6 +165,9 @@ const isLoading = ref(false);
 const error = ref(null);
 const currentPage = ref(1);
 const itemsPerPage = 9;
+const searchQuery = ref("");
+const selectedCategory = ref("");
+const categories = ref([]);
 
 // Default placeholder image
 const defaultPosterUrl =
@@ -109,14 +175,40 @@ const defaultPosterUrl =
 const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
 
 // Computed properties
+// Filtered agenda based on search and category
+const filteredAgenda = computed(() => {
+  let result = agendaList.value;
+
+  // Filter by search query
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim();
+    result = result.filter((agenda) =>
+      agenda.judul?.toLowerCase().includes(query)
+    );
+  }
+
+  // Filter by category
+  if (selectedCategory.value) {
+    result = result.filter((agenda) => {
+      const catId =
+        agenda.kategori_agenda?.id_kategori_agenda ||
+        agenda.kategori_agenda?.idakategoriagenda ||
+        agenda.id_kategori_agenda;
+      return catId === selectedCategory.value;
+    });
+  }
+
+  return result;
+});
+
 const totalPages = computed(() =>
-  Math.ceil(agendaList.value.length / itemsPerPage)
+  Math.ceil(filteredAgenda.value.length / itemsPerPage)
 );
 
 const paginatedAgenda = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  return agendaList.value.slice(start, end);
+  return filteredAgenda.value.slice(start, end);
 });
 
 const visiblePages = computed(() => {
@@ -212,9 +304,58 @@ const openDetail = (agenda) => {
   router.push(`/agenda-detail/${agenda.id_agenda}`);
 };
 
+// Fetch categories from API
+const fetchCategories = async () => {
+  try {
+    const response = await getEventCategories();
+
+    let categoryData = [];
+    if (
+      response.data &&
+      Array.isArray(response.data) &&
+      response.data[0]?.data
+    ) {
+      categoryData = response.data[0].data;
+    } else if (response.data?.data && Array.isArray(response.data.data)) {
+      categoryData = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      categoryData = response.data;
+    }
+
+    categories.value = categoryData.map((cat) => ({
+      id: cat.idakategoriagenda,
+      name: cat.namakategoriagenda,
+    }));
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    // Fallback: categories will remain empty
+  }
+};
+
+// Search and filter handlers
+const onSearchChange = () => {
+  currentPage.value = 1; // Reset to first page
+};
+
+const onCategoryChange = () => {
+  currentPage.value = 1; // Reset to first page
+};
+
+const clearSearch = () => {
+  searchQuery.value = "";
+  currentPage.value = 1;
+};
+
+const resetFilters = () => {
+  searchQuery.value = "";
+  selectedCategory.value = "";
+  currentPage.value = 1;
+};
+
 // Lifecycle
 onMounted(() => {
   fetchAgenda();
+  fetchCategories();
 });
 </script>
 

@@ -1,20 +1,15 @@
 <template>
   <div>
-    <Breadcrumbs :title="$route.meta.title" />
+    <Breadcrumbs main="Agenda" :title="$route.meta.title" />
     <div class="container-fluid">
       <div class="row">
-        <agenda-page />
+        <MyAgendaPage />
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import AgendaPage from "./AgendaPage.vue";
-
-export default {
-  components: {
-    AgendaPage,
-  },
-};
+<script setup>
+import Breadcrumbs from "@/components/bread_crumbs.vue";
+import MyAgendaPage from "./MyAgendaPage.vue";
 </script>

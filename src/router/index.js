@@ -46,7 +46,7 @@ import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
 import IndexUserProfile from "@/pages/generalUser/userProfile/index.vue";
 import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
 import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
-import IndexMyAgendaPage from "@/pages/generalUser/agendaPage/myAgendaIndex.vue";
+import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
 
 const routes =[
     {

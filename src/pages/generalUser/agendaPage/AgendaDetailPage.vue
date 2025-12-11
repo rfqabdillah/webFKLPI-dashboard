@@ -303,7 +303,7 @@ const registerAgenda = async () => {
     confirmButtonText: "Ya, Daftar",
     cancelButtonText: "Batal",
     confirmButtonColor: "#7366ff",
-    cancelButtonColor: "#6c757d",
+    cancelButtonColor: "#efefef",
   });
 
   if (!result.isConfirmed) return;
