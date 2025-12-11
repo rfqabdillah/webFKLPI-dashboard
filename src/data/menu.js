@@ -169,7 +169,8 @@ export var menuItems = {
       "iconf": "fill-user",
       "type": "link",
       "path": "/my-profile",
-      "active": false
+      "active": false,
+      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
     },
     {
       "title": "Jadwal Agenda",
@@ -177,7 +178,17 @@ export var menuItems = {
       "iconf": "fill-calendar",
       "type": "link",
       "path": "/list-agenda",
-      "active": false
+      "active": false,
+      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
+    },
+    {
+      "title": "Agenda Saya",
+      "icon": "stroke-calendar",
+      "iconf": "fill-calendar",
+      "type": "link",
+      "path": "/my-agenda",
+      "active": false,
+      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
     },
   
     {

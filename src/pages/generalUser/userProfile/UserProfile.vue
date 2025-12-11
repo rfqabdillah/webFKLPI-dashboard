@@ -421,6 +421,39 @@ async function fetchUserProfile() {
 
                 // Achievements
                 userAchievements.value = fetchedUser["user-achievments"] || []; // Note: spelling matches API
+
+                // 3. ✅ UPDATE localStorage with MINIMAL essential data only
+                // Only save what's needed for: menu filtering, layout selection, and header profile
+                const essentialUserData = {
+                  idpengguna: fetchedUser.idpengguna,
+                  id_pengguna: fetchedUser.idpengguna, // Alt key for compatibility
+                  id_level: fetchedUser.idlevel,
+                  id_jenis_pengguna: fetchedUser.idjenispengguna,
+                  nama: fetchedUser.nama,
+                  nama_level: fetchedUser.roles?.[0]?.namalevel || "",
+                  email: fetchedUser.email,
+                  foto: fetchedUser.foto,
+                  gelardepan: fetchedUser.gelardepan || "",
+                  gelarbelakang: fetchedUser.gelarbelakang || "",
+                  nik: fetchedUser.nik || "",
+                  telp: fetchedUser.telp || "",
+                  alamat: fetchedUser.alamat || "",
+                  tempatlahir: fetchedUser.tempatlahir || "",
+                  tanggallahir: fetchedUser.tanggallahir || "",
+                  // Keep user-types for backward compatibility with profile page
+                  "user-types": fetchedUser["user-types"] || [],
+                };
+
+                const updatedUserData = {
+                  data: [essentialUserData],
+                };
+                localStorage.setItem(
+                  "userData",
+                  JSON.stringify(updatedUserData)
+                );
+
+                // 4. ✅ Dispatch custom event to notify profile.vue in header
+                window.dispatchEvent(new CustomEvent("userDataUpdated"));
               }
             }
           } catch (err) {

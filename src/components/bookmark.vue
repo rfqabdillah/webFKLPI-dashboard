@@ -4,10 +4,7 @@
     :class="bookmarkSearchBox || activeclass ? 'active' : ''"
   >
     <div class="flip-card">
-      <div
-        class="flip-card-inner"
-        :class="bookmarkSearchBox ? 'flipped' : ''"
-      >
+      <div class="flip-card-inner" :class="bookmarkSearchBox ? 'flipped' : ''">
         <div class="front">
           <h6 class="f-18 mb-0 dropdown-title">Bookmark</h6>
           <ul class="droplet-dropdown bookmark-dropdown">
@@ -21,7 +18,12 @@
                   <div class="bookmark-content">
                     <div class="bookmark-icon">
                       <svg class="stroke-icon">
-                        <use :xlink:href="require('@/assets/svg/icon-sprite.svg')+`#${items.icon}`"></use>
+                        <use
+                          :xlink:href="
+                            require('@/assets/svg/icon-sprite.svg') +
+                            `#${items.icon}`
+                          "
+                        ></use>
                       </svg>
                       <!-- <vue-feather :type="items.icon"></vue-feather> -->
                     </div>
@@ -45,14 +47,8 @@
         <div class="back">
           <ul>
             <li>
-              <div
-                class="bookmark-dropdown flip-back-content"
-              >
-                <input
-                  type="text"
-                  placeholder="search..."
-                  v-model="terms"
-                />
+              <div class="bookmark-dropdown flip-back-content">
+                <input type="text" placeholder="search..." v-model="terms" />
                 <div
                   class="bookmark-search custom-scrollbar"
                   :class="
@@ -68,18 +64,21 @@
                   >
                     <div class="ProfileCard-avatar header-search">
                       <svg class="stroke-icon">
-                        <use :xlink:href="require('@/assets/svg/icon-sprite.svg')+`#${menuItem.icon}`"></use>
+                        <use
+                          :xlink:href="
+                            require('@/assets/svg/icon-sprite.svg') +
+                            `#${menuItem.icon}`
+                          "
+                        ></use>
                       </svg>
                       <!-- <feather :type="menuItem.icon"></feather> -->
                     </div>
                     <div class="ProfileCard-details">
                       <div class="ProfileCard-realName">
                         <span @click="removeFix()">
-                          <router-link
-                            to="/"
-                            class="realname"
-                            >{{ menuItem.title }}</router-link
-                          >
+                          <router-link to="/" class="realname">{{
+                            menuItem.title
+                          }}</router-link>
                         </span>
                         <a
                           href="JavaScript:void(0);"
@@ -128,72 +127,71 @@
   </div>
 </template>
 <script>
-  import { mapState } from 'vuex';
+import { mapState } from "vuex";
 
-  export default {
-    props: ['activeclass'],
-    data() {
-      return {
-        terms: '',
-        bookmarkSearchBox: false,
-        bookmarkSearchResult: false,
-        bookmarkSearchResultEmpty: false,
-        bookmarkItems: [],
-      };
-    },
-    computed: {
-      ...mapState({
-        menuItems: (state) => state.menu.data,
-        searchMenuItems: (state) => state.menu.searchData,
-      }),
-    },
-    watch: {
-      terms:{
-        handler(value){
-
-          this.terms ? this.addFix() : this.removeFix();
-          if (!this.searchMenuItems.length) this.bookmarkSearchResultEmpty = true;
-          else this.bookmarkSearchResultEmpty = false;
-          this.addFix();
-          console.log("teradsdjsahfs;af==s===sa=d=sad",this.searchMenuItems);
-          this.$store.dispatch('menu/searchTerm', value);
-        }
-      },
-    },
-    mounted() {
-      this.menuItems.filter((items) => {
-        if (items.bookmark) {
-          this.bookmarkItems.push(items);
-        }
-      });
-    },
-    methods: {
-      openbookmark() {
-        this.bookmarkSearchBox = !this.bookmarkSearchBox;
-        if (!this.bookmarkSearchBox) this.removeFix();
-      },
-      searchTerm: function() {
+export default {
+  props: ["activeclass"],
+  data() {
+    return {
+      terms: "",
+      bookmarkSearchBox: false,
+      bookmarkSearchResult: false,
+      bookmarkSearchResultEmpty: false,
+      bookmarkItems: [],
+    };
+  },
+  computed: {
+    ...mapState({
+      menuItems: (state) => state.menu.data,
+      searchMenuItems: (state) => state.menu.searchData,
+    }),
+  },
+  watch: {
+    terms: {
+      handler(value) {
+        this.terms ? this.addFix() : this.removeFix();
+        if (!this.searchMenuItems.length) this.bookmarkSearchResultEmpty = true;
+        else this.bookmarkSearchResultEmpty = false;
         this.addFix();
-        this.$store.dispatch('menu/searchTerm', this.terms);
-      },
-      addFix() {
-        this.bookmarkSearchResult = true;
-      },
-      removeFix() {
-        this.bookmarkSearchResult = false;
-        this.text = '';
-      },
-      addToBookmark(items) {
-        const index = this.bookmarkItems.indexOf(items);
-        if (index === -1 && !items.bookmark) {
-          items.bookmark = true;
-          this.bookmarkItems.push(items);
-          this.text = '';
-        } else {
-          this.bookmarkItems.splice(index, 1);
-          items.bookmark = false;
-        }
+        console.log("teradsdjsahfs;af==s===sa=d=sad", this.searchMenuItems);
+        this.$store.dispatch("menu/searchTerm", value);
       },
     },
-  };
+  },
+  mounted() {
+    this.menuItems.filter((items) => {
+      if (items.bookmark) {
+        this.bookmarkItems.push(items);
+      }
+    });
+  },
+  methods: {
+    openbookmark() {
+      this.bookmarkSearchBox = !this.bookmarkSearchBox;
+      if (!this.bookmarkSearchBox) this.removeFix();
+    },
+    searchTerm: function () {
+      this.addFix();
+      this.$store.dispatch("menu/searchTerm", this.terms);
+    },
+    addFix() {
+      this.bookmarkSearchResult = true;
+    },
+    removeFix() {
+      this.bookmarkSearchResult = false;
+      this.text = "";
+    },
+    addToBookmark(items) {
+      const index = this.bookmarkItems.indexOf(items);
+      if (index === -1 && !items.bookmark) {
+        items.bookmark = true;
+        this.bookmarkItems.push(items);
+        this.text = "";
+      } else {
+        this.bookmarkItems.splice(index, 1);
+        items.bookmark = false;
+      }
+    },
+  },
+};
 </script>

@@ -52,6 +52,7 @@ export default {
         nama_level: "Role",
         photo: null,
       },
+      userDataCheckInterval: null,
     };
   },
   computed: {
@@ -64,10 +65,43 @@ export default {
   },
   mounted() {
     this.loadUserData();
+
+    // Listen for storage changes from other tabs/windows
+    window.addEventListener("storage", this.handleStorageChange);
+
+    // Listen for custom event when user updates profile in same tab
+    window.addEventListener("userDataUpdated", this.handleUserDataUpdate);
+
+    // Fallback: Check for userData changes periodically (in case events don't fire)
+    this.userDataCheckInterval = setInterval(() => {
+      this.loadUserData();
+    }, 3000); // Check every 3 seconds
+  },
+  beforeUnmount() {
+    // Clean up event listeners
+    window.removeEventListener("storage", this.handleStorageChange);
+    window.removeEventListener("userDataUpdated", this.handleUserDataUpdate);
+
+    // Clear interval
+    if (this.userDataCheckInterval) {
+      clearInterval(this.userDataCheckInterval);
+    }
   },
   methods: {
     handleImageError() {
       this.user.photo = null;
+    },
+
+    handleStorageChange(e) {
+      // Triggered when localStorage changes in another tab/window
+      if (e.key === "userData") {
+        this.loadUserData();
+      }
+    },
+
+    handleUserDataUpdate() {
+      // Triggered by custom event when user updates profile
+      this.loadUserData();
     },
 
     loadUserData() {
@@ -79,10 +113,16 @@ export default {
         const userProfile = parsedData.data?.[0];
 
         if (userProfile) {
-          this.user.nama = userProfile.nama || "Pengguna";
-          this.user.nama_level = userProfile.nama_level || "Role";
-
-          this.user.photo = userProfile.foto || null;
+          // Only update if data actually changed (to avoid unnecessary re-renders)
+          if (this.user.nama !== userProfile.nama) {
+            this.user.nama = userProfile.nama || "Pengguna";
+          }
+          if (this.user.nama_level !== userProfile.nama_level) {
+            this.user.nama_level = userProfile.nama_level || "Role";
+          }
+          if (this.user.photo !== userProfile.foto) {
+            this.user.photo = userProfile.foto || null;
+          }
         }
       } catch (error) {
         console.error("Gagal parse user data dari localStorage:", error);

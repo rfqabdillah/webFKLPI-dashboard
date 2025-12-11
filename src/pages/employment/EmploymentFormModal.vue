@@ -39,6 +39,7 @@
               :fieldToEdit="fieldToEdit"
               @validation-change="(valid) => (stepValidations[0] = valid)"
               @user-selected="handleUserSelected"
+              @photo-change="handlePhotoChange"
             />
           </div>
 
@@ -330,6 +331,12 @@ function handleUserSelected(userId) {
   stepLoaded[0] = true;
 }
 
+function handlePhotoChange(file) {
+  wizardState.biodata.photoFile = file;
+  wizardState.biodata.isPhotoRemoved =
+    !file && wizardState.biodata.userData.foto;
+}
+
 async function loadStepData(stepIndex) {
   const stepRefs = [
     null,
@@ -499,11 +506,7 @@ function createBiodataFormData() {
   });
 
   if (wizardState.biodata.photoFile) {
-    data.append(
-      "upload_foto",
-      wizardState.biodata.photoFile,
-      wizardState.biodata.photoFile.name
-    );
+    data.append("upload_foto", wizardState.biodata.photoFile);
   } else if (wizardState.biodata.isPhotoRemoved) {
     data.append("record[foto]", "");
   }
@@ -555,7 +558,7 @@ function createFormData(item, fileKey, userId) {
   });
 
   if (fileKey && item[fileKey] instanceof File) {
-    formData.append(`upload_${fileKey}`, item[fileKey], item[fileKey].name);
+    formData.append(`upload_${fileKey}`, item[fileKey]);
   }
 
   return formData;

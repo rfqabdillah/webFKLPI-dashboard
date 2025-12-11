@@ -35,6 +35,7 @@ const emit = defineEmits([
   "update:modelValue",
   "validation-change",
   "user-type-changed",
+  "photo-change",
 ]);
 
 const toast = useToast();
@@ -173,6 +174,7 @@ function populateFormData(data) {
 function handlePhotoChange(file) {
   selectedPhotoFile.value = file;
   isPhotoRemoved.value = !file && formData.foto;
+  emit("photo-change", file);
 }
 
 async function validate() {

@@ -40,6 +40,7 @@
               @validation-change="(valid) => (stepValidations.biodata = valid)"
               @user-selected="handleUserSelected"
               @user-type-changed="handleUserTypeChanged"
+              @photo-change="handlePhotoChange"
             />
           </div>
 
@@ -326,10 +327,10 @@ const currentUserId = computed(() => {
   return null;
 });
 
-// Check if user is Non-ASN based on selected user type name
+// Check if user is Non-ASN based on idjenispengguna
 const isNonAsn = computed(() => {
-  const name = selectedUserTypeName.value?.toLowerCase() || "";
-  return name.includes("non");
+  const NON_ASN_ID = "7563d021-664d-4cd9-87d7-82cb3440664f";
+  return wizardState.biodata.userData.idjenispengguna === NON_ASN_ID;
 });
 
 // Filter steps based on user type
@@ -409,6 +410,22 @@ function handleUserTypeChanged(userType) {
   if (isNonAsn.value && currentStepIndex.value >= filteredSteps.value.length) {
     currentStepIndex.value = 0;
   }
+}
+
+function handlePhotoChange(file) {
+  console.log("🔵 [DEBUG] handlePhotoChange called:", {
+    file: file,
+    fileName: file?.name,
+    fileSize: file?.size,
+    fileType: file?.type,
+  });
+  wizardState.biodata.photoFile = file;
+  wizardState.biodata.isPhotoRemoved =
+    !file && wizardState.biodata.userData.foto;
+  console.log("🔵 [DEBUG] After set:", {
+    photoFile: wizardState.biodata.photoFile,
+    isPhotoRemoved: wizardState.biodata.isPhotoRemoved,
+  });
 }
 
 async function loadStepData(stepIndex) {
@@ -545,6 +562,13 @@ function validateSingleActiveStatus() {
 
 // === Data Saving Helpers ===
 function createBiodataFormData() {
+  console.log("🟢 [DEBUG] createBiodataFormData called");
+  console.log("🟢 [DEBUG] wizardState.biodata:", {
+    photoFile: wizardState.biodata.photoFile,
+    isPhotoRemoved: wizardState.biodata.isPhotoRemoved,
+    userData_foto: wizardState.biodata.userData.foto,
+  });
+
   const data = new FormData();
   const biodata = wizardState.biodata.userData;
 
@@ -584,13 +608,22 @@ function createBiodataFormData() {
   });
 
   if (wizardState.biodata.photoFile) {
-    data.append(
-      "upload_foto",
-      wizardState.biodata.photoFile,
-      wizardState.biodata.photoFile.name
+    console.log(
+      "🟢 [DEBUG] Appending photo file:",
+      wizardState.biodata.photoFile
     );
+    data.append("upload_foto", wizardState.biodata.photoFile);
   } else if (wizardState.biodata.isPhotoRemoved) {
+    console.log("🟢 [DEBUG] Photo removed, appending empty string");
     data.append("record[foto]", "");
+  } else {
+    console.log("🔴 [DEBUG] No photo file to append!");
+  }
+
+  // Log FormData contents
+  console.log("🟢 [DEBUG] FormData contents:");
+  for (let pair of data.entries()) {
+    console.log(`  ${pair[0]}:`, pair[1]);
   }
 
   return data;
@@ -640,7 +673,7 @@ function createFormData(item, fileKey, userId) {
   });
 
   if (fileKey && item[fileKey] instanceof File) {
-    formData.append(`upload_${fileKey}`, item[fileKey], item[fileKey].name);
+    formData.append(`upload_${fileKey}`, item[fileKey]);
   }
 
   return formData;

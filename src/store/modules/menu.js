@@ -1,8 +1,79 @@
 import {menuItems} from '../../data/menu.js';
 import BonusUI from '../../data/bonusui';
 
+// ID level pengguna "Umum"
+const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
+
+// Helper function to get current user's idlevel from localStorage
+const getCurrentUserLevel = () => {
+  try {
+    const userDataString = localStorage.getItem('userData');
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      // Try to get from direct property
+      if (userData?.data?.[0]?.id_level) {
+        return userData.data[0].id_level;
+      }
+      // Try to get from roles object
+      if (userData?.data?.[0]?.roles?.id_level) {
+        return userData.data[0].roles.id_level;
+      }
+    }
+  } catch (error) {
+    console.error('Error getting user level:', error);
+  }
+  return null;
+};
+
+// Helper function to filter menu items based on user level
+const filterMenuByLevel = (items, userLevel) => {
+  if (!items || !Array.isArray(items)) return [];
+  
+  const isUmumUser = userLevel === UMUM_LEVEL_ID;
+  
+  return items.filter(item => {
+    // Skip headtitle for Umum users
+    if (isUmumUser && item.type === 'headtitle') {
+      return false;
+    }
+    
+    if (isUmumUser) {
+      // WHITELIST MODE for Umum: only show if explicitly allowed
+      if (!item.allowedLevels || !Array.isArray(item.allowedLevels)) {
+        return false;
+      }
+      return item.allowedLevels.includes(userLevel);
+    } else {
+      // BLACKLIST MODE for Admin/Operator: show all except Umum only menus
+      if (item.type === 'headtitle') return true;
+      
+      // If menu has allowedLevels and current user is not in list, hide it
+      if (item.allowedLevels && Array.isArray(item.allowedLevels)) {
+        if (!userLevel || !item.allowedLevels.includes(userLevel)) {
+          return false;
+        }
+      }
+      
+      return true;
+    }
+  }).map(item => {
+    if (item.children && Array.isArray(item.children)) {
+      return {
+        ...item,
+        children: filterMenuByLevel(item.children, userLevel)
+      };
+    }
+    return item;
+  });
+};
+
+// Initialize filtered menu data ONCE at module load
+const userLevel = getCurrentUserLevel();
+const filteredMenuData = filterMenuByLevel(menuItems.data, userLevel);
+
 const state = {
-  data: menuItems.data,
+  data: filteredMenuData, // Use filtered data directly in state
+  originalData: menuItems.data, // Keep original for reference
   megamenu: BonusUI.data,
   searchData: [],
   togglesidebar: true,
@@ -21,7 +92,11 @@ const state = {
 
 
 const getters = {
-
+  // Getter to check if user is Umum
+  isUmumUser: () => {
+    const userLevel = getCurrentUserLevel();
+    return userLevel === UMUM_LEVEL_ID;
+  },
 };
 
 

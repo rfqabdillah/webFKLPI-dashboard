@@ -56,6 +56,43 @@ import Footer from "./footer.vue";
 // import Customizer from './customizer';
 import TapTop from "./tapTop.vue";
 
+// Constants for user levels
+const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
+
+// Helper function to get user id_level from localStorage
+const getUserLevelFromStorage = () => {
+  try {
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      // Try to get from direct property
+      if (userData?.data?.[0]?.id_level) {
+        return userData.data[0].id_level;
+      }
+      // Try to get from roles object
+      if (userData?.data?.[0]?.roles?.id_level) {
+        return userData.data[0].roles.id_level;
+      }
+    }
+  } catch (error) {
+    console.error("Error getting user level:", error);
+  }
+  return null;
+};
+
+// Helper function to determine layout based on user level
+const getLayoutForUserLevel = () => {
+  const userLevel = getUserLevelFromStorage();
+
+  // User "umum" uses Los Angeles layout (horizontal navbar/topbar)
+  if (userLevel === UMUM_LEVEL_ID) {
+    return "LosAngeles";
+  }
+
+  // Other users (administrator, operator) use Dubai layout (vertical sidebar)
+  return "Dubai";
+};
+
 export default {
   //   name: 'mainPage',
   props: ["sidebar_toggle_var"],
@@ -168,10 +205,15 @@ export default {
     this.handleResize();
     this.resized = this.sidebar_toggle_var;
     this.$store.dispatch("layout/set");
-    // this.$router.replace({ 'query': null }).catch(err => err);
+
+    // Determine layout based on user level (umum uses LosAngeles, admin/operator uses Dubai)
+    const defaultLayout = getLayoutForUserLevel();
+
+    // Use query param if provided, otherwise use dynamic layout based on user level
     this.layout.settings.layout = this.$route.query.layout
       ? this.$route.query.layout
-      : "Dubai";
+      : defaultLayout;
+
     this.layoutobj = layoutClasses.find(
       (item) => Object.keys(item).pop() === this.layout.settings.layout
     );

@@ -182,6 +182,10 @@ function togglePassword() {
 
 async function onSubmit() {
   isLoading.value = true;
+
+  // ID level untuk user "umum"
+  const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
+
   try {
     const response = await loginAPI(user.email, user.password);
     const responseData = response.data;
@@ -203,7 +207,23 @@ async function onSubmit() {
 
       const userName = userProfile?.nama || "Pengguna";
       toast.success(`Login berhasil! Selamat datang, ${userName}`);
-      router.push("/");
+
+      // Determine redirect path based on user level
+      // User "umum" goes to /my-profile, others go to home /
+      console.log("=== DEBUG LOGIN ===");
+      console.log("userProfile:", userProfile);
+      console.log("id_level dari userProfile:", userProfile?.id_level);
+      console.log("UMUM_LEVEL_ID:", UMUM_LEVEL_ID);
+
+      const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
+      console.log("userLevel detected:", userLevel);
+      console.log("Is umum?", userLevel === UMUM_LEVEL_ID);
+
+      const redirectPath = userLevel === UMUM_LEVEL_ID ? "/my-profile" : "/";
+      console.log("Redirect to:", redirectPath);
+      console.log("==================");
+
+      router.push(redirectPath);
     } else {
       toast.error(
         responseData.message || "Login gagal. Token tidak ditemukan."

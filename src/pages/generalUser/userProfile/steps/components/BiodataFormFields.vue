@@ -485,9 +485,11 @@ async function handlePhotoUpload(event) {
   if (!file) return;
 
   try {
+    toast.info("Sedang mengompres gambar...", { timeout: 2000 });
     const compressed = await compressImage(file);
     photoPreviewUrl.value = URL.createObjectURL(compressed);
     emit("photo-change", compressed);
+    toast.success("Gambar berhasil dikompres", { timeout: 2000 });
   } catch (error) {
     toast.error("Gagal memproses gambar");
   }
