@@ -2,7 +2,8 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header pb-0">
-        <h5>Agenda</h5>
+        <h5>Agenda Saya</h5>
+        <p class="text-muted mb-0">Daftar agenda yang telah Anda ikuti</p>
       </div>
       <div class="card-body">
         <!-- Loading State -->
@@ -10,14 +11,14 @@
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <p class="mt-2 text-muted">Memuat data agenda...</p>
+          <p class="mt-2 text-muted">Memuat agenda Anda...</p>
         </div>
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-5">
           <i class="fa fa-exclamation-circle text-danger fa-3x mb-3"></i>
           <p class="text-danger">{{ error }}</p>
-          <button class="btn btn-outline-primary" @click="fetchAgenda">
+          <button class="btn btn-outline-primary" @click="fetchMyAgenda">
             Coba Lagi
           </button>
         </div>
@@ -25,19 +26,22 @@
         <!-- Empty State -->
         <div v-else-if="agendaList.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
-          <p class="text-muted">Tidak ada agenda yang tersedia saat ini.</p>
+          <p class="text-muted">Anda belum mendaftar agenda apapun.</p>
+          <router-link to="/list-agenda" class="btn btn-primary">
+            Lihat Daftar Agenda
+          </router-link>
         </div>
 
         <!-- Card Grid -->
         <div v-else class="row g-4">
           <div
-            v-for="agenda in paginatedAgenda"
-            :key="agenda.id_agenda"
+            v-for="item in paginatedAgenda"
+            :key="item.id_agenda_pengguna"
             class="col-12 col-md-6 col-lg-4"
           >
             <AgendaCard
-              :item="mapAgendaToCard(agenda)"
-              @click="openDetail(agenda)"
+              :item="mapAgendaToCard(item)"
+              @click="openDetail(item)"
             />
           </div>
         </div>
@@ -92,7 +96,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import AgendaCard from "@/components/base/default/agendaCard.vue";
-import { getEvents } from "@/services/public/eventsPublic";
+import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
 
 const router = useRouter();
 
@@ -141,12 +145,30 @@ const stripHtml = (html) => {
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   const text = tmp.textContent || tmp.innerText || "";
-  // Truncate to 100 characters
   return text.length > 100 ? text.substring(0, 100) + "..." : text;
 };
 
+// Get status badge class
+const getStatusClass = (status) => {
+  switch (status?.toLowerCase()) {
+    case "terdaftar":
+      return "bg-primary";
+    case "hadir":
+      return "bg-success";
+    case "tidak hadir":
+      return "bg-danger";
+    case "pending":
+      return "bg-warning text-dark";
+    default:
+      return "bg-secondary";
+  }
+};
+
 // Map agenda data to card props
-const mapAgendaToCard = (agenda) => {
+const mapAgendaToCard = (item) => {
+  // item contains events relation data (from API response)
+  const agenda = item.events || item;
+
   return {
     id: agenda.id_agenda,
     image: agenda.poster || defaultPosterUrl,
@@ -157,26 +179,42 @@ const mapAgendaToCard = (agenda) => {
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
     photo: defaultAvatarUrl,
-    author: "Administrator",
+    author: item.users?.nama || "Administrator",
     students: agenda.peserta || 0,
   };
 };
 
 // Methods
-const fetchAgenda = async () => {
+const fetchMyAgenda = async () => {
   isLoading.value = true;
   error.value = null;
 
+  // Get current user ID from localStorage
+  const userDataString = localStorage.getItem("userData");
+  if (!userDataString) {
+    error.value = "Silakan login terlebih dahulu.";
+    isLoading.value = false;
+    return;
+  }
+
+  const userData = JSON.parse(userDataString);
+  const userId = userData?.data?.[0]?.id_pengguna;
+
+  if (!userId) {
+    error.value = "Data pengguna tidak ditemukan. Silakan login ulang.";
+    isLoading.value = false;
+    return;
+  }
+
   try {
-    const response = await getEvents({
-      sort_by: "tanggal_pelaksanaan",
-      sort_direction: "desc",
-      tayang: "Tayang", // Only show published events
+    const response = await getEventUsers({
+      filter: `id_pengguna=${userId}`,
+      with: "agenda,status",
     });
 
-    console.log("API Response:", response);
+    console.log("My Agenda Response:", response);
 
-    // Handle response structure: response.data is an array with first element containing data
+    // Handle response structure
     if (
       response.data &&
       Array.isArray(response.data) &&
@@ -191,10 +229,10 @@ const fetchAgenda = async () => {
       agendaList.value = [];
     }
 
-    console.log("Agenda List:", agendaList.value);
+    console.log("My Agenda List:", agendaList.value);
   } catch (err) {
-    console.error("Error fetching agenda:", err);
-    error.value = "Gagal memuat data agenda. Silakan coba lagi.";
+    console.error("Error fetching my agenda:", err);
+    error.value = "Gagal memuat agenda Anda. Silakan coba lagi.";
   } finally {
     isLoading.value = false;
   }
@@ -203,43 +241,25 @@ const fetchAgenda = async () => {
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
-    // Scroll to top of card container
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 };
 
-const openDetail = (agenda) => {
-  router.push(`/agenda-detail/${agenda.id_agenda}`);
+const openDetail = (item) => {
+  const agendaId = item.events?.id_agenda || item.id_agenda;
+  if (agendaId) {
+    router.push(`/agenda-detail/${agendaId}`);
+  }
 };
 
 // Lifecycle
 onMounted(() => {
-  fetchAgenda();
+  fetchMyAgenda();
 });
 </script>
 
 <style scoped>
-.pagination .page-link {
-  border: 1px solid #dee2e6;
-  color: #6c757d;
-  padding: 0.5rem 0.75rem;
-  transition: all 0.2s ease;
-}
-
-.pagination .page-link:hover {
-  background-color: #7366ff;
-  border-color: #7366ff;
-  color: white;
-}
-
-.pagination .page-item.active .page-link {
-  background-color: #7366ff;
-  border-color: #7366ff;
-  color: white;
-}
-
-.pagination .page-item.disabled .page-link {
-  color: #adb5bd;
-  pointer-events: none;
+.badge {
+  font-size: 12px;
 }
 </style>
