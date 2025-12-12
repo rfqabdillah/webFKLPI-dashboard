@@ -26,7 +26,7 @@
       <div class="d-flex flex-wrap gap-3 mb-3 text-muted agenda-info">
         <span class="d-flex align-items-center">
           <i class="fa fa-calendar me-1"></i>
-          {{ formatTanggal(props.item.registration_deadline) }}
+          {{ formatDate(props.item.registration_deadline) }}
         </span>
         <span class="d-flex align-items-center">
           <i class="fa fa-users me-1"></i>
@@ -44,8 +44,7 @@
         <div class="d-flex align-items-start mb-1">
           <i class="fa fa-clock-o me-2 mt-1"></i>
           <span
-            >Pelaksanaan:
-            {{ formatTanggal(props.item.implementation_date) }}</span
+            >Pelaksanaan: {{ formatDate(props.item.implementation_date) }}</span
           >
         </div>
         <div class="d-flex align-items-start">
@@ -91,6 +90,7 @@
 
 <script setup>
 import { defineEmits } from "vue";
+import { formatDate } from "@/utils/formatDate";
 
 // Emit event when card is clicked
 defineEmits(["click"]);
@@ -121,16 +121,7 @@ const defaultPosterUrl =
   "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
 const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
 
-// Helper function to format date
-const formatTanggal = (dateString) => {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
+// Use imported formatDate utility
 
 // Handle image loading error
 const handleImageError = (event) => {
@@ -155,7 +146,6 @@ const handleAvatarError = (event) => {
 }
 
 .card-img-wrapper {
-  height: 180px;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
 }
 

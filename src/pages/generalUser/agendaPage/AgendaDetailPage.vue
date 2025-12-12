@@ -39,7 +39,6 @@
                 :src="data.image"
                 :alt="data.title"
                 class="img-fluid rounded-3 w-100"
-                style="max-height: 400px; object-fit: cover"
                 @error="handleImageError"
               />
             </div>
