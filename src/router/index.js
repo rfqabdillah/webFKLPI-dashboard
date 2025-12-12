@@ -4,6 +4,8 @@ import Body from '../components/body';
 import Default from '@/pages/dashboard/defaultPage.vue';
 import Login from '@/auth/login.vue';
 import Register from '@/auth/register.vue';
+import ForgetPassword from '@/auth/forgetpassword.vue';
+import ResetPassword from '@/auth/resetpassword.vue';
 
 import IndexEmployments from "@/pages/employment/index.vue";
 
@@ -75,6 +77,27 @@ const routes =[
         },
       ]
     },
+  {
+    path: '/forgetpassword',
+    children: [
+      {
+        path: '',
+        name: 'ForgetPassword',
+        component: ForgetPassword,
+        meta: {
+          title: 'Lupa Password',
+        }
+      },
+    ]
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword,
+    meta: {
+      title: 'Reset Password'
+    }
+  },
     {
         path: '/',
         component: Body,

@@ -109,8 +109,8 @@
                     <div class="checkbox p-0">
                       <input id="checkbox1" type="checkbox" />
                       <label class="text-muted" for="checkbox1"
-                        >Remember password</label
-                      >
+                        >Remember password</label>
+                      <router-link class="link" to="/forgetpassword"> Lupa password?</router-link>
                     </div>
                     <div class="text-end mt-3">
                       <button
