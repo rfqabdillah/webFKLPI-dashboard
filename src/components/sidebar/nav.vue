@@ -168,3 +168,11 @@ export default {
   },
 };
 </script>
+
+<style>
+/* Hide arrow navigation in horizontal layout */
+.page-wrapper.horizontal-wrapper .left-arrow,
+.page-wrapper.horizontal-wrapper .right-arrow {
+  display: none !important;
+}
+</style>

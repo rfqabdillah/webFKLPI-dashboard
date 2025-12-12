@@ -3,7 +3,9 @@
     <SearchBar />
     <Logo />
 
-    <div class="nav-right col-xxl-7 col-xl-6 col-md-7 col-8 pull-right right-header p-0 ms-auto">
+    <div
+      class="nav-right col-xxl-7 col-xl-6 col-md-7 col-8 pull-right right-header p-0 ms-auto"
+    >
       <ul class="nav-menus">
         <Profile />
       </ul>
@@ -11,17 +13,17 @@
   </div>
 </template>
 <script>
-import { mapState } from 'vuex';
-import Bookmark from '../bookmark';
+import { mapState } from "vuex";
+import Bookmark from "../bookmark";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay } from "swiper";
 import "swiper/css";
-import Notifications from './notifications.vue';
-import Mode from './mode';
-import Cart from './cart';
-import Profile from './profile';
-import Logo from './logo.vue';
-import SearchBar from './search';
+import Notifications from "./notifications.vue";
+import Mode from "./mode";
+import Cart from "./cart";
+import Profile from "./profile";
+import Logo from "./logo.vue";
+import SearchBar from "./search";
 
 export default {
   //   name: 'Search',

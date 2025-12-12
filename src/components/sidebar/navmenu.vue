@@ -429,6 +429,7 @@ export default {
   },
   destroyed() {
     window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("scroll", this.handleScroll);
   },
   mounted() {
     window.addEventListener("unload", this.HandleUnload);
@@ -451,6 +452,9 @@ export default {
         });
       });
     });
+
+    // Add scroll listener for horizontal sticky
+    window.addEventListener("scroll", this.handleScroll);
   },
   methods: {
     HandleUnload() {
@@ -461,6 +465,7 @@ export default {
       localStorage.setItem("pins", JSON.stringify(pinsArray));
     },
     handleScroll() {
+      // Original scroll logic for material-type and advance-layout
       if (window.scrollY > 400) {
         if (
           this.layoutobject.split(" ").pop() === "material-type" ||

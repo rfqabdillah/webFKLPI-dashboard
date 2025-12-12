@@ -45,6 +45,8 @@ import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
 
 import IndexUserProfile from "@/pages/generalUser/userProfile/index.vue";
 import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
+import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
+import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
 
 const routes =[
     {
@@ -281,6 +283,42 @@ const routes =[
             component: IndexAgendaPage,
             meta: {
               title: "Jadwal Agenda",
+            },
+          },
+        ]
+      },
+
+      {
+        path: '/agenda-detail/:id',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "AgendaDetailPage",
+            component: IndexAgendaDetailPage,
+            meta: {
+              title: "Detail Agenda",
+            },
+          },
+        ]
+      },
+
+      {
+        path: '/my-agenda',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "MyAgendaPage",
+            component: IndexMyAgendaPage,
+            meta: {
+              title: "Agenda Saya",
             },
           },
         ]

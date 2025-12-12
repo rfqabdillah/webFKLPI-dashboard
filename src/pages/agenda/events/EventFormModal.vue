@@ -13,6 +13,17 @@
     >
       <div class="row">
         <div class="mb-3">
+          <label class="form-label fw-semibold">Penulis</label>
+          <input
+            type="text"
+            class="form-control bg-light"
+            v-model="formData.idpengguna"
+            disabled
+            readonly
+          />
+        </div>
+
+        <div class="mb-3">
           <label class="form-label fw-semibold">Judul (Bahasa)</label>
           <input
             type="text"
@@ -261,6 +272,7 @@ const toast = useToast();
 
 // === State ===
 const formData = reactive({
+  idpengguna: "",
   idakategoriagenda: "",
   judul: "",
   judul_en: "",
@@ -275,6 +287,7 @@ const formData = reactive({
 });
 
 const formErrors = reactive({
+  idpengguna: "",
   idakategoriagenda: "",
   judul: "",
   judul_en: "",
@@ -355,6 +368,7 @@ watch(
 
     if (newData) {
       formData.idakategoriagenda = newData.idakategoriagenda;
+      formData.idpengguna = newData.idpengguna;
       formData.judul = newData.judul;
       formData.judul_en = newData.judul_en;
       formData.konten = newData.konten;
@@ -368,6 +382,7 @@ watch(
       posterPreviewUrl.value = newData.poster;
     } else {
       formData.idakategoriagenda = "";
+      formData.idpengguna = "";
       formData.judul = "";
       formData.judul_en = "";
       formData.konten = "";
@@ -410,7 +425,25 @@ async function fetchCategories() {
 
 onMounted(() => {
   fetchCategories();
+  loadUserIdFromStorage();
 });
+
+// Load user ID from localStorage
+function loadUserIdFromStorage() {
+  try {
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      const userId =
+        userData?.data?.[0]?.id_pengguna || userData?.data?.[0]?.idpengguna;
+      if (userId) {
+        formData.idpengguna = userId;
+      }
+    }
+  } catch (err) {
+    console.error("Error loading user ID:", err);
+  }
+}
 
 // === Hook Lifecycle ===
 onUnmounted(() => {
@@ -529,6 +562,7 @@ async function submitForm() {
   errorMessage.value = null;
 
   const data = new FormData();
+  data.append("record[idpengguna]", formData.idpengguna);
   data.append("record[idakategoriagenda]", formData.idakategoriagenda);
   data.append("record[judul]", formData.judul);
   data.append("record[judul_en]", formData.judul_en || "");

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Breadcrumbs main="Jadwal Agenda" :title="$route.meta.title" />
+    <Breadcrumbs :title="$route.meta.title" />
     <div class="container-fluid">
       <div class="row">
         <agenda-page />

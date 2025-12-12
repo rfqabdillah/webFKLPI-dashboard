@@ -191,6 +191,13 @@ const mutations = {
         });
       }
     });
+  },
+  // Mutation to refresh menu by re-filtering based on current user level
+  refreshMenuByUserLevel: (state) => {
+    const userLevel = getCurrentUserLevel();
+    console.log('[Menu Store] Refreshing menu for user level:', userLevel);
+    state.data = filterMenuByLevel(menuItems.data, userLevel);
+    console.log('[Menu Store] Menu filtered, items count:', state.data.length);
   }
 };
 
@@ -212,6 +219,10 @@ const actions = {
   },
   setActiveRoute: (context, item) => {
     context.commit('setActiveRoute', item);
+  },
+  // Action to refresh menu based on user level after login
+  refreshMenuByUserLevel: (context) => {
+    context.commit('refreshMenuByUserLevel');
   }
 };
 

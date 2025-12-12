@@ -144,6 +144,7 @@
 <script setup>
 import { reactive, ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 import { useToast } from "vue-toastification";
 import { Form, Field } from "vee-validate";
 import * as yup from "yup";
@@ -151,6 +152,7 @@ import { login as loginAPI } from "@/services/auth";
 import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 
 const router = useRouter();
+const store = useStore();
 const toast = useToast();
 
 // === State Login ===
@@ -222,6 +224,10 @@ async function onSubmit() {
       const redirectPath = userLevel === UMUM_LEVEL_ID ? "/my-profile" : "/";
       console.log("Redirect to:", redirectPath);
       console.log("==================");
+
+      // Refresh menu based on user level before redirect
+      // This ensures the menu is filtered correctly for the logged-in user
+      store.dispatch("menu/refreshMenuByUserLevel");
 
       router.push(redirectPath);
     } else {
