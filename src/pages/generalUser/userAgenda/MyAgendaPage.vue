@@ -157,14 +157,16 @@ const mapAgendaToCard = (item) => {
   return {
     id: agenda.id_agenda,
     image: agenda.poster || defaultPosterUrl,
-    tag1: category?.nama_kategori_agenda || "Umum",
+    tag1:
+      category?.nama_kategori_agenda || category?.namakategoriagenda || "Umum",
     registration_deadline: agenda.tanggal_batas_pendaftaran,
     implementation_date: agenda.tanggal_pelaksanaan,
     place: agenda.tempat_pelaksanaan || "-",
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
-    photo: defaultAvatarUrl,
-    author: item.users?.nama || "Administrator",
+    photo: agenda.pengguna?.foto || item.pengguna?.foto || defaultAvatarUrl,
+    author:
+      agenda.pengguna?.penulis || item.pengguna?.penulis || "Administrator",
     students: agenda.peserta || 0,
   };
 };

@@ -7,7 +7,6 @@
     @close="$emit('close')"
   >
     <template #detail="{ item }">
-      
       <div class="text-center mb-4">
         <img
           v-if="item.poster"
@@ -23,19 +22,30 @@
           class="foto"
         />
         <h2 class="nama-barang mt-3">
-          {{ item.judul || 'Judul Agenda' }}
+          {{ item.judul || "Judul Agenda" }}
         </h2>
         <h5 class="nama-barang-en text-muted fw-normal">
-          {{ item.judul_en || 'Judul English' }}
+          {{ item.judul_en || "Judul English" }}
         </h5>
-        <p class="merk">{{ item['event-categories']?.namakategoriagenda || 'Kategori tidak tersedia' }}</p>
+        <p class="merk">
+          {{
+            item["event-categories"]?.namakategoriagenda ||
+            "Kategori tidak tersedia"
+          }}
+        </p>
+        <p class="penulis">
+          <i class="fa fa-user me-1"></i>
+          {{
+            item.pengguna?.penulis || item.users?.namapenulis || "Administrator"
+          }}
+        </p>
       </div>
 
-      <hr>
+      <hr />
 
       <div class="detail-section">
         <h4><i class="fa fa-calendar me-2"></i>Detail Pelaksanaan & Status</h4>
-        
+
         <div class="row detail-grid-container">
           <div class="col-md-6">
             <dl class="detail-list">
@@ -46,52 +56,62 @@
               <dd>{{ formatDate(item.tglbatasdaftar) }}</dd>
 
               <dt>Tempat Pelaksanaan</dt>
-              <dd>{{ item.tmptpelaksanaan || '-' }}</dd>
+              <dd>{{ item.tmptpelaksanaan || "-" }}</dd>
             </dl>
           </div>
-          
+
           <div class="col-md-6">
             <dl class="detail-list">
               <dt>Status Tayang</dt>
               <dd>
-                <span class="badge" :class="{
-                  'bg-success': item.tayang === 'Tayang',
-                  'bg-warning text-dark': item.tayang === 'Draft',
-                  'bg-light text-dark': item.tayang !== 'Tayang' && item.tayang !== 'Draft'
-                }">
-                  {{ item.tayang || 'N/A' }}
+                <span
+                  class="badge"
+                  :class="{
+                    'bg-success': item.tayang === 'Tayang',
+                    'bg-warning text-dark': item.tayang === 'Draft',
+                    'bg-light text-dark':
+                      item.tayang !== 'Tayang' && item.tayang !== 'Draft',
+                  }"
+                >
+                  {{ item.tayang || "N/A" }}
                 </span>
               </dd>
 
               <dt>Status Flash</dt>
-              <dd>{{ item.flash == '1' ? 'Ya' : 'Tidak' }}</dd>
+              <dd>{{ item.flash == "1" ? "Ya" : "Tidak" }}</dd>
             </dl>
           </div>
         </div>
       </div>
 
-      <hr>
+      <hr />
 
       <div class="detail-section">
         <h4><i class="fa fa-file-text-o me-2"></i>Konten Agenda</h4>
         <div class="row">
           <div class="mb-3">
             <h5>Konten (ID)</h5>
-            
-            <div class="text-content" v-if="item.konten" v-html="item.konten"></div>
+
+            <div
+              class="text-content"
+              v-if="item.konten"
+              v-html="item.konten"
+            ></div>
             <div class="text-content" v-else>
               <span class="text-muted">Konten tidak tersedia.</span>
             </div>
-
           </div>
           <div class="mb-3">
             <h5>Konten (EN)</h5>
 
-            <div class="text-content" v-if="item.konten_en" v-html="item.konten_en"></div>
+            <div
+              class="text-content"
+              v-if="item.konten_en"
+              v-html="item.konten_en"
+            ></div>
             <div class="text-content" v-else>
               <span class="text-muted">Konten tidak tersedia.</span>
             </div>
-            
           </div>
         </div>
       </div>
@@ -100,18 +120,18 @@
 </template>
 
 <script setup>
-import BaseDetailModal from '@/components/base/BaseDetailModal.vue';
-import { getDetailEvent } from '@/services/general/events/events';
-import { formatDate } from '@/utils/formatDate';
+import BaseDetailModal from "@/components/base/BaseDetailModal.vue";
+import { getDetailEvent } from "@/services/general/events/events";
+import { formatDate } from "@/utils/formatDate";
 
 defineProps({
   itemToView: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
-defineEmits(['close']);
+defineEmits(["close"]);
 </script>
 
 <style scoped>
@@ -137,6 +157,12 @@ defineEmits(['close']);
   color: #6c757d;
   font-size: 1.1rem;
   margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.penulis {
+  color: #495057;
+  font-size: 0.95rem;
+  margin-top: 0;
 }
 .detail-section {
   margin-top: 1rem;
@@ -166,7 +192,7 @@ defineEmits(['close']);
   min-height: 150px;
 }
 .detail-grid-container {
-  padding-top: 0.5rem; 
+  padding-top: 0.5rem;
 }
 .detail-list {
   margin-bottom: 0;
@@ -180,15 +206,15 @@ defineEmits(['close']);
 .detail-list dd {
   color: #555;
   margin-bottom: 1.15rem;
-  padding-left: 0; 
+  padding-left: 0;
 }
 .detail-list dd .badge {
   font-size: 0.85em;
   padding: 0.5em 0.75em;
-  color: #fff; 
+  color: #fff;
 }
 .detail-list dd .badge.text-dark {
-  color: #000 !important; 
+  color: #000 !important;
 }
 
 .text-content :deep(p) {
@@ -197,11 +223,11 @@ defineEmits(['close']);
 }
 .text-content :deep(ul),
 .text-content :deep(ol) {
-  padding-left: 2rem; 
+  padding-left: 2rem;
   margin-bottom: 1rem;
 }
 .text-content :deep(li) {
-  margin-bottom: 0.5rem; 
+  margin-bottom: 0.5rem;
 }
 .text-content :deep(blockquote) {
   margin: 1rem 0;
@@ -216,7 +242,7 @@ defineEmits(['close']);
   background-color: #eee;
   padding: 2px 4px;
   border-radius: 4px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 .text-content :deep(.ql-align-center) {
   text-align: center;

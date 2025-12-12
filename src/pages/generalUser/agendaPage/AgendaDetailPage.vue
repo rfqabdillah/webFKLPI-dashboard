@@ -20,7 +20,7 @@
         </div>
 
         <!-- Content -->
-        <div v-else-if="data" class="row">
+        <div v-else-if="data" class="row align-items-start">
           <!-- Main Content -->
           <div class="col-lg-8">
             <!-- Back Button -->
@@ -80,6 +80,13 @@
                   data.place || "-"
                 }}</span>
               </div>
+              <div class="d-flex align-items-center mb-2">
+                <i class="fa fa-user text-primary me-2"></i>
+                <span class="text-muted">Penyelenggara: </span>
+                <span class="text-dark fw-medium ms-1">{{
+                  data.author || "Administrator"
+                }}</span>
+              </div>
             </div>
 
             <hr class="my-4" />
@@ -116,9 +123,7 @@
 
           <!-- Sidebar -->
           <div class="col-lg-4">
-            <div class="sidebar-sticky">
-              <AgendaDetailPageSidebar />
-            </div>
+            <AgendaDetailPageSidebar />
           </div>
         </div>
       </div>
@@ -140,7 +145,6 @@ import {
 
 const route = useRoute();
 
-// Constants
 const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
 
 // State
@@ -150,11 +154,9 @@ const isRegistering = ref(false);
 const isRegistered = ref(false);
 const error = ref(null);
 
-// Default placeholder
 const defaultPosterUrl =
   "https://placehold.co/800x400/EBF4FF/7F9CF5?text=Agenda";
 
-// Fetch Detail Agenda
 const fetchDetail = async () => {
   isLoading.value = true;
   error.value = null;
@@ -169,11 +171,13 @@ const fetchDetail = async () => {
       return;
     }
 
-    // Map response to data
     data.value = {
       id: item.id_agenda,
       image: item.poster || defaultPosterUrl,
-      kategori: item.kategori_agenda?.nama_kategori_agenda || "",
+      kategori:
+        item.kategori_agenda?.nama_kategori_agenda ||
+        item["event-categories"]?.namakategoriagenda ||
+        "",
       implementation_date: item.tanggal_pelaksanaan,
       registration_deadline: item.tanggal_batas_pendaftaran,
       place: item.tempat_pelaksanaan,
@@ -181,6 +185,8 @@ const fetchDetail = async () => {
       title_en: item.judul_en,
       desc: item.konten,
       desc_en: item.konten_en,
+      author: item.pengguna?.penulis || "Administrator",
+      authorPhoto: item.pengguna?.foto || null,
     };
   } catch (err) {
     console.error("Error fetching agenda data:", err);
@@ -189,11 +195,9 @@ const fetchDetail = async () => {
     isLoading.value = false;
   }
 
-  // Check if user is already registered
   await checkRegistration();
 };
 
-// Check if user is already registered for this agenda
 const checkRegistration = async () => {
   const userDataString = localStorage.getItem("userData");
   if (!userDataString) return;
@@ -208,22 +212,18 @@ const checkRegistration = async () => {
       filter: `id_pengguna=${userId},id_agenda=${data.value.id}`,
     });
 
-    // Check if there's any registration data
     const registrations = response.data?.[0]?.data || [];
     isRegistered.value = registrations.length > 0;
   } catch (err) {
     console.error("Error checking registration:", err);
-    // Silently fail - assume not registered
     isRegistered.value = false;
   }
 };
 
-// Handle image error
 const handleImageError = (event) => {
   event.target.src = defaultPosterUrl;
 };
 
-// Download poster function - saves directly to user's downloads folder
 const downloadPoster = async () => {
   if (!data.value?.image) return;
 
@@ -253,13 +253,10 @@ const downloadPoster = async () => {
     // CORS or network error - use fallback
   }
 
-  // Fallback: open in new tab for manual save
   window.open(imageUrl, "_blank");
 };
 
-// Register for agenda function
 const registerAgenda = async () => {
-  // Get user data from localStorage
   const userDataString = localStorage.getItem("userData");
   if (!userDataString) {
     Swal.fire({
@@ -294,7 +291,6 @@ const registerAgenda = async () => {
     return;
   }
 
-  // Show confirmation dialog
   const result = await Swal.fire({
     icon: "question",
     title: "Konfirmasi Pendaftaran",
@@ -308,7 +304,6 @@ const registerAgenda = async () => {
 
   if (!result.isConfirmed) return;
 
-  // Proceed with registration
   isRegistering.value = true;
 
   try {
@@ -319,7 +314,6 @@ const registerAgenda = async () => {
 
     await addEventUser(formData);
 
-    // Set registered status
     isRegistered.value = true;
 
     Swal.fire({
@@ -380,11 +374,5 @@ onMounted(() => {
 
 .text-primary {
   color: #7366ff !important;
-}
-
-.sidebar-sticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 100px;
 }
 </style>

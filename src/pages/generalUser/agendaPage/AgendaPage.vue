@@ -16,7 +16,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="form-control"
-                placeholder="Cari judul agenda..."
+                placeholder="Cari Agenda"
                 @input="onSearchChange"
               />
               <button
@@ -175,11 +175,9 @@ const defaultPosterUrl =
 const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
 
 // Computed properties
-// Filtered agenda based on search and category
 const filteredAgenda = computed(() => {
   let result = agendaList.value;
 
-  // Filter by search query
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim();
     result = result.filter((agenda) =>
@@ -187,7 +185,6 @@ const filteredAgenda = computed(() => {
     );
   }
 
-  // Filter by category
   if (selectedCategory.value) {
     result = result.filter((agenda) => {
       const catId =
@@ -227,17 +224,14 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-// Helper function to strip HTML tags for description
 const stripHtml = (html) => {
   if (!html) return "";
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   const text = tmp.textContent || tmp.innerText || "";
-  // Truncate to 100 characters
   return text.length > 100 ? text.substring(0, 100) + "..." : text;
 };
 
-// Map agenda data to card props
 const mapAgendaToCard = (agenda) => {
   return {
     id: agenda.id_agenda,
@@ -248,8 +242,8 @@ const mapAgendaToCard = (agenda) => {
     place: agenda.tempat_pelaksanaan || "-",
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
-    photo: defaultAvatarUrl,
-    author: "Administrator",
+    photo: agenda.pengguna?.foto || defaultAvatarUrl,
+    author: agenda.pengguna?.penulis || "Administrator",
     students: agenda.peserta || 0,
   };
 };
@@ -263,12 +257,11 @@ const fetchAgenda = async () => {
     const response = await getEvents({
       sort_by: "tanggal_pelaksanaan",
       sort_direction: "desc",
-      tayang: "Tayang", // Only show published events
+      tayang: "Tayang",
     });
 
     console.log("API Response:", response);
 
-    // Handle response structure: response.data is an array with first element containing data
     if (
       response.data &&
       Array.isArray(response.data) &&
@@ -295,7 +288,6 @@ const fetchAgenda = async () => {
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
-    // Scroll to top of card container
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 };
@@ -304,7 +296,6 @@ const openDetail = (agenda) => {
   router.push(`/agenda-detail/${agenda.id_agenda}`);
 };
 
-// Fetch categories from API
 const fetchCategories = async () => {
   try {
     const response = await getEventCategories();
@@ -332,13 +323,12 @@ const fetchCategories = async () => {
   }
 };
 
-// Search and filter handlers
 const onSearchChange = () => {
-  currentPage.value = 1; // Reset to first page
+  currentPage.value = 1;
 };
 
 const onCategoryChange = () => {
-  currentPage.value = 1; // Reset to first page
+  currentPage.value = 1;
 };
 
 const clearSearch = () => {
