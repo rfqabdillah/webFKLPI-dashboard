@@ -156,11 +156,13 @@ import { useRouter } from "vue-router";
 import AgendaCard from "@/components/base/default/agendaCard.vue";
 import { getEvents } from "@/services/public/eventsPublic";
 import { getEventCategories } from "@/services/general/events/eventsCategories";
+import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
 
 const router = useRouter();
 
 // State
 const agendaList = ref([]);
+const registrantCounts = ref({});
 const isLoading = ref(false);
 const error = ref(null);
 const currentPage = ref(1);
@@ -169,7 +171,6 @@ const searchQuery = ref("");
 const selectedCategory = ref("");
 const categories = ref([]);
 
-// Default placeholder image
 const defaultPosterUrl =
   "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
 const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
@@ -243,8 +244,8 @@ const mapAgendaToCard = (agenda) => {
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
     photo: agenda.pengguna?.foto || defaultAvatarUrl,
-    author: agenda.pengguna?.penulis || "Administrator",
-    students: agenda.peserta || 0,
+    author: agenda.pengguna?.penulis || "Author",
+    students: registrantCounts.value[agenda.id_agenda] || 0,
   };
 };
 
@@ -277,11 +278,33 @@ const fetchAgenda = async () => {
     }
 
     console.log("Agenda List:", agendaList.value);
+
+    await fetchRegistrantCounts();
   } catch (err) {
     console.error("Error fetching agenda:", err);
     error.value = "Gagal memuat data agenda. Silakan coba lagi.";
   } finally {
     isLoading.value = false;
+  }
+};
+
+const fetchRegistrantCounts = async () => {
+  try {
+    const response = await getEventUsers();
+    const eventUsers = response.data?.[0]?.data || response.data?.data || [];
+
+    const counts = {};
+    eventUsers.forEach((eu) => {
+      const agendaId = eu.id_agenda || eu.idagenda;
+      if (agendaId) {
+        counts[agendaId] = (counts[agendaId] || 0) + 1;
+      }
+    });
+
+    registrantCounts.value = counts;
+    console.log("Registrant Counts:", registrantCounts.value);
+  } catch (err) {
+    console.error("Error fetching registrant counts:", err);
   }
 };
 
