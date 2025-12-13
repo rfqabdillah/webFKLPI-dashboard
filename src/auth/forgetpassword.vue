@@ -9,34 +9,45 @@
               <div class="text-center mb-4">
                 <a class="logo d-inline-block">
                   <img
-                      v-if="dynamicLogoUrl && !isLoadingLogo"
-                      class="img-fluid for-light"
-                      :src="dynamicLogoUrl"
-                      :alt="appName"
-                      style="max-height: 100px; width: auto; object-fit: contain"
-                      @error="handleImageError"
+                    v-if="dynamicLogoUrl && !isLoadingLogo"
+                    class="img-fluid for-light"
+                    :src="dynamicLogoUrl"
+                    :alt="appName"
+                    style="max-height: 100px; width: auto; object-fit: contain"
+                    @error="handleImageError"
                   />
 
                   <div
-                      v-else-if="isLoadingLogo"
-                      class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
-                      style="width: 110px; height: 110px; border: 1px solid #dee2e6;"
+                    v-else-if="isLoadingLogo"
+                    class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
+                    style="
+                      width: 110px;
+                      height: 110px;
+                      border: 1px solid #dee2e6;
+                    "
                   >
                     <div
-                        class="spinner-border text-primary"
-                        role="status"
-                        style="width: 2.5rem; height: 2.5rem"
+                      class="spinner-border text-primary"
+                      role="status"
+                      style="width: 2.5rem; height: 2.5rem"
                     >
                       <span class="visually-hidden">Loading...</span>
                     </div>
                   </div>
 
                   <div
-                      v-else
-                      class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
-                      style="width: 110px; height: 110px; border: 1px solid #dee2e6;"
+                    v-else
+                    class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm mx-auto"
+                    style="
+                      width: 110px;
+                      height: 110px;
+                      border: 1px solid #dee2e6;
+                    "
                   >
-                    <span class="fw-bold text-secondary" style="font-size: 24px; letter-spacing: 2px;">
+                    <span
+                      class="fw-bold text-secondary"
+                      style="font-size: 24px; letter-spacing: 2px"
+                    >
                       LOGO
                     </span>
                   </div>
@@ -45,20 +56,26 @@
 
               <!-- FORM -->
               <div class="login-main">
-                <Form class="theme-form" :validation-schema="schema" @submit="onSubmit" v-slot="{ errors }">
-
-                  <h4>Lupa Kata Sandi</h4>
-                  <p>Masukkan email Anda untuk menerima tautan reset password</p>
+                <Form
+                  class="theme-form"
+                  :validation-schema="schema"
+                  @submit="onSubmit"
+                  v-slot="{ errors }"
+                >
+                  <h4>Lupa Password</h4>
+                  <p>
+                    Masukkan email Anda untuk menerima tautan reset password
+                  </p>
 
                   <div class="form-group">
                     <label class="col-form-label">Email</label>
                     <Field
-                        name="email"
-                        type="email"
-                        class="form-control"
-                        :class="{ 'is-invalid': errors.email }"
-                        placeholder="email@gmail.com"
-                        v-model="form.email"
+                      name="email"
+                      type="email"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.email }"
+                      placeholder="email@gmail.com"
+                      v-model="form.email"
                     />
                     <span class="validate-error">{{ errors.email }}</span>
                   </div>
@@ -66,11 +83,14 @@
                   <div class="form-group mb-0">
                     <div class="text-end mt-3">
                       <button
-                          class="btn btn-primary btn-block w-100"
-                          type="submit"
-                          :disabled="isLoading"
+                        class="btn btn-primary btn-block w-100"
+                        type="submit"
+                        :disabled="isLoading"
                       >
-                        <span v-if="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                        <span
+                          v-if="isLoading"
+                          class="spinner-border spinner-border-sm me-1"
+                        ></span>
                         {{ isLoading ? "Mengirim..." : "Kirim Tautan Reset" }}
                       </button>
                     </div>
@@ -78,12 +98,12 @@
 
                   <p class="mt-4 mb-0 text-center">
                     Kembali ke?
-                    <router-link to="/auth" class="ms-1">Login</router-link>
+                    <router-link to="/auth" class="ms-1"
+                      >Masuk Sekarang</router-link
+                    >
                   </p>
-
                 </Form>
               </div>
-
             </div>
           </div>
         </div>
@@ -120,7 +140,10 @@ const form = reactive({
 
 /* VALIDATION */
 const schema = yup.object({
-  email: yup.string().email("Format email tidak valid").required("Email wajib diisi")
+  email: yup
+    .string()
+    .email("Format email tidak valid")
+    .required("Email wajib diisi"),
 });
 
 /* RECAPTCHA LOADER */
@@ -145,9 +168,9 @@ function getRecaptchaToken() {
     if (!window.grecaptcha) return reject("reCAPTCHA not loaded");
     window.grecaptcha.ready(() => {
       window.grecaptcha
-          .execute(recaptchaKey, { action: "forgot_password" })
-          .then(resolve)
-          .catch(reject);
+        .execute(recaptchaKey, { action: "forgot_password" })
+        .then(resolve)
+        .catch(reject);
     });
   });
 }
@@ -172,7 +195,6 @@ async function onSubmit() {
     const res = await axios.post(`/forgot-password`, fd);
 
     toast.success(res.data.message || "Tautan reset password dikirim!");
-
   } catch (error) {
     console.error("Forgot Password Error:", error);
 
