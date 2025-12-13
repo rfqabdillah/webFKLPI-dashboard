@@ -50,6 +50,7 @@ import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
 import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
 import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
 import IndexTestimoniPage from "@/pages/generalUser/testimoni/index.vue";
+import IndexAdminTestimoni from "@/pages/testimoni/index.vue";
 
 const routes =[
     {
@@ -152,6 +153,23 @@ const routes =[
             component: IndexEventCategories,
             meta: {
               title: "Kategori Agenda",
+            },
+          },
+        ]
+      },
+      {
+        path: '/website/testimoni',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "AdminTestimoni",
+            component: IndexAdminTestimoni,
+            meta: {
+              title: "Kelola Testimoni",
             },
           },
         ]

@@ -99,6 +99,12 @@ export var menuItems = {
         "active":false
       },
       {
+        "path": "/website/testimoni",
+        "title": "Testimoni",
+        "type": "link",
+        "active":false
+      },
+      {
         "title": "Galeri",
         "type": "sub",
         "active": false,

@@ -55,31 +55,8 @@
 
       <!-- Footer -->
       <div
-        class="d-flex justify-content-between align-items-center pt-3 border-top"
+        class="d-flex justify-content-end align-items-center pt-3 border-top"
       >
-        <div class="d-flex align-items-center">
-          <div class="author-avatar me-2">
-            <img
-              v-if="props.item.photo && !props.item.photo.includes('placehold')"
-              :src="props.item.photo"
-              :alt="props.item.author"
-              class="author-photo"
-              @error="
-                $event.target.style.display = 'none';
-                $event.target.nextElementSibling.style.display = 'block';
-              "
-            />
-            <i
-              class="fa fa-user"
-              :style="
-                props.item.photo && !props.item.photo.includes('placehold')
-                  ? 'display: none'
-                  : ''
-              "
-            ></i>
-          </div>
-          <span class="author-name">{{ props.item.author }}</span>
-        </div>
         <span class="btn-selengkapnya">
           Selengkapnya <i class="fa fa-arrow-right ms-1"></i>
         </span>
@@ -190,34 +167,6 @@ const handleAvatarError = (event) => {
   background-color: #7366ff !important;
   font-weight: 500;
   font-size: 0.75rem;
-}
-
-.author-avatar {
-  width: 36px;
-  height: 36px;
-  background-color: #e8e6f5;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.author-avatar i {
-  color: #6c757d;
-  font-size: 16px;
-}
-
-.author-photo {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.author-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
 }
 
 .btn-selengkapnya {
