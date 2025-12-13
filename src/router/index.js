@@ -49,6 +49,7 @@ import IndexUserProfile from "@/pages/generalUser/userProfile/index.vue";
 import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
 import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
 import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
+import IndexTestimoniPage from "@/pages/generalUser/testimoni/index.vue";
 
 const routes =[
     {
@@ -342,6 +343,24 @@ const routes =[
             component: IndexMyAgendaPage,
             meta: {
               title: "Agenda Saya",
+            },
+          },
+        ]
+      },
+
+      {
+        path: '/testimoni',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "TestimoniPage",
+            component: IndexTestimoniPage,
+            meta: {
+              title: "Testimoni Saya",
             },
           },
         ]
