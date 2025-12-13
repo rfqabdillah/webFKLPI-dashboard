@@ -463,17 +463,42 @@ const router=createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  // ID level untuk user "umum"
+  const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
+
   if (to.meta.title) {
     document.title = to.meta.title;
   }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
+    const token = localStorage.getItem('token');
     
-    if (!localStorage.getItem('token')) {
+    if (!token) {
       next('/auth');
-    } else {
-      next();
+      return;
     }
+    
+    // Check if user is "umum" level trying to access dashboard (root path)
+    // If so, redirect them to /my-profile
+    if (to.path === '/' || to.name === 'defaultRoot') {
+      try {
+        const userDataString = localStorage.getItem('userData');
+        if (userDataString) {
+          const userData = JSON.parse(userDataString);
+          const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
+          
+          if (userLevel === UMUM_LEVEL_ID) {
+            // User "umum" should not access dashboard, redirect to profile
+            next('/my-profile');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user level in router guard:', error);
+      }
+    }
+    
+    next();
   } else {
     next();
   }

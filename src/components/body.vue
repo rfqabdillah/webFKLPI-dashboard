@@ -166,6 +166,11 @@ export default {
           });
         });
       });
+
+      // IMPORTANT: Enforce correct layout based on user level on every route change
+      // This prevents "umum" users from accidentally getting Dubai layout
+      this.ensureCorrectLayoutForUser();
+
       this.layoutobj = layoutClasses.find(
         (item) => Object.keys(item).pop() === this.layout.settings.layout
       );
@@ -206,6 +211,11 @@ export default {
     this.resized = this.sidebar_toggle_var;
     this.$store.dispatch("layout/set");
 
+    // Listen for user data changes (login/logout/profile update)
+    // to ensure layout is updated accordingly
+    window.addEventListener("userDataUpdated", this.handleUserDataChange);
+    window.addEventListener("storage", this.handleStorageChange);
+
     // Determine layout based on user level (umum uses LosAngeles, admin/operator uses Dubai)
     const defaultLayout = getLayoutForUserLevel();
 
@@ -221,6 +231,11 @@ export default {
       this.layout.settings.layout
     ];
   },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("userDataUpdated", this.handleUserDataChange);
+    window.removeEventListener("storage", this.handleStorageChange);
+  },
   methods: {
     sidebar_toggle(value) {
       this.sidebar_toggle_var = !value;
@@ -230,6 +245,52 @@ export default {
     },
     handleResize() {
       this.$store.dispatch("menu/resizetoggle");
+    },
+    // Method to ensure layout matches user level
+    // "umum" users should always have LosAngeles layout
+    // Other users (admin, operator) should have Dubai layout
+    ensureCorrectLayoutForUser() {
+      const expectedLayout = getLayoutForUserLevel();
+      const currentLayout = this.layout.settings.layout;
+
+      // Skip if layout is already correct
+      if (currentLayout === expectedLayout) {
+        return;
+      }
+
+      // Force correct layout based on user level
+      console.log(
+        `[Layout] Correcting layout from ${currentLayout} to ${expectedLayout}`
+      );
+      this.layout.settings.layout = expectedLayout;
+
+      // Update layoutobj to reflect the change
+      this.updateLayoutObject();
+    },
+    // Handler for userDataUpdated event (same tab)
+    handleUserDataChange() {
+      console.log("[Layout] User data changed, checking layout...");
+      this.ensureCorrectLayoutForUser();
+    },
+    // Handler for storage event (other tabs)
+    handleStorageChange(e) {
+      if (e.key === "userData") {
+        console.log(
+          "[Layout] User data changed in another tab, checking layout..."
+        );
+        this.ensureCorrectLayoutForUser();
+      }
+    },
+    // Update layoutobj based on current layout setting
+    updateLayoutObject() {
+      this.layoutobj = layoutClasses.find(
+        (item) => Object.keys(item).pop() === this.layout.settings.layout
+      );
+      if (this.layoutobj) {
+        this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
+          this.layout.settings.layout
+        ];
+      }
     },
     removeoverlay() {
       this.$store.state.menu.activeoverlay = false;
@@ -255,6 +316,9 @@ export default {
     // setTimeout(()=>{
     this.loading = false;
 
+    // Ensure layout is correct after mount
+    // This catches any edge cases where layout was set incorrectly
+    this.ensureCorrectLayoutForUser();
     // },2000)
   },
 };
