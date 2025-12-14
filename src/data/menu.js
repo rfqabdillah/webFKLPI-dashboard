@@ -99,6 +99,12 @@ export var menuItems = {
         "active":false
       },
       {
+        "path": "/website/testimoni",
+        "title": "Testimoni",
+        "type": "link",
+        "active":false
+      },
+      {
         "title": "Galeri",
         "type": "sub",
         "active": false,
@@ -173,6 +179,15 @@ export var menuItems = {
       "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
     },
     {
+      "title": "Agenda Saya",
+      "icon": "stroke-big-checklist",
+      "iconf": "fill-big-checklist",
+      "type": "link",
+      "path": "/my-agenda",
+      "active": false,
+      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
+    },
+    {
       "title": "Jadwal Agenda",
       "icon": "stroke-calendar",
       "iconf": "fill-calendar",
@@ -182,11 +197,11 @@ export var menuItems = {
       "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
     },
     {
-      "title": "Agenda Saya",
-      "icon": "stroke-calendar",
-      "iconf": "fill-calendar",
+      "title": "Testimoni",
+      "icon": "message-box",
+      "iconf": "message-box",
       "type": "link",
-      "path": "/my-agenda",
+      "path": "/testimoni",
       "active": false,
       "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
     },

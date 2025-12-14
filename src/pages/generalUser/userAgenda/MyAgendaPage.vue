@@ -110,7 +110,6 @@ const itemsPerPage = 9;
 // Default placeholder image
 const defaultPosterUrl =
   "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
-const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
 
 // Computed properties
 const totalPages = computed(() =>
@@ -164,9 +163,6 @@ const mapAgendaToCard = (item) => {
     place: agenda.tempat_pelaksanaan || "-",
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
-    photo: agenda.pengguna?.foto || item.pengguna?.foto || defaultAvatarUrl,
-    author:
-      agenda.pengguna?.penulis || item.pengguna?.penulis || "Administrator",
     students: agenda.peserta || 0,
   };
 };

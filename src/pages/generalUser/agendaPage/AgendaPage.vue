@@ -173,7 +173,6 @@ const categories = ref([]);
 
 const defaultPosterUrl =
   "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
-const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
 
 // Computed properties
 const filteredAgenda = computed(() => {
@@ -243,8 +242,6 @@ const mapAgendaToCard = (agenda) => {
     place: agenda.tempat_pelaksanaan || "-",
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
-    photo: agenda.pengguna?.foto || defaultAvatarUrl,
-    author: agenda.pengguna?.penulis || "Author",
     students: registrantCounts.value[agenda.id_agenda] || 0,
   };
 };
