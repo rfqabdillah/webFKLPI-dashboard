@@ -88,17 +88,57 @@
               </div>
             </div>
 
+            <!-- Registration Status Card -->
+            <div
+              v-if="isRegistered"
+              class="registration-status-card mb-4"
+              :class="getCardClass(registrationStatusId)"
+            >
+              <div class="status-icon">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div class="status-content">
+                <div class="status-header">
+                  <span class="status-label">Status Pendaftaran Anda</span>
+                  <span
+                    class="status-badge"
+                    :class="getStatusClass(registrationStatusId)"
+                  >
+                    {{ registrationStatus }}
+                  </span>
+                </div>
+                <p class="status-message">
+                  {{ getStatusMessage(registrationStatusId) }}
+                </p>
+              </div>
+            </div>
+
             <hr class="my-4" />
 
             <!-- Content / Description -->
             <div class="agenda-content" v-html="data.desc"></div>
 
             <!-- Action Buttons -->
-            <div class="mt-4 d-flex gap-3">
-              <!-- Already Registered -->
-              <button v-if="isRegistered" class="btn btn-success px-4" disabled>
-                <i class="fa fa-check-circle me-2"></i> Terdaftar
-              </button>
+            <div class="mt-4 d-flex gap-3 flex-wrap">
+              <!-- Already Registered - Show Cancel Button -->
+              <template v-if="isRegistered">
+                <button class="btn btn-success px-4" disabled>
+                  <i class="fa fa-check-circle me-2"></i> Terdaftar
+                </button>
+                <button
+                  @click="cancelRegistration"
+                  class="btn btn-outline-danger px-4"
+                  :disabled="isCancelling"
+                >
+                  <span v-if="isCancelling">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Membatalkan...
+                  </span>
+                  <span v-else>
+                    <i class="fa fa-times-circle me-2"></i> Batalkan Pendaftaran
+                  </span>
+                </button>
+              </template>
               <!-- Not Registered -->
               <button
                 v-else
@@ -121,7 +161,7 @@
           </div>
 
           <!-- Sidebar -->
-          <div class="col-lg-4">
+          <div class="col-lg-4 mt-4 mt-lg-0 sidebar-column">
             <AgendaDetailPageSidebar />
           </div>
         </div>
@@ -140,17 +180,25 @@ import { getDetailEvent } from "@/services/public/eventsPublic";
 import {
   addEventUser,
   getEventUsers,
+  deleteEventUser,
 } from "@/services/general/eventUsers/eventUsers";
 
 const route = useRoute();
 
 const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
+const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
+const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
+const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
 
 // State
 const data = ref(null);
 const isLoading = ref(false);
 const isRegistering = ref(false);
+const isCancelling = ref(false);
 const isRegistered = ref(false);
+const registrationId = ref(null);
+const registrationStatusId = ref(null);
+const registrationStatus = ref("Terdaftar");
 const error = ref(null);
 
 const defaultPosterUrl =
@@ -212,7 +260,22 @@ const checkRegistration = async () => {
     });
 
     const registrations = response.data?.[0]?.data || [];
-    isRegistered.value = registrations.length > 0;
+
+    if (registrations.length > 0) {
+      isRegistered.value = true;
+      registrationId.value = registrations[0].id_agenda_pengguna;
+      registrationStatusId.value = registrations[0].id_status;
+
+      // Get status name from relation
+      const statusData =
+        registrations[0].status_agenda_pengguna ||
+        registrations[0]["event-user-statuses"];
+      registrationStatus.value = statusData?.nama_status || "Terdaftar";
+    } else {
+      isRegistered.value = false;
+      registrationId.value = null;
+      registrationStatusId.value = null;
+    }
   } catch (err) {
     console.error("Error checking registration:", err);
     isRegistered.value = false;
@@ -313,7 +376,7 @@ const registerAgenda = async () => {
 
     await addEventUser(formData);
 
-    isRegistered.value = true;
+    await checkRegistration();
 
     Swal.fire({
       icon: "success",
@@ -336,6 +399,105 @@ const registerAgenda = async () => {
     });
   } finally {
     isRegistering.value = false;
+  }
+};
+
+const cancelRegistration = async () => {
+  if (!registrationId.value) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Data pendaftaran tidak ditemukan.",
+      confirmButtonColor: "#7366ff",
+    });
+    return;
+  }
+
+  const result = await Swal.fire({
+    icon: "warning",
+    title: "Batalkan Pendaftaran",
+    html: `Apakah Anda yakin ingin membatalkan pendaftaran untuk agenda:<br><br><strong>${data.value.title}</strong>?`,
+    showCancelButton: true,
+    confirmButtonText: "Ya, Batalkan",
+    cancelButtonText: "Tidak",
+    confirmButtonColor: "#dc3545",
+    cancelButtonColor: "#efefef",
+  });
+
+  if (!result.isConfirmed) return;
+
+  isCancelling.value = true;
+
+  try {
+    await deleteEventUser(registrationId.value);
+
+    isRegistered.value = false;
+    registrationId.value = null;
+    registrationStatus.value = "Terdaftar";
+
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: "Pendaftaran Anda telah dibatalkan.",
+      confirmButtonColor: "#7366ff",
+    });
+  } catch (err) {
+    console.error("Cancel registration error:", err);
+
+    const errorMessage =
+      err.response?.data?.message ||
+      "Gagal membatalkan pendaftaran. Silakan coba lagi.";
+
+    Swal.fire({
+      icon: "error",
+      title: "Gagal Membatalkan",
+      text: errorMessage,
+      confirmButtonColor: "#7366ff",
+    });
+  } finally {
+    isCancelling.value = false;
+  }
+};
+
+const getStatusClass = (statusId) => {
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "status-completed"; // Ungu - Selesai
+    case STATUS_DITOLAK_ID:
+      return "status-cancelled"; // Merah - Ditolak
+    case STATUS_DITERIMA_ID:
+      return "status-accepted"; // Hijau - Diterima
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "status-registered"; // Biru - Terdaftar
+  }
+};
+
+const getCardClass = (statusId) => {
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "card-completed";
+    case STATUS_DITOLAK_ID:
+      return "card-cancelled";
+    case STATUS_DITERIMA_ID:
+      return "card-accepted";
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "card-registered";
+  }
+};
+
+const getStatusMessage = (statusId) => {
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "Terima kasih telah menghadiri agenda ini!";
+    case STATUS_DITOLAK_ID:
+      return "Maaf, pendaftaran Anda tidak dapat diproses.";
+    case STATUS_DITERIMA_ID:
+      return "Pendaftaran Anda telah diterima. Silakan hadir sesuai jadwal.";
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "Pendaftaran Anda sedang dalam proses verifikasi.";
   }
 };
 
@@ -373,5 +535,178 @@ onMounted(() => {
 
 .text-primary {
   color: #7366ff !important;
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.1);
+  border-color: rgba(13, 202, 240, 0.3);
+  color: #055160;
+}
+
+/* Registration Status Card */
+.registration-status-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border-left: 4px solid;
+}
+
+/* Card Variants */
+.registration-status-card.card-registered {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-left-color: #2196f3;
+}
+
+.registration-status-card.card-registered .status-icon {
+  background: #2196f3;
+}
+
+.registration-status-card.card-registered .status-label,
+.registration-status-card.card-registered .status-message {
+  color: #1565c0;
+}
+
+.registration-status-card.card-accepted {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-left-color: #4caf50;
+}
+
+.registration-status-card.card-accepted .status-icon {
+  background: #4caf50;
+}
+
+.registration-status-card.card-accepted .status-label,
+.registration-status-card.card-accepted .status-message {
+  color: #2e7d32;
+}
+
+.registration-status-card.card-completed {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  border-left-color: #8e24aa;
+}
+
+.registration-status-card.card-completed .status-icon {
+  background: #8e24aa;
+}
+
+.registration-status-card.card-completed .status-label,
+.registration-status-card.card-completed .status-message {
+  color: #6a1b9a;
+}
+
+.registration-status-card.card-cancelled {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-left-color: #f44336;
+}
+
+.registration-status-card.card-cancelled .status-icon {
+  background: #f44336;
+}
+
+.registration-status-card.card-cancelled .status-label,
+.registration-status-card.card-cancelled .status-message {
+  color: #c62828;
+}
+
+.status-icon {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+}
+
+.status-content {
+  flex: 1;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.status-label {
+  font-weight: 600;
+  color: #2e7d32;
+  font-size: 1rem;
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-badge.status-registered {
+  background-color: #2196f3;
+  color: white;
+}
+
+.status-badge.status-completed {
+  background-color: #8e24aa;
+  color: white;
+}
+
+.status-badge.status-pending {
+  background-color: #ff9800;
+  color: white;
+}
+
+.status-badge.status-accepted {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-badge.status-cancelled {
+  background-color: #f44336;
+  color: white;
+}
+
+.status-message {
+  margin: 0 0 0.75rem 0;
+  color: #1b5e20;
+  font-size: 0.95rem;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #2e7d32;
+}
+
+.info-item i {
+  width: 18px;
+  text-align: center;
+  color: #4caf50;
+}
+
+/* Sidebar sticky behavior */
+.sidebar-column {
+  align-self: flex-start;
+}
+
+@media (min-width: 992px) {
+  .sidebar-column {
+    position: sticky;
+    top: 100px;
+  }
 }
 </style>
