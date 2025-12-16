@@ -439,7 +439,7 @@ function processDetailItem(item) {
     item["user-educations"] || [],
     item["education-levels"] || [],
     "idpenggunapendidikan",
-    "id_jenjang_pendidikan",
+    "idjenjangpendidikan",
     "idjenjangpendidikan"
   );
 

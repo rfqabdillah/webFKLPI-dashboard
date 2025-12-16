@@ -38,7 +38,13 @@
         v-if="item.foto"
         :src="item.foto"
         alt="Foto"
-        style="width: 50px; height: 50px; cursor: pointer; border-radius: 50%"
+        style="
+          width: 50px;
+          height: 50px;
+          cursor: pointer;
+          border-radius: 50%;
+          object-fit: cover;
+        "
         @click="showImage(item.foto)"
       />
       <div
@@ -120,12 +126,6 @@ function hideImage() {
   lightboxVisible.value = false;
 }
 
-/**
- * Get active unit kerja name
- * 1. Find user-work-unit with statusunitkerja === "Aktif"
- * 2. Get idunitkerja from active item
- * 3. Find matching work-unit and return namaunitkerja
- */
 function getActiveUnitKerja(item) {
   const userWorkUnits = item["user-work-units"];
   const workUnits = item["work-units"];
@@ -160,12 +160,6 @@ function getActiveUnitKerja(item) {
   return matchingWorkUnit?.namaunitkerja || "-";
 }
 
-/**
- * Get active jenjang/jabatan name
- * 1. Find user-level with statusjenjang === "Aktif"
- * 2. Get idjenjang from active item
- * 3. Find matching level and return namajenjang
- */
 function getActiveJenjang(item) {
   const userLevels = item["user-levels"];
   const levels = item["level"];
@@ -192,12 +186,6 @@ function getActiveJenjang(item) {
   return matchingLevel?.namajenjang || "-";
 }
 
-/**
- * Get active pangkat/rank name
- * 1. Find user-rank with status === "Aktif"
- * 2. Get idpangkat from active item
- * 3. Find matching rank and return formatted string (golongan/ruang-pangkat)
- */
 function getActivePangkat(item) {
   const userRanks = item["user-ranks"];
   const ranks = item["ranks"];

@@ -362,9 +362,9 @@ const prestasiColumns = [
     label: "Skala",
     getValue: (item) => item._refData?.namaskala || "-",
   },
-  { key: "namapenyelenggara", label: "Penyelenggara" },
+  { key: "namapenyelenggaraprestasi", label: "Penyelenggara" },
   {
-    key: "filesertifikat",
+    key: "filesertifikatprestasi",
     label: "Sertifikat",
     width: "10%",
     type: "file",
@@ -464,7 +464,7 @@ function processDetailItem(item) {
     item["user-educations"] || [],
     item["education-levels"] || [],
     "idpenggunapendidikan",
-    "id_jenjang_pendidikan",
+    "idjenjangpendidikan",
     "idjenjangpendidikan"
   );
 
