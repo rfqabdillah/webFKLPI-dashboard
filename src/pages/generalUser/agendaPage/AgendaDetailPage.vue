@@ -19,9 +19,7 @@
           </router-link>
         </div>
 
-        <!-- Content -->
         <div v-else-if="data" class="row align-items-start">
-          <!-- Main Content -->
           <div class="col-lg-8">
             <!-- Back Button -->
             <div class="mb-3">
@@ -182,6 +180,7 @@ import {
   getEventUsers,
   deleteEventUser,
 } from "@/services/general/eventUsers/eventUsers";
+import { getStatuses } from "@/services/referensi/status";
 
 const route = useRoute();
 
@@ -200,6 +199,7 @@ const registrationId = ref(null);
 const registrationStatusId = ref(null);
 const registrationStatus = ref("Terdaftar");
 const error = ref(null);
+const statusOptions = ref([]);
 
 const defaultPosterUrl =
   "https://placehold.co/800x400/EBF4FF/7F9CF5?text=Agenda";
@@ -269,8 +269,26 @@ const checkRegistration = async () => {
       // Get status name from relation
       const statusData =
         registrations[0].status_agenda_pengguna ||
-        registrations[0]["event-user-statuses"];
-      registrationStatus.value = statusData?.nama_status || "Terdaftar";
+        registrations[0]["event-user-statuses"] ||
+        registrations[0].statuses;
+
+      let statusName = statusData?.nama_status || statusData?.namastatus;
+
+      // Fallback: ambil dari statusOptions jika tidak ada
+      if (
+        !statusName &&
+        registrationStatusId.value &&
+        statusOptions.value.length > 0
+      ) {
+        const foundStatus = statusOptions.value.find(
+          (s) =>
+            s.idstatus === registrationStatusId.value ||
+            s.id_status === registrationStatusId.value
+        );
+        statusName = foundStatus?.namastatus || foundStatus?.nama_status;
+      }
+
+      registrationStatus.value = statusName || "Terdaftar";
     } else {
       isRegistered.value = false;
       registrationId.value = null;
@@ -279,6 +297,16 @@ const checkRegistration = async () => {
   } catch (err) {
     console.error("Error checking registration:", err);
     isRegistered.value = false;
+  }
+};
+
+const fetchStatusOptions = async () => {
+  try {
+    const res = await getStatuses({ limit: 100 });
+    const responseData = Array.isArray(res.data) ? res.data[0] : res.data;
+    statusOptions.value = responseData?.data || [];
+  } catch (err) {
+    console.error("Error fetching status options:", err);
   }
 };
 
@@ -502,7 +530,8 @@ const getStatusMessage = (statusId) => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  await fetchStatusOptions();
   fetchDetail();
 });
 </script>

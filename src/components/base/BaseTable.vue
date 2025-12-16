@@ -116,6 +116,8 @@
                   </td>
                   <td v-if="isAdmin">
                     <div class="btn-group">
+                      <!-- Slot untuk custom actions -->
+                      <slot name="custom-actions" :item="item"></slot>
                       <button
                         v-if="DetailModalComponent"
                         class="btn btn-info btn-sm"
