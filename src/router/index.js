@@ -30,7 +30,6 @@ import IndexContacts from "@/pages/settings/contacts/index.vue";
 // Mulai Referensi
 import IndexUsers from "@/pages/general/user/index.vue";
 import IndexRegions from "@/pages/general/regions/index.vue";
-import IndexGenders from "@/pages/general/genders/index.vue";
 import IndexUserTypes from "@/pages/general/userTypes/index.vue";
 
 import IndexVocationalFields from "@/pages/personnel/vocationalFields/index.vue";
@@ -405,14 +404,6 @@ const routes =[
             component: IndexRegions,
             meta: {
               title: "Wilayah",
-            },
-          },
-          {
-            path: "genders",
-            name: "General_genders",
-            component: IndexGenders,
-            meta: {
-              title: "Jenis Kelamin",
             },
           },
           {

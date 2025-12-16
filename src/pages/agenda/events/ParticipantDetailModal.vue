@@ -1,6 +1,6 @@
 <template>
   <BaseDetailModal
-    title="Detail Data Pegawai"
+    title="Detail Data Peserta"
     :item-to-view="itemToView"
     :api-detail-fn="getDetailUser"
     id-key="idpengguna"
@@ -12,24 +12,28 @@
         <img
           v-if="item.foto"
           :src="item.foto"
-          alt="Foto Pegawai"
-          class="foto-pegawai"
+          alt="Foto Peserta"
+          class="foto-peserta"
           @error="(e) => (e.target.style.display = 'none')"
         />
         <div
           v-else
-          class="foto-pegawai d-flex align-items-center justify-content-center text-white fw-bold"
+          class="foto-peserta d-flex align-items-center justify-content-center text-white fw-bold"
           :style="{ backgroundColor: getRandomColor(item.nama) }"
         >
           <span style="font-size: 3rem">{{ getInitials(item.nama) }}</span>
         </div>
-        <h2 class="nama-pegawai mt-3">
-          {{ item.gelardepan }} {{ item.nama || "Nama Pegawai" }}
+        <h2 class="nama-peserta mt-3">
+          {{ item.gelardepan }} {{ item.nama || "Nama Peserta" }}
           {{ item.gelarbelakang }}
         </h2>
         <p class="text-muted">
           <i class="fa fa-id-badge me-1"></i>
-          {{ item.roles?.[0]?.namalevel || "Level" }}
+          {{
+            item.roles?.[0]?.namalevel ||
+            item["user-types"]?.[0]?.namajenispengguna ||
+            "Pengguna"
+          }}
         </p>
         <span
           class="badge"
@@ -46,7 +50,7 @@
 
       <!-- Biodata -->
       <div class="detail-section">
-        <h4><i class="fa fa-user me-2"></i>Biodata Pegawai</h4>
+        <h4><i class="fa fa-user me-2"></i>Biodata Peserta</h4>
         <div class="row detail-grid-container">
           <div class="col-md-6">
             <dl class="detail-list">
@@ -154,35 +158,6 @@
           empty-icon="fa-trophy"
           empty-message="Belum ada riwayat prestasi"
         />
-      </div>
-
-      <hr />
-
-      <!-- Informasi Sistem -->
-      <div class="detail-section">
-        <h4><i class="fa fa-clock-o me-2"></i>Informasi Sistem</h4>
-        <div class="row detail-grid-container">
-          <div class="col-md-6">
-            <dl class="detail-list">
-              <dt>Dibuat Pada</dt>
-              <dd>{{ formatDate(item.created_at) || "-" }}</dd>
-              <dt>Diupdate Pada</dt>
-              <dd>{{ formatDate(item.updated_at) || "-" }}</dd>
-            </dl>
-          </div>
-          <div class="col-md-6">
-            <dl class="detail-list">
-              <dt>Email Terverifikasi</dt>
-              <dd>
-                {{
-                  item.email_verified_at
-                    ? formatDate(item.email_verified_at)
-                    : "Belum terverifikasi"
-                }}
-              </dd>
-            </dl>
-          </div>
-        </div>
       </div>
     </template>
   </BaseDetailModal>
@@ -362,9 +337,9 @@ const prestasiColumns = [
     label: "Skala",
     getValue: (item) => item._refData?.namaskala || "-",
   },
-  { key: "namapenyelenggaraprestasi", label: "Penyelenggara" },
+  { key: "namapenyelenggara", label: "Penyelenggara" },
   {
-    key: "filesertifikatprestasi",
+    key: "filesertifikat",
     label: "Sertifikat",
     width: "10%",
     type: "file",
@@ -487,7 +462,7 @@ function processDetailItem(item) {
 </script>
 
 <style scoped>
-.foto-pegawai {
+.foto-peserta {
   display: block;
   margin: 0 auto;
   height: 200px;
@@ -497,7 +472,7 @@ function processDetailItem(item) {
   border: 4px solid #e9ecef;
 }
 
-.nama-pegawai {
+.nama-peserta {
   font-weight: 600;
   color: #333;
   margin-bottom: 0.5rem;

@@ -102,6 +102,7 @@ const router = useRouter();
 
 // State
 const agendaList = ref([]);
+const registrantCounts = ref({});
 const isLoading = ref(false);
 const error = ref(null);
 const currentPage = ref(1);
@@ -147,14 +148,13 @@ const stripHtml = (html) => {
   return text.length > 100 ? text.substring(0, 100) + "..." : text;
 };
 
-// Map agenda data to card props
 const mapAgendaToCard = (item) => {
-  // item contains events relation data (from API response)
   const agenda = item.events || item;
   const category = item["event-categories"];
+  const agendaId = agenda.id_agenda || agenda.idagenda;
 
   return {
-    id: agenda.id_agenda,
+    id: agendaId,
     image: agenda.poster || defaultPosterUrl,
     tag1:
       category?.nama_kategori_agenda || category?.namakategoriagenda || "Umum",
@@ -163,7 +163,7 @@ const mapAgendaToCard = (item) => {
     place: agenda.tempat_pelaksanaan || "-",
     title: agenda.judul || "Tanpa Judul",
     desc: stripHtml(agenda.konten),
-    students: agenda.peserta || 0,
+    students: registrantCounts.value[agendaId] || 0,
   };
 };
 
@@ -212,12 +212,31 @@ const fetchMyAgenda = async () => {
       agendaList.value = [];
     }
 
-    console.log("My Agenda List:", agendaList.value);
+    await fetchRegistrantCounts();
   } catch (err) {
     console.error("Error fetching my agenda:", err);
     error.value = "Gagal memuat agenda Anda. Silakan coba lagi.";
   } finally {
     isLoading.value = false;
+  }
+};
+
+const fetchRegistrantCounts = async () => {
+  try {
+    const response = await getEventUsers();
+    const eventUsers = response.data?.[0]?.data || response.data?.data || [];
+
+    const counts = {};
+    eventUsers.forEach((eu) => {
+      const agendaId = eu.id_agenda || eu.idagenda;
+      if (agendaId) {
+        counts[agendaId] = (counts[agendaId] || 0) + 1;
+      }
+    });
+
+    registrantCounts.value = counts;
+  } catch (err) {
+    console.error("Error fetching registrant counts:", err);
   }
 };
 
