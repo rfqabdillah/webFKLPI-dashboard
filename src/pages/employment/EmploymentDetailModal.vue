@@ -84,331 +84,81 @@
 
       <hr />
 
+      <!-- Riwayat Unit Kerja -->
       <div class="detail-section">
         <h4><i class="fa fa-building me-2"></i>Riwayat Unit Kerja</h4>
-        <div v-if="riwayatUnitKerja.length > 0" class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th width="5%">No</th>
-                <th>Unit Kerja</th>
-                <th width="15%">Tanggal Mulai</th>
-                <th width="15%">Tanggal Selesai</th>
-                <th width="10%">File SK</th>
-                <th width="10%">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(uk, index) in riwayatUnitKerja"
-                :key="uk.idpenggunaunitkerja || index"
-              >
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ uk._refData?.namaunitkerja || "-" }}</td>
-                <td>{{ formatDate(uk.tglmulaiunitkerja) }}</td>
-                <td>
-                  {{
-                    uk.tglselesaiunitkerja
-                      ? formatDate(uk.tglselesaiunitkerja)
-                      : "-"
-                  }}
-                </td>
-                <td class="text-center">
-                  <a
-                    v-if="uk.fileskunitkerja"
-                    :href="uk.fileskunitkerja"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    <i class="fa fa-external-link"></i>
-                  </a>
-                  <span v-else class="text-muted">-</span>
-                </td>
-                <td class="text-center">
-                  <span
-                    class="badge"
-                    :class="{
-                      'bg-success': uk.statusunitkerja === 'Aktif',
-                      'bg-secondary': uk.statusunitkerja !== 'Aktif',
-                    }"
-                  >
-                    {{ uk.statusunitkerja || "-" }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <i class="fa fa-building-o fa-3x text-muted mb-3"></i>
-          <p class="text-muted mb-0">Belum ada riwayat unit kerja</p>
-        </div>
+        <SimpleHistoryTable
+          :items="riwayatUnitKerja"
+          :columns="unitKerjaColumns"
+          item-key="idpenggunaunitkerja"
+          empty-icon="fa-building-o"
+          empty-message="Belum ada riwayat unit kerja"
+        />
       </div>
 
-      <div class="detail-section">
+      <!-- Riwayat Jabatan (hanya untuk ASN) -->
+      <div v-if="isASN" class="detail-section">
         <h4><i class="fa fa-briefcase me-2"></i>Riwayat Jabatan</h4>
-        <div v-if="riwayatJabatan.length > 0" class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th width="5%">No</th>
-                <th>Jenjang Jabatan</th>
-                <th width="15%">Tanggal Mulai</th>
-                <th width="15%">Tanggal Selesai</th>
-                <th width="10%">File SK</th>
-                <th width="10%">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(jab, index) in riwayatJabatan"
-                :key="jab.idepnggunajenjang || index"
-              >
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ jab._refData?.namajenjang || "-" }}</td>
-                <td>{{ formatDate(jab.tglmulaijenjang) }}</td>
-                <td>
-                  {{
-                    jab.tglselesaijenjang
-                      ? formatDate(jab.tglselesaijenjang)
-                      : "-"
-                  }}
-                </td>
-                <td class="text-center">
-                  <a
-                    v-if="jab.fileskjenjang"
-                    :href="jab.fileskjenjang"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    <i class="fa fa-external-link"></i>
-                  </a>
-                  <span v-else class="text-muted">-</span>
-                </td>
-                <td class="text-center">
-                  <span
-                    class="badge"
-                    :class="{
-                      'bg-success': jab.statusjenjang === 'Aktif',
-                      'bg-secondary': jab.statusjenjang !== 'Aktif',
-                    }"
-                  >
-                    {{ jab.statusjenjang || "-" }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <i class="fa fa-briefcase fa-3x text-muted mb-3"></i>
-          <p class="text-muted mb-0">Belum ada riwayat jabatan</p>
-        </div>
+        <SimpleHistoryTable
+          :items="riwayatJabatan"
+          :columns="jabatanColumns"
+          item-key="idepnggunajenjang"
+          empty-icon="fa-briefcase"
+          empty-message="Belum ada riwayat jabatan"
+        />
       </div>
 
-      <div class="detail-section">
+      <!-- Riwayat Pangkat (hanya untuk ASN) -->
+      <div v-if="isASN" class="detail-section">
         <h4><i class="fa fa-star me-2"></i>Riwayat Pangkat</h4>
-        <div v-if="riwayatPangkat.length > 0" class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th width="5%">No</th>
-                <th>Pangkat</th>
-                <th width="15%">Tanggal Mulai</th>
-                <th width="15%">Tanggal Selesai</th>
-                <th width="10%">File SK</th>
-                <th width="10%">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(pkt, index) in riwayatPangkat"
-                :key="pkt.idpenggunapangkat || index"
-              >
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ pkt._refData?.pangkat || "-" }}</td>
-                <td>{{ formatDate(pkt.tglmulaipangkat) }}</td>
-                <td>
-                  {{
-                    pkt.tglselesaipangkat
-                      ? formatDate(pkt.tglselesaipangkat)
-                      : "-"
-                  }}
-                </td>
-                <td class="text-center">
-                  <a
-                    v-if="pkt.fileskpangkat"
-                    :href="pkt.fileskpangkat"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    <i class="fa fa-external-link"></i>
-                  </a>
-                  <span v-else class="text-muted">-</span>
-                </td>
-                <td class="text-center">
-                  <span
-                    class="badge"
-                    :class="{
-                      'bg-success': pkt.statuspangkat === 'Aktif',
-                      'bg-secondary': pkt.statuspangkat !== 'Aktif',
-                    }"
-                  >
-                    {{ pkt.statuspangkat || "-" }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <i class="fa fa-star-o fa-3x text-muted mb-3"></i>
-          <p class="text-muted mb-0">Belum ada riwayat pangkat</p>
-        </div>
+        <SimpleHistoryTable
+          :items="riwayatPangkat"
+          :columns="pangkatColumns"
+          item-key="idpenggunapangkat"
+          empty-icon="fa-star-o"
+          empty-message="Belum ada riwayat pangkat"
+        />
       </div>
 
+      <!-- Riwayat Pendidikan -->
       <div class="detail-section">
         <h4><i class="fa fa-graduation-cap me-2"></i>Riwayat Pendidikan</h4>
-        <div v-if="riwayatPendidikan.length > 0" class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th width="5%">No</th>
-                <th>Jenjang</th>
-                <th>Program Studi</th>
-                <th>Perguruan Tinggi</th>
-                <th width="12%">Tahun Lulus</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(pdk, index) in riwayatPendidikan"
-                :key="pdk.idpenggunapendidikan || index"
-              >
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>
-                  {{ pdk._refData?.namajenjangpendidikan || "-" }}
-                </td>
-                <td>{{ pdk.programstudi || "-" }}</td>
-                <td>{{ pdk.namaperguruantinggi || "-" }}</td>
-                <td class="text-center">{{ pdk.tahunlulus || "-" }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <i class="fa fa-graduation-cap fa-3x text-muted mb-3"></i>
-          <p class="text-muted mb-0">Belum ada riwayat pendidikan</p>
-        </div>
+        <SimpleHistoryTable
+          :items="riwayatPendidikan"
+          :columns="pendidikanColumns"
+          item-key="idpenggunapendidikan"
+          empty-icon="fa-graduation-cap"
+          empty-message="Belum ada riwayat pendidikan"
+        />
       </div>
 
+      <!-- Riwayat Pelatihan -->
       <div class="detail-section">
         <h4><i class="fa fa-certificate me-2"></i>Riwayat Pelatihan</h4>
-        <div v-if="riwayatPelatihan.length > 0" class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th width="5%">No</th>
-                <th>Nama Pelatihan</th>
-                <th width="10%">Sertifikat</th>
-                <th width="10%">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(plt, index) in riwayatPelatihan"
-                :key="plt.idpenggunapelatihan || index"
-              >
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ plt.namapelatihan || "-" }}</td>
-                <td class="text-center">
-                  <a
-                    v-if="plt.filesertifikatpelatihan"
-                    :href="plt.filesertifikatpelatihan"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    <i class="fa fa-external-link"></i>
-                  </a>
-                  <span v-else class="text-muted">-</span>
-                </td>
-                <td class="text-center">
-                  <span
-                    class="badge"
-                    :class="{
-                      'bg-success': plt.status === 'Aktif',
-                      'bg-secondary': plt.status !== 'Aktif',
-                    }"
-                  >
-                    {{ plt.status || "-" }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <i class="fa fa-certificate fa-3x text-muted mb-3"></i>
-          <p class="text-muted mb-0">Belum ada riwayat pelatihan</p>
-        </div>
+        <SimpleHistoryTable
+          :items="riwayatPelatihan"
+          :columns="pelatihanColumns"
+          item-key="idpenggunapelatihan"
+          empty-icon="fa-certificate"
+          empty-message="Belum ada riwayat pelatihan"
+        />
       </div>
 
+      <!-- Riwayat Prestasi -->
       <div class="detail-section">
         <h4><i class="fa fa-trophy me-2"></i>Riwayat Prestasi</h4>
-        <div v-if="riwayatPrestasi.length > 0" class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="table-light">
-              <tr>
-                <th width="5%">No</th>
-                <th>Nama Prestasi</th>
-                <th>Skala</th>
-                <th>Penyelenggara</th>
-                <th width="10%">Sertifikat</th>
-                <th width="10%">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(prs, index) in riwayatPrestasi"
-                :key="prs.idpenggunaprestasi || index"
-              >
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>{{ prs.namaprestasi || "-" }}</td>
-                <td>{{ prs._refData?.namaskala || "-" }}</td>
-                <td>{{ prs.namapenyelenggara || "-" }}</td>
-                <td class="text-center">
-                  <a
-                    v-if="prs.filesertifikat"
-                    :href="prs.filesertifikat"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    <i class="fa fa-external-link"></i>
-                  </a>
-                  <span v-else class="text-muted">-</span>
-                </td>
-                <td class="text-center">
-                  <span
-                    class="badge"
-                    :class="{
-                      'bg-success': prs.statusprestasi === 'Aktif',
-                      'bg-secondary': prs.statusprestasi !== 'Aktif',
-                    }"
-                  >
-                    {{ prs.statusprestasi || "-" }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else class="empty-state">
-          <i class="fa fa-trophy fa-3x text-muted mb-3"></i>
-          <p class="text-muted mb-0">Belum ada riwayat prestasi</p>
-        </div>
+        <SimpleHistoryTable
+          :items="riwayatPrestasi"
+          :columns="prestasiColumns"
+          item-key="idpenggunaprestasi"
+          empty-icon="fa-trophy"
+          empty-message="Belum ada riwayat prestasi"
+        />
       </div>
 
       <hr />
+
+      <!-- Informasi Sistem -->
       <div class="detail-section">
         <h4><i class="fa fa-clock-o me-2"></i>Informasi Sistem</h4>
         <div class="row detail-grid-container">
@@ -439,13 +189,14 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import BaseDetailModal from "@/components/base/BaseDetailModal.vue";
+import SimpleHistoryTable from "@/components/base/SimpleHistoryTable.vue";
 import { getDetailUser } from "@/services/referensi/users";
 import { formatDate } from "@/utils/formatDate";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
-const props = defineProps({
+defineProps({
   itemToView: {
     type: Object,
     required: true,
@@ -461,13 +212,175 @@ const riwayatPangkat = ref([]);
 const riwayatPendidikan = ref([]);
 const riwayatPelatihan = ref([]);
 const riwayatPrestasi = ref([]);
-const detailItem = ref(null);
+const isASN = ref(true);
+
+// === Column Definitions ===
+const unitKerjaColumns = [
+  {
+    key: "_refData.namaunitkerja",
+    label: "Unit Kerja",
+    getValue: (item) => item._refData?.namaunitkerja || "-",
+  },
+  {
+    key: "tglmulaiunitkerja",
+    label: "Tanggal Mulai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "tglselesaiunitkerja",
+    label: "Tanggal Selesai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "fileskunitkerja",
+    label: "File SK",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "statusunitkerja",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const jabatanColumns = [
+  {
+    key: "_refData.namajenjang",
+    label: "Jenjang Jabatan",
+    getValue: (item) => item._refData?.namajenjang || "-",
+  },
+  {
+    key: "tglmulaijenjang",
+    label: "Tanggal Mulai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "tglselesaijenjang",
+    label: "Tanggal Selesai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "fileskjenjang",
+    label: "File SK",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "statusjenjang",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const pangkatColumns = [
+  {
+    key: "_refData.pangkat",
+    label: "Pangkat",
+    getValue: (item) => item._refData?.pangkat || "-",
+  },
+  {
+    key: "tglmulaipangkat",
+    label: "Tanggal Mulai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "tglselesaipangkat",
+    label: "Tanggal Selesai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "fileskpangkat",
+    label: "File SK",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "statuspangkat",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const pendidikanColumns = [
+  {
+    key: "_refData.namajenjangpendidikan",
+    label: "Jenjang",
+    getValue: (item) => item._refData?.namajenjangpendidikan || "-",
+  },
+  { key: "programstudi", label: "Program Studi" },
+  { key: "namaperguruantinggi", label: "Perguruan Tinggi" },
+  {
+    key: "tahunlulus",
+    label: "Tahun Lulus",
+    width: "12%",
+    class: "text-center",
+  },
+];
+
+const pelatihanColumns = [
+  { key: "namapelatihan", label: "Nama Pelatihan" },
+  {
+    key: "filesertifikatpelatihan",
+    label: "Sertifikat",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "status",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const prestasiColumns = [
+  { key: "namaprestasi", label: "Nama Prestasi" },
+  {
+    key: "_refData.namaskala",
+    label: "Skala",
+    getValue: (item) => item._refData?.namaskala || "-",
+  },
+  { key: "namapenyelenggara", label: "Penyelenggara" },
+  {
+    key: "filesertifikat",
+    label: "Sertifikat",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "statusprestasi",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
 
 // === Helper Functions ===
-
-/**
- * Remove duplicates from array based on a key
- */
 function uniqueByKey(array, key) {
   if (!Array.isArray(array)) return [];
   const seen = new Set();
@@ -481,10 +394,6 @@ function uniqueByKey(array, key) {
   });
 }
 
-/**
- * Combine user relation data with reference data
- * e.g., combine user-work-units with work-units by matching idunitkerja
- */
 function combineRelationData(
   userRelations,
   referenceData,
@@ -496,18 +405,15 @@ function combineRelationData(
     return [];
   }
 
-  // Remove duplicates from user relations
   const uniqueUserRelations = uniqueByKey(userRelations, userKey);
 
-  // Create a map of reference data by ID
   const refMap = new Map();
-  referenceData.forEach((item, index) => {
+  referenceData.forEach((item) => {
     if (item[refIdKey] && !refMap.has(item[refIdKey])) {
       refMap.set(item[refIdKey], item);
     }
   });
 
-  // Combine data
   return uniqueUserRelations.map((relation, index) => {
     const refId = relation[refKey];
     const refData = refMap.get(refId);
@@ -519,53 +425,44 @@ function combineRelationData(
   });
 }
 
-/**
- * Process detail item and extract riwayat data
- */
 function processDetailItem(item) {
   if (!item) return;
 
-  detailItem.value = item;
+  // Cek tipe pengguna (ASN atau Non-ASN)
+  const userType = item["user-types"]?.[0]?.namajenispengguna || "";
+  isASN.value = !userType.toLowerCase().includes("non-asn");
 
   // Process Riwayat Unit Kerja
-  const userWorkUnits = item["user-work-units"] || [];
-  const workUnits = item["work-units"] || [];
   riwayatUnitKerja.value = combineRelationData(
-    userWorkUnits,
-    workUnits,
+    item["user-work-units"] || [],
+    item["work-units"] || [],
     "idpenggunaunitkerja",
     "idunitkerja",
     "idunitkerja"
   );
 
-  // Process Riwayat Jabatan (user-levels with level)
-  const userLevels = item["user-levels"] || [];
-  const levels = item["level"] || [];
+  // Process Riwayat Jabatan
   riwayatJabatan.value = combineRelationData(
-    userLevels,
-    levels,
+    item["user-levels"] || [],
+    item["level"] || [],
     "idepnggunajenjang",
     "idjenjang",
     "idjenjang"
   );
 
-  // Process Riwayat Pangkat (user-ranks with ranks)
-  const userRanks = item["user-ranks"] || [];
-  const ranks = item["ranks"] || [];
+  // Process Riwayat Pangkat
   riwayatPangkat.value = combineRelationData(
-    userRanks,
-    ranks,
+    item["user-ranks"] || [],
+    item["ranks"] || [],
     "idpenggunapangkat",
     "idpangkat",
     "idpangkat"
   );
 
-  // Process Riwayat Pendidikan (user-educations with education-levels)
-  const userEducations = item["user-educations"] || [];
-  const educationLevels = item["education-levels"] || [];
+  // Process Riwayat Pendidikan
   riwayatPendidikan.value = combineRelationData(
-    userEducations,
-    educationLevels,
+    item["user-educations"] || [],
+    item["education-levels"] || [],
     "idpenggunapendidikan",
     "id_jenjang_pendidikan",
     "idjenjangpendidikan"
@@ -576,16 +473,12 @@ function processDetailItem(item) {
   riwayatPelatihan.value = uniqueByKey(
     userTrainings,
     "idpenggunapelatihan"
-  ).filter(
-    (t) => t.namapelatihan // Only include trainings with a name
-  );
+  ).filter((t) => t.namapelatihan);
 
-  // Process Riwayat Prestasi (user-achievments with scale)
-  const userAchievements = item["user-achievments"] || [];
-  const scales = item["scale"] || [];
+  // Process Riwayat Prestasi
   riwayatPrestasi.value = combineRelationData(
-    userAchievements,
-    scales,
+    item["user-achievments"] || [],
+    item["scale"] || [],
     "idpenggunaprestasi",
     "idskala",
     "idskala"
@@ -644,48 +537,5 @@ function processDetailItem(item) {
   color: #555;
   margin-bottom: 1rem;
   padding-left: 0;
-}
-
-.table {
-  font-size: 0.9rem;
-  margin-bottom: 0;
-}
-
-.table thead th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
-  border-color: #dee2e6;
-  vertical-align: middle;
-}
-
-.table tbody td {
-  vertical-align: middle;
-}
-
-.table-hover tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 2px dashed #dee2e6;
-}
-
-.empty-state i {
-  opacity: 0.5;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 1rem;
 }
 </style>

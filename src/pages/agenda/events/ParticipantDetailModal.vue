@@ -100,8 +100,8 @@
         />
       </div>
 
-      <!-- Riwayat Jabatan -->
-      <div class="detail-section">
+      <!-- Riwayat Jabatan (hanya untuk ASN) -->
+      <div v-if="isASN" class="detail-section">
         <h4><i class="fa fa-briefcase me-2"></i>Riwayat Jabatan</h4>
         <SimpleHistoryTable
           :items="riwayatJabatan"
@@ -109,6 +109,18 @@
           item-key="idepnggunajenjang"
           empty-icon="fa-briefcase"
           empty-message="Belum ada riwayat jabatan"
+        />
+      </div>
+
+      <!-- Riwayat Pangkat (hanya untuk ASN) -->
+      <div v-if="isASN" class="detail-section">
+        <h4><i class="fa fa-star me-2"></i>Riwayat Pangkat</h4>
+        <SimpleHistoryTable
+          :items="riwayatPangkat"
+          :columns="pangkatColumns"
+          item-key="idpenggunapangkat"
+          empty-icon="fa-star-o"
+          empty-message="Belum ada riwayat pangkat"
         />
       </div>
 
@@ -121,6 +133,18 @@
           item-key="idpenggunapendidikan"
           empty-icon="fa-graduation-cap"
           empty-message="Belum ada riwayat pendidikan"
+        />
+      </div>
+
+      <!-- Riwayat Pelatihan -->
+      <div class="detail-section">
+        <h4><i class="fa fa-certificate me-2"></i>Riwayat Pelatihan</h4>
+        <SimpleHistoryTable
+          :items="riwayatPelatihan"
+          :columns="pelatihanColumns"
+          item-key="idpenggunapelatihan"
+          empty-icon="fa-certificate"
+          empty-message="Belum ada riwayat pelatihan"
         />
       </div>
 
@@ -159,8 +183,11 @@ defineEmits(["close"]);
 // === State ===
 const riwayatUnitKerja = ref([]);
 const riwayatJabatan = ref([]);
+const riwayatPangkat = ref([]);
 const riwayatPendidikan = ref([]);
+const riwayatPelatihan = ref([]);
 const riwayatPrestasi = ref([]);
+const isASN = ref(true);
 
 // === Column Definitions ===
 const unitKerjaColumns = [
@@ -180,6 +207,14 @@ const unitKerjaColumns = [
     label: "Tanggal Selesai",
     width: "15%",
     type: "date",
+  },
+  {
+    key: "fileskunitkerja",
+    label: "File SK",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
   },
   {
     key: "statusunitkerja",
@@ -209,7 +244,50 @@ const jabatanColumns = [
     type: "date",
   },
   {
+    key: "fileskjenjang",
+    label: "File SK",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
     key: "statusjenjang",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const pangkatColumns = [
+  {
+    key: "_refData.pangkat",
+    label: "Pangkat",
+    getValue: (item) => item._refData?.pangkat || "-",
+  },
+  {
+    key: "tglmulaipangkat",
+    label: "Tanggal Mulai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "tglselesaipangkat",
+    label: "Tanggal Selesai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "fileskpangkat",
+    label: "File SK",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "statuspangkat",
     label: "Status",
     width: "10%",
     type: "status",
@@ -233,6 +311,25 @@ const pendidikanColumns = [
   },
 ];
 
+const pelatihanColumns = [
+  { key: "namapelatihan", label: "Nama Pelatihan" },
+  {
+    key: "filesertifikatpelatihan",
+    label: "Sertifikat",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
+  {
+    key: "status",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
 const prestasiColumns = [
   { key: "namaprestasi", label: "Nama Prestasi" },
   {
@@ -241,6 +338,14 @@ const prestasiColumns = [
     getValue: (item) => item._refData?.namaskala || "-",
   },
   { key: "namapenyelenggara", label: "Penyelenggara" },
+  {
+    key: "filesertifikat",
+    label: "Sertifikat",
+    width: "10%",
+    type: "file",
+    class: "text-center",
+    fileLabel: "Lihat",
+  },
   {
     key: "statusprestasi",
     label: "Status",
@@ -298,6 +403,10 @@ function combineRelationData(
 function processDetailItem(item) {
   if (!item) return;
 
+  // Cek tipe pengguna (ASN atau Non-ASN)
+  const userType = item["user-types"]?.[0]?.namajenispengguna || "";
+  isASN.value = !userType.toLowerCase().includes("non-asn");
+
   // Process Riwayat Unit Kerja
   riwayatUnitKerja.value = combineRelationData(
     item["user-work-units"] || [],
@@ -316,6 +425,15 @@ function processDetailItem(item) {
     "idjenjang"
   );
 
+  // Process Riwayat Pangkat
+  riwayatPangkat.value = combineRelationData(
+    item["user-ranks"] || [],
+    item["ranks"] || [],
+    "idpenggunapangkat",
+    "idpangkat",
+    "idpangkat"
+  );
+
   // Process Riwayat Pendidikan
   riwayatPendidikan.value = combineRelationData(
     item["user-educations"] || [],
@@ -324,6 +442,13 @@ function processDetailItem(item) {
     "id_jenjang_pendidikan",
     "idjenjangpendidikan"
   );
+
+  // Process Riwayat Pelatihan
+  const userTrainings = item["user-trainings"] || [];
+  riwayatPelatihan.value = uniqueByKey(
+    userTrainings,
+    "idpenggunapelatihan"
+  ).filter((t) => t.namapelatihan);
 
   // Process Riwayat Prestasi
   riwayatPrestasi.value = combineRelationData(

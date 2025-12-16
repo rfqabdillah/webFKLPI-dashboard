@@ -39,6 +39,18 @@
                     {{ getCellValue(item, col) || "-" }}
                   </span>
                 </template>
+                <template v-else-if="col.type === 'file'">
+                  <a
+                    v-if="getCellValue(item, col)"
+                    :href="getCellValue(item, col)"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary file-btn"
+                    :title="col.fileLabel || 'Lihat File'"
+                  >
+                    <i class="fa fa-file-text-o"></i>
+                  </a>
+                  <span v-else>-</span>
+                </template>
                 <template v-else>
                   {{ getCellValue(item, col) || "-" }}
                 </template>
@@ -68,7 +80,7 @@ const props = defineProps({
   columns: {
     type: Array,
     required: true,
-    // Format: [{ key: 'fieldName', label: 'Column Label', width: '15%', type: 'text|date|status', class: 'text-center' }]
+    // Format: [{ key: 'fieldName', label: 'Column Label', width: '15%', type: 'text|date|status|file', class: 'text-center', fileLabel: 'Lihat File' }]
   },
   itemKey: {
     type: String,
@@ -154,5 +166,16 @@ function formatValue(value, type) {
 .empty-state p {
   margin: 0;
   font-size: 1rem;
+}
+
+.file-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.file-btn:hover {
+  background-color: #7366ff;
+  border-color: #7366ff;
+  color: white;
 }
 </style>
