@@ -53,7 +53,13 @@
         v-if="item.foto"
         :src="item.foto"
         alt="Foto"
-        style="width: 50px; height: 50px; cursor: pointer; border-radius: 50%"
+        style="
+          width: 50px;
+          height: 50px;
+          cursor: pointer;
+          border-radius: 50%;
+          object-fit: cover;
+        "
         @click="showImage(item.foto)"
       />
       <div
