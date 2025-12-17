@@ -272,7 +272,3 @@ function unescapeHtml(safe) {
     .replace(/&#039;/g, "'");
 }
 </script>
-
-<style scoped>
-/* No scoped styles needed as we use Bootstrap utility classes */
-</style>

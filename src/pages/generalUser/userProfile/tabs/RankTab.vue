@@ -93,14 +93,12 @@ function getFullRankDisplay(item) {
   let rankGol = "-";
   let rankRuang = "";
 
-  // 1. Try to get from direct item properties if available (e.g. if API sends flattened structure)
   if (item.nama_pangkat || item.namapangkat || item.pangkat) {
     rankName = item.nama_pangkat || item.namapangkat || item.pangkat;
   }
   if (item.golongan) rankGol = item.golongan;
   if (item.ruang) rankRuang = item.ruang;
 
-  // 2. If not found, look up in props.user['ranks']
   if ((rankName === "-" || rankGol === "-") && props.user["ranks"]) {
     const rank = props.user["ranks"].find(
       (r) => r.idpangkat === item.idpangkat
@@ -112,8 +110,6 @@ function getFullRankDisplay(item) {
     }
   }
 
-  // Format: "Golongan/Ruang-NamaPangkat" => "IV/a-Pembina"
-  // If rankRuang is present, join with slash, else just Golongan
   const golRuang = rankRuang ? `${rankGol}/${rankRuang}` : rankGol;
 
   return `${golRuang}-${rankName}`;

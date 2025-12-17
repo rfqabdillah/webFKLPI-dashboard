@@ -258,8 +258,6 @@ const fetchAgenda = async () => {
       tayang: "Tayang",
     });
 
-    console.log("API Response:", response);
-
     if (
       response.data &&
       Array.isArray(response.data) &&
@@ -273,8 +271,6 @@ const fetchAgenda = async () => {
     } else {
       agendaList.value = [];
     }
-
-    console.log("Agenda List:", agendaList.value);
 
     await fetchRegistrantCounts();
   } catch (err) {
@@ -299,7 +295,6 @@ const fetchRegistrantCounts = async () => {
     });
 
     registrantCounts.value = counts;
-    console.log("Registrant Counts:", registrantCounts.value);
   } catch (err) {
     console.error("Error fetching registrant counts:", err);
   }

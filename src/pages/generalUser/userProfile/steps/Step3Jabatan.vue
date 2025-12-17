@@ -330,17 +330,11 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
-      console.log("[DEBUG] Step3 rawData count:", rawData.length);
-
-      // Filter berdasarkan idpengguna jika perlu
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
 
-      console.log("[DEBUG] Step3 filteredData count:", filteredData.length);
-
-      // Mapping sesuai struktur JSON yang diminta
       const apiData = filteredData.map((d) => ({
-        idpenggunajenjang: d.idpenggunajenjang, // Primary Key
-        idjenjang: d.idjenjang, // Foreign Key Jenjang
+        idpenggunajenjang: d.idpenggunajenjang,
+        idjenjang: d.idjenjang,
         tglmulai: d.tglmulai,
         tglselesai: d.tglselesai,
         status: d.status,
@@ -349,14 +343,7 @@ async function loadData(userId) {
         _tempId: Date.now() + Math.random(),
       }));
 
-      // Deduplicate by ID
       const uniqueData = uniqueByKey(apiData, "idpenggunajenjang");
-
-      console.log("[DEBUG] Step3 uniqueData count:", uniqueData.length);
-      console.log(
-        "[DEBUG] Step3 uniqueData IDs:",
-        uniqueData.map((d) => d.idpenggunajenjang)
-      );
 
       jenjangList.value = uniqueData;
       formErrors.value = jenjangList.value.map(() => ({}));

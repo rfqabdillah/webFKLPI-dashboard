@@ -289,7 +289,6 @@ const validationSchema = yup.object().shape({
 });
 
 const validateForm = async () => {
-  // Reset errors
   errors.konten = "";
   errors.nilai = "";
 
@@ -330,14 +329,13 @@ const submitTestimoni = async () => {
     data.append("record[id_pengguna]", currentUser.id_pengguna);
     data.append("record[konten]", formData.konten.trim());
     data.append("record[nilai]", formData.nilai);
-    data.append("record[status]", "Draft"); // Default: pending/not published
+    data.append("record[status]", "Draft");
 
     await addTestimoni(data);
 
     toast.success("Testimoni berhasil dikirim!");
     isSubmitted.value = true;
 
-    // Reload testimonials
     await loadUserTestimonials();
   } catch (error) {
     console.error("Error submitting testimonial:", error);

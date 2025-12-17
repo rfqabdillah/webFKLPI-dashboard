@@ -172,7 +172,6 @@ const fetchMyAgenda = async () => {
   isLoading.value = true;
   error.value = null;
 
-  // Get current user ID from localStorage
   const userDataString = localStorage.getItem("userData");
   if (!userDataString) {
     error.value = "Silakan login terlebih dahulu.";
@@ -195,9 +194,6 @@ const fetchMyAgenda = async () => {
       with: "agenda,status",
     });
 
-    console.log("My Agenda Response:", response);
-
-    // Handle response structure
     if (
       response.data &&
       Array.isArray(response.data) &&

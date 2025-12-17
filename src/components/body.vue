@@ -18,14 +18,12 @@
     </svg>
   </div>
   <div v-else>
-    <!-- <div class="page-wrapper" id="pageWrapper" :class="{'horizontal-wrapper':sidebar=='horizontal-wrapper','compact-wrapper':sidebar=='compact-sidebar1'}"> -->
     <div class="page-wrapper" id="pageWrapper" :class="layoutobj">
       <div class="page-header" :class="{ close_icon: !togglesidebar }">
         <Header @clicked="sidebar_toggle" />
       </div>
 
       <div class="page-body-wrapper">
-        <!-- <div class="bg-overlay" :class="{active: activeoverlay }" @click="removeoverlay()"></div> -->
         <div
           class="sidebar-wrapper"
           :class="[{ close_icon: !togglesidebar }]"
@@ -53,23 +51,18 @@ import { layoutClasses } from "../constants/layout";
 import Header from "./header";
 import Sidebar from "./sidebar";
 import Footer from "./footer.vue";
-// import Customizer from './customizer';
 import TapTop from "./tapTop.vue";
 
-// Constants for user levels
 const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
 
-// Helper function to get user id_level from localStorage
 const getUserLevelFromStorage = () => {
   try {
     const userDataString = localStorage.getItem("userData");
     if (userDataString) {
       const userData = JSON.parse(userDataString);
-      // Try to get from direct property
       if (userData?.data?.[0]?.id_level) {
         return userData.data[0].id_level;
       }
-      // Try to get from roles object
       if (userData?.data?.[0]?.roles?.id_level) {
         return userData.data[0].roles.id_level;
       }
@@ -80,21 +73,18 @@ const getUserLevelFromStorage = () => {
   return null;
 };
 
-// Helper function to determine layout based on user level
+// Helper function
 const getLayoutForUserLevel = () => {
   const userLevel = getUserLevelFromStorage();
 
-  // User "umum" uses Los Angeles layout (horizontal navbar/topbar)
   if (userLevel === UMUM_LEVEL_ID) {
     return "LosAngeles";
   }
 
-  // Other users (administrator, operator) use Dubai layout (vertical sidebar)
   return "Dubai";
 };
 
 export default {
-  //   name: 'mainPage',
   props: ["sidebar_toggle_var"],
   components: {
     Header,
@@ -167,14 +157,11 @@ export default {
         });
       });
 
-      // IMPORTANT: Enforce correct layout based on user level on every route change
-      // This prevents "umum" users from accidentally getting Dubai layout
       this.ensureCorrectLayoutForUser();
 
       this.layoutobj = layoutClasses.find(
         (item) => Object.keys(item).pop() === this.layout.settings.layout
       );
-      console.log("layobj==>", this.layoutobj);
 
       if (
         (window.innerWidth < 991 &&
@@ -189,7 +176,6 @@ export default {
             "compact-wrapper"
           )
         );
-        // console.log("newlayobj==>",newlayout)
 
         this.layoutobj = JSON.parse(JSON.stringify(newlayout))[
           this.layout.settings.layout
@@ -211,15 +197,11 @@ export default {
     this.resized = this.sidebar_toggle_var;
     this.$store.dispatch("layout/set");
 
-    // Listen for user data changes (login/logout/profile update)
-    // to ensure layout is updated accordingly
     window.addEventListener("userDataUpdated", this.handleUserDataChange);
     window.addEventListener("storage", this.handleStorageChange);
 
-    // Determine layout based on user level (umum uses LosAngeles, admin/operator uses Dubai)
     const defaultLayout = getLayoutForUserLevel();
 
-    // Use query param if provided, otherwise use dynamic layout based on user level
     this.layout.settings.layout = this.$route.query.layout
       ? this.$route.query.layout
       : defaultLayout;
@@ -246,42 +228,26 @@ export default {
     handleResize() {
       this.$store.dispatch("menu/resizetoggle");
     },
-    // Method to ensure layout matches user level
-    // "umum" users should always have LosAngeles layout
-    // Other users (admin, operator) should have Dubai layout
     ensureCorrectLayoutForUser() {
       const expectedLayout = getLayoutForUserLevel();
       const currentLayout = this.layout.settings.layout;
 
-      // Skip if layout is already correct
       if (currentLayout === expectedLayout) {
         return;
       }
 
-      // Force correct layout based on user level
-      console.log(
-        `[Layout] Correcting layout from ${currentLayout} to ${expectedLayout}`
-      );
       this.layout.settings.layout = expectedLayout;
 
-      // Update layoutobj to reflect the change
       this.updateLayoutObject();
     },
-    // Handler for userDataUpdated event (same tab)
     handleUserDataChange() {
-      console.log("[Layout] User data changed, checking layout...");
       this.ensureCorrectLayoutForUser();
     },
-    // Handler for storage event (other tabs)
     handleStorageChange(e) {
       if (e.key === "userData") {
-        console.log(
-          "[Layout] User data changed in another tab, checking layout..."
-        );
         this.ensureCorrectLayoutForUser();
       }
     },
-    // Update layoutobj based on current layout setting
     updateLayoutObject() {
       this.layoutobj = layoutClasses.find(
         (item) => Object.keys(item).pop() === this.layout.settings.layout
@@ -313,13 +279,8 @@ export default {
     },
   },
   mounted() {
-    // setTimeout(()=>{
     this.loading = false;
-
-    // Ensure layout is correct after mount
-    // This catches any edge cases where layout was set incorrectly
     this.ensureCorrectLayoutForUser();
-    // },2000)
   },
 };
 </script>
