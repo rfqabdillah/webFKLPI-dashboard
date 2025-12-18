@@ -2876,7 +2876,7 @@
       left: 0;
       width: 100%;
       height: 300px;
-      background-image: $gradient-bg-primary;
+      background-color: $primary-color;
     }
 
     .card {
@@ -2913,8 +2913,6 @@
     }
 
     .page-body-wrapper {
-      background-image: url(../images/other-images/boxbg.jpg);
-      background-blend-mode: overlay;
       background-color: rgba($white, 0.5);
 
       .sidebar-wrapper {
@@ -3304,7 +3302,7 @@
         left: 0;
         width: 100%;
         height: 200px;
-        background: $gradient-bg-primary;
+        background-color: $primary-color;
       }
       .toggle-sidebar {
         color: rgba($white, 0.8);

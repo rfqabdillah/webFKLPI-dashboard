@@ -14,7 +14,10 @@
       />
       <!-- Category Badge -->
       <div class="position-absolute top-0 start-0 m-2">
-        <span class="badge bg-primary rounded-pill px-3 py-2">
+        <span
+          class="badge rounded-pill px-3 py-2"
+          style="background-color: #15406a"
+        >
           {{ props.item.tag1 }}
         </span>
       </div>
@@ -169,9 +172,14 @@ const handleAvatarError = (event) => {
   font-size: 0.75rem;
 }
 
+/* Override text-primary color */
+.text-primary {
+  color: #15406a !important;
+}
+
 .btn-selengkapnya {
-  background-color: rgba(115, 102, 255, 0.1);
-  color: #15406ae6;
+  background-color: rgba(21, 64, 106, 0.1);
+  color: #15406a;
   font-size: 14px;
   font-weight: 500;
   padding: 8px 16px;
@@ -181,7 +189,7 @@ const handleAvatarError = (event) => {
 }
 
 .btn-selengkapnya:hover {
-  background-color: #15406ae6;
+  background-color: #15406a;
   color: white;
 }
 </style>

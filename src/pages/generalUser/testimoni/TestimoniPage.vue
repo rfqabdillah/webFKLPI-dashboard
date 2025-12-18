@@ -383,8 +383,9 @@ onMounted(() => {
 }
 
 .testimonial-header {
-  background: linear-gradient(135deg, #7366ff 0%, #a855f7 100%);
+  background: transparent;
   border: none;
+  border-bottom: 1px solid #e5e7eb;
   padding: 24px;
 }
 
@@ -397,7 +398,7 @@ onMounted(() => {
 .header-icon {
   width: 56px;
   height: 56px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(21, 64, 106, 0.1);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -406,16 +407,16 @@ onMounted(() => {
 
 .header-icon i {
   font-size: 24px;
-  color: #ffd700;
+  color: rgb(255, 193, 7);
 }
 
 .header-text .card-title {
-  color: #fff;
+  color: #1f2937;
   font-weight: 600;
 }
 
 .header-text .card-subtitle {
-  color: rgba(255, 255, 255, 0.8);
+  color: #6b7280;
   font-size: 14px;
 }
 
@@ -524,7 +525,6 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 600;
   border-radius: 12px;
-  background: linear-gradient(135deg, #7366ff 0%, #a855f7 100%);
   border: none;
   transition: all 0.3s ease;
 }

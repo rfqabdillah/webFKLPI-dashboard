@@ -44,8 +44,12 @@
             <!-- Category Badge -->
             <div class="mb-3">
               <span
-                class="badge bg-primary-subtle text-primary px-3 py-2 rounded-2"
-                style="font-size: 14px"
+                class="badge px-3 py-2 rounded-2"
+                style="
+                  font-size: 14px;
+                  background-color: rgba(21, 64, 106, 0.15);
+                  color: #15406a;
+                "
               >
                 {{ data.kategori || "Umum" }}
               </span>
@@ -57,28 +61,28 @@
             <!-- Info List -->
             <div class="agenda-info-list mb-4">
               <div class="d-flex align-items-center mb-2">
-                <i class="fa fa-calendar text-primary me-2"></i>
+                <i class="fa fa-calendar me-2" style="color: #15406a"></i>
                 <span class="text-muted">Tanggal Pelaksanaan: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   formatDate(data.implementation_date)
                 }}</span>
               </div>
               <div class="d-flex align-items-center mb-2">
-                <i class="fa fa-clock-o text-primary me-2"></i>
+                <i class="fa fa-clock-o me-2" style="color: #15406a"></i>
                 <span class="text-muted">Batas Pendaftaran: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   formatDate(data.registration_deadline)
                 }}</span>
               </div>
               <div class="d-flex align-items-center mb-2">
-                <i class="fa fa-map-marker text-primary me-2"></i>
+                <i class="fa fa-map-marker me-2" style="color: #15406a"></i>
                 <span class="text-muted">Tempat: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   data.place || "-"
                 }}</span>
               </div>
               <div class="d-flex align-items-center mb-2">
-                <i class="fa fa-user text-primary me-2"></i>
+                <i class="fa fa-user me-2" style="color: #15406a"></i>
                 <span class="text-muted">Penyelenggara: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   data.author || "Administrator"

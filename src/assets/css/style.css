@@ -29215,7 +29215,7 @@ button[data-toggle=dropdown]:hover ~ .dropdown-menu {
 }
 .page-wrapper .page-body-wrapper .page-title {
   padding: 15px 30px;
-  margin: 0 -27px 30px;
+  margin: 0 auto 30px;
   background-color: #fff;
 }
 .page-wrapper .page-body-wrapper .page-title > .row {
@@ -30744,7 +30744,7 @@ button[data-toggle=dropdown]:hover ~ .dropdown-menu {
   left: 0;
   width: 100%;
   height: 300px;
-  background-image: linear-gradient(103.75deg, #33B1EE -13.9%, var(--theme-deafult) 79.68%);
+  background-color: #15406A;
 }
 .page-wrapper.material-type .card {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
@@ -30784,8 +30784,6 @@ button[data-toggle=dropdown]:hover ~ .dropdown-menu {
   }
 }
 .page-wrapper.material-type .page-body-wrapper {
-  background-image: url(../images/other-images/boxbg.jpg);
-  background-blend-mode: overlay;
   background-color: rgba(255, 255, 255, 0.5);
 }
 .page-wrapper.material-type .page-body-wrapper .sidebar-wrapper {
@@ -30993,7 +30991,7 @@ button[data-toggle=dropdown]:hover ~ .dropdown-menu {
     left: 0;
     width: 100%;
     height: 200px;
-    background: linear-gradient(103.75deg, #33B1EE -13.9%, var(--theme-deafult) 79.68%);
+    background-color: #15406A;
   }
   .page-wrapper.material-icon .toggle-sidebar {
     color: rgba(255, 255, 255, 0.8);
@@ -34523,3 +34521,16 @@ html[dir=rtl] .page-wrapper.compact-small .page-body-wrapper div.sidebar-wrapper
 /**=====================
     63. Box-layout CSS ends
 ==========================**/
+
+/* Custom: Breadcrumbs width per layout */
+/* Dubai layout (compact-wrapper) */
+.page-wrapper.compact-wrapper .page-body-wrapper .page-title {
+  width: 1450px !important;
+  max-width: 1450px !important;
+}
+
+/* Los Angeles layout (horizontal-wrapper) */
+.page-wrapper.horizontal-wrapper .page-body-wrapper .page-title {
+  width: 1350px !important;
+  max-width: 1350px !important;
+}
