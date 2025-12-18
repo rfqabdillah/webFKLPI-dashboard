@@ -382,7 +382,7 @@ function removePrestasi(index) {
   Swal.fire({
     title: "Hapus Data?",
     text: item.idpenggunaprestasi
-      ? "Data prestasi ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      ? "Data prestasi ini akan dihapus. Tindakan ini tidak dapat dibatalkan."
       : "Data prestasi ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,

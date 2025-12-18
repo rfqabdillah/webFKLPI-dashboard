@@ -89,8 +89,7 @@ const props = defineProps({
 });
 
 function getLevelName(item) {
-  if (item.nama_jenjang || item.namajenjang)
-    return item.nama_jenjang || item.namajenjang;
+  if (item.namajenjang) return item.namajenjang;
 
   if (props.user["level"]) {
     const level = props.user["level"].find(

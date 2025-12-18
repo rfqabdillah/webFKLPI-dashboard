@@ -126,7 +126,7 @@
           v-model="formData.idjeniskelamin"
           :disabled="gendersLoading || isLoading"
         >
-          <option value="">
+          <option value="" disabled>
             {{ gendersLoading ? "Memuat..." : "Pilih Jenis Kelamin" }}
           </option>
           <option
@@ -139,22 +139,25 @@
         </select>
       </div>
 
+      <!-- Jenis Pengguna sudah dipilih di UserTypeSelectionCards -->
+      <!-- Hidden: nilai sudah di-set dari step sebelumnya -->
+
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Jenis Pengguna</label>
+        <label class="form-label fw-semibold">Jenis Pegawai</label>
         <select
           class="form-select"
-          v-model="formData.idjenispengguna"
-          :disabled="userTypesLoading || isLoading"
+          v-model="formData.idjenispegawai"
+          :disabled="employeeTypesLoading || isLoading"
         >
-          <option value="">
-            {{ userTypesLoading ? "Memuat..." : "Pilih Jenis Pengguna" }}
+          <option value="" disabled>
+            {{ employeeTypesLoading ? "Memuat..." : "Pilih Jenis Pegawai" }}
           </option>
           <option
-            v-for="userType in userTypeOptions"
-            :key="userType.idjenispengguna"
-            :value="userType.idjenispengguna"
+            v-for="employeeType in employeeTypeOptions"
+            :key="employeeType.idjenispegawai"
+            :value="employeeType.idjenispegawai"
           >
-            {{ userType.namajenispengguna }}
+            {{ employeeType.namajenispegawai }}
           </option>
         </select>
       </div>
@@ -239,6 +242,39 @@
         </select>
       </div>
 
+      <!-- Minat -->
+      <div class="col-12 mb-3">
+        <label class="form-label fw-semibold">Minat</label>
+        <div class="interest-input-container">
+          <div class="interest-bubbles">
+            <span
+              v-for="(interest, index) in interestList"
+              :key="index"
+              class="interest-bubble"
+            >
+              {{ interest }}
+              <button
+                type="button"
+                class="bubble-remove"
+                @click="removeInterest(index)"
+              >
+                <i class="fa fa-times"></i>
+              </button>
+            </span>
+            <input
+              type="text"
+              class="interest-input"
+              v-model="interestInput"
+              @keydown="handleInterestKeydown"
+              placeholder="Ketik minat, pisahkan dengan koma"
+            />
+          </div>
+        </div>
+        <small class="form-text text-muted">
+          Tekan koma (,) atau Enter untuk menambahkan minat.
+        </small>
+      </div>
+
       <!-- Upload Foto -->
       <div class="col-12 mb-3">
         <label class="form-label fw-semibold">Upload Foto</label>
@@ -287,8 +323,9 @@ import { ref, reactive, watch, onMounted } from "vue";
 import { getRoles } from "@/services/referensi/roles";
 import { getRegions } from "@/services/referensi/regions";
 import { getGenders } from "@/services/referensi/genders";
-import { getUserTypes } from "@/services/referensi/userTypes";
+import { getEmployeeTypes } from "@/services/referensi/employeeTypes";
 import { compressImage } from "@/utils/imageCompressor";
+import { parseBubble } from "@/utils/parseBubble";
 import { useToast } from "vue-toastification";
 import * as yup from "yup";
 
@@ -323,16 +360,18 @@ const formData = reactive(props.modelValue);
 const formErrors = reactive({});
 const roleOptions = ref([]);
 const genderOptions = ref([]);
-const userTypeOptions = ref([]);
 const provinceOptions = ref([]);
 const kabupatenOptions = ref([]);
 const rolesLoading = ref(false);
 const gendersLoading = ref(false);
-const userTypesLoading = ref(false);
+const employeeTypesLoading = ref(false);
 const regionsLoading = ref(false);
 const kabupatenLoading = ref(false);
 const photoPreviewUrl = ref(null);
 const fileInput = ref(null);
+const interestInput = ref("");
+const interestList = ref([]);
+const employeeTypeOptions = ref([]);
 
 // Validation Schema
 const validationSchema = yup.object().shape({
@@ -372,7 +411,7 @@ watch(
 onMounted(() => {
   fetchRoles();
   fetchGenders();
-  fetchUserTypes();
+  fetchEmployeeTypes();
   fetchProvinces();
 
   if (formData.foto) {
@@ -381,6 +420,11 @@ onMounted(() => {
 
   if (formData.kodepropinsi) {
     fetchKabupaten(formData.kodepropinsi);
+  }
+
+  // Parse existing minat
+  if (formData.minat) {
+    interestList.value = parseBubble(formData.minat);
   }
 });
 
@@ -416,22 +460,22 @@ async function fetchGenders() {
   }
 }
 
-async function fetchUserTypes() {
-  userTypesLoading.value = true;
+async function fetchEmployeeTypes() {
+  employeeTypesLoading.value = true;
   try {
-    const response = await getUserTypes({
+    const response = await getEmployeeTypes({
       page: 1,
       limit: 999,
-      sort: "namajenispengguna",
+      sort: "namajenispegawai",
       dir: "asc",
     });
-    userTypeOptions.value =
+    employeeTypeOptions.value =
       response.data?.[0]?.data || response.data?.data || [];
   } catch (error) {
     console.error(error);
-    toast.error("Gagal memuat daftar jenis pengguna");
+    toast.error("Gagal memuat daftar jenis pegawai");
   } finally {
-    userTypesLoading.value = false;
+    employeeTypesLoading.value = false;
   }
 }
 
@@ -502,6 +546,39 @@ function removePhoto() {
   emit("photo-change", null);
 }
 
+// Interest (Minat) handlers
+function handleInterestKeydown(event) {
+  if (event.key === "," || event.key === "Enter") {
+    event.preventDefault();
+    addInterest();
+  } else if (
+    event.key === "Backspace" &&
+    !interestInput.value &&
+    interestList.value.length > 0
+  ) {
+    interestList.value.pop();
+    updateMinatFormData();
+  }
+}
+
+function addInterest() {
+  const value = interestInput.value.replace(/,/g, "").trim();
+  if (value && !interestList.value.includes(value)) {
+    interestList.value.push(value);
+    updateMinatFormData();
+  }
+  interestInput.value = "";
+}
+
+function removeInterest(index) {
+  interestList.value.splice(index, 1);
+  updateMinatFormData();
+}
+
+function updateMinatFormData() {
+  formData.minat = interestList.value.join(", ");
+}
+
 async function validateField(field) {
   try {
     await validationSchema.validateAt(field, formData);
@@ -532,5 +609,72 @@ defineExpose({ validate });
 <style scoped>
 .invalid-feedback {
   display: block;
+}
+
+/* Interest Bubble Styles */
+.interest-input-container {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #fff;
+  min-height: 80px;
+}
+
+.interest-input-container:focus-within {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.interest-bubbles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.interest-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e7f1ff;
+  color: #0d6efd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #b6d4fe;
+}
+
+.bubble-remove {
+  background: #0d6efd;
+  border: none;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 10px;
+  transition: background 0.2s;
+}
+
+.bubble-remove:hover {
+  background: #0b5ed7;
+}
+
+.interest-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 200px;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.interest-input::placeholder {
+  color: #adb5bd;
 }
 </style>

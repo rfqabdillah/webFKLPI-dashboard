@@ -360,7 +360,7 @@ function removePelatihan(index) {
   Swal.fire({
     title: "Hapus Data?",
     text: item.idpenggunapelatihan
-      ? "Data pelatihan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      ? "Data pelatihan ini akan dihapus. Tindakan ini tidak dapat dibatalkan."
       : "Data pelatihan ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,

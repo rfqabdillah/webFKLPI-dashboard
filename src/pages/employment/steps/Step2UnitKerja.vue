@@ -264,10 +264,6 @@ onMounted(async () => {
 });
 
 // === Methods ===
-
-/**
- * Remove duplicates from array based on a key
- */
 function uniqueByKey(array, key) {
   const seen = new Set();
   return array.filter((item) => {
@@ -377,7 +373,7 @@ function removeUnitKerja(index) {
   Swal.fire({
     title: "Hapus Data?",
     text: item.idpenggunaunitkerja
-      ? "Data unit kerja ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      ? "Data unit kerja ini akan dihapus. Tindakan ini tidak dapat dibatalkan."
       : "Data unit kerja ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,

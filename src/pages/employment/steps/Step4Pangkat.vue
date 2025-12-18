@@ -370,7 +370,7 @@ function removePangkat(index) {
   Swal.fire({
     title: "Hapus Data?",
     text: item.idpenggunapangkat
-      ? "Data pangkat ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      ? "Data pangkat ini akan dihapus. Tindakan ini tidak dapat dibatalkan."
       : "Data pangkat ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,

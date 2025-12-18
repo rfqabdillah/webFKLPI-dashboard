@@ -77,15 +77,35 @@
               <dd>{{ item.kodekabupaten || "-" }}</dd>
               <dt>Jenis Pengguna</dt>
               <dd>{{ item["user-types"]?.[0]?.namajenispengguna || "-" }}</dd>
+              <dt>Jenis Pegawai</dt>
+              <dd>
+                {{ item["employee-types"]?.[0]?.namajenispegawai || "-" }}
+              </dd>
             </dl>
           </div>
         </div>
+
+        <!-- Minat -->
+        <dl v-if="item.minat" class="detail-list mt-3">
+          <dt>Minat</dt>
+          <dd>
+            <div class="d-flex flex-wrap gap-2">
+              <span
+                v-for="(interest, index) in parseBubble(item.minat)"
+                :key="index"
+                class="badge bg-light text-primary border border-primary px-3 py-2"
+              >
+                {{ interest }}
+              </span>
+            </div>
+          </dd>
+        </dl>
       </div>
 
       <hr />
 
-      <!-- Riwayat Unit Kerja -->
-      <div class="detail-section">
+      <!-- Riwayat Unit Kerja (ASN) -->
+      <div v-if="isASN" class="detail-section">
         <h4><i class="fa fa-building me-2"></i>Riwayat Unit Kerja</h4>
         <SimpleHistoryTable
           :items="riwayatUnitKerja"
@@ -93,6 +113,30 @@
           item-key="idpenggunaunitkerja"
           empty-icon="fa-building-o"
           empty-message="Belum ada riwayat unit kerja"
+        />
+      </div>
+
+      <!-- Riwayat Perusahaan (Non-ASN) -->
+      <div v-if="!isASN" class="detail-section">
+        <h4><i class="fa fa-briefcase me-2"></i>Riwayat Perusahaan</h4>
+        <SimpleHistoryTable
+          :items="riwayatPerusahaan"
+          :columns="perusahaanColumns"
+          item-key="idpenggunaperusahaan"
+          empty-icon="fa-briefcase"
+          empty-message="Belum ada riwayat perusahaan"
+        />
+      </div>
+
+      <!-- Riwayat Pengalaman Pekerjaan -->
+      <div class="detail-section">
+        <h4><i class="fa fa-suitcase me-2"></i>Riwayat Pengalaman Kerja</h4>
+        <SimpleHistoryTable
+          :items="riwayatPekerjaan"
+          :columns="pekerjaanColumns"
+          item-key="idpenggunapekerjaan"
+          empty-icon="fa-suitcase"
+          empty-message="Belum ada riwayat pekerjaan"
         />
       </div>
 
@@ -195,6 +239,7 @@ import SimpleHistoryTable from "@/components/base/SimpleHistoryTable.vue";
 import { getDetailUser } from "@/services/referensi/users";
 import { formatDate } from "@/utils/formatDate";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
+import { parseBubble } from "@/utils/parseBubble";
 
 defineProps({
   itemToView: {
@@ -207,6 +252,8 @@ defineEmits(["close"]);
 
 // === State ===
 const riwayatUnitKerja = ref([]);
+const riwayatPerusahaan = ref([]);
+const riwayatPekerjaan = ref([]);
 const riwayatJabatan = ref([]);
 const riwayatPangkat = ref([]);
 const riwayatPendidikan = ref([]);
@@ -243,6 +290,37 @@ const unitKerjaColumns = [
   },
   {
     key: "statusunitkerja",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const perusahaanColumns = [
+  {
+    key: "namaperusahaan",
+    label: "Nama Perusahaan",
+  },
+  {
+    key: "alamatperusahaan",
+    label: "Alamat",
+    width: "25%",
+  },
+  {
+    key: "tglmulaiperusahaan",
+    label: "Tanggal Mulai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "tglselesaiperusahaan",
+    label: "Tanggal Selesai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "statusperusahaan",
     label: "Status",
     width: "10%",
     type: "status",
@@ -338,6 +416,7 @@ const pendidikanColumns = [
 
 const pelatihanColumns = [
   { key: "namapelatihan", label: "Nama Pelatihan" },
+  { key: "namapenyelenggarapelatihan", label: "Penyelenggara" },
   {
     key: "filesertifikatpelatihan",
     label: "Sertifikat",
@@ -347,7 +426,7 @@ const pelatihanColumns = [
     fileLabel: "Lihat",
   },
   {
-    key: "status",
+    key: "statuspelatihan",
     label: "Status",
     width: "10%",
     type: "status",
@@ -373,6 +452,35 @@ const prestasiColumns = [
   },
   {
     key: "statusprestasi",
+    label: "Status",
+    width: "10%",
+    type: "status",
+    class: "text-center",
+  },
+];
+
+const pekerjaanColumns = [
+  { key: "namapekerjaan", label: "Nama Pekerjaan" },
+  { key: "namaperusahaankerja", label: "Perusahaan" },
+  {
+    key: "_refData.namatipepekerjaan",
+    label: "Tipe",
+    getValue: (item) => item._refData?.namatipepekerjaan || "-",
+  },
+  {
+    key: "tglmulaipekerjaan",
+    label: "Tanggal Mulai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "tglselesaipekerjaan",
+    label: "Tanggal Selesai",
+    width: "15%",
+    type: "date",
+  },
+  {
+    key: "statuspekerjaan",
     label: "Status",
     width: "10%",
     type: "status",
@@ -432,13 +540,31 @@ function processDetailItem(item) {
   const userType = item["user-types"]?.[0]?.namajenispengguna || "";
   isASN.value = !userType.toLowerCase().includes("non-asn");
 
-  // Process Riwayat Unit Kerja
+  // Process Riwayat Unit Kerja (untuk ASN)
   riwayatUnitKerja.value = combineRelationData(
     item["user-work-units"] || [],
     item["work-units"] || [],
     "idpenggunaunitkerja",
     "idunitkerja",
     "idunitkerja"
+  );
+
+  // Process Riwayat Perusahaan (untuk Non-ASN)
+  // Data perusahaan tidak perlu di-combine karena tidak ada referensi terpisah
+  riwayatPerusahaan.value = (item["user-companies"] || []).map(
+    (company, index) => ({
+      ...company,
+      _index: index,
+    })
+  );
+
+  // Process Riwayat Pekerjaan
+  riwayatPekerjaan.value = combineRelationData(
+    item["user-work-experiences"] || [],
+    item["job-types"] || [],
+    "idpenggunapekerjaan",
+    "idtipepekerjaan",
+    "idtipepekerjaan"
   );
 
   // Process Riwayat Jabatan

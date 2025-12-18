@@ -44,13 +44,35 @@
             />
           </div>
 
-          <div v-show="currentStepKey === 'unitKerja'">
+          <div v-if="!isNonAsn" v-show="currentStepKey === 'unitKerja'">
             <Step2UnitKerja
               ref="step2Ref"
               v-model="wizardState.unitKerja"
               :currentUserId="currentUserId"
               @validation-change="
                 (valid) => (stepValidations.unitKerja = valid)
+              "
+            />
+          </div>
+
+          <div v-if="isNonAsn" v-show="currentStepKey === 'perusahaan'">
+            <StepPerusahaan
+              ref="stepPerusahaanRef"
+              v-model="wizardState.perusahaan"
+              :currentUserId="currentUserId"
+              @validation-change="
+                (valid) => (stepValidations.perusahaan = valid)
+              "
+            />
+          </div>
+
+          <div v-show="currentStepKey === 'pekerjaan'">
+            <StepPekerjaan
+              ref="stepPekerjaanRef"
+              v-model="wizardState.pekerjaan"
+              :currentUserId="currentUserId"
+              @validation-change="
+                (valid) => (stepValidations.pekerjaan = valid)
               "
             />
           </div>
@@ -158,6 +180,8 @@ import { useToast } from "vue-toastification";
 
 import Step1Biodata from "./steps/Step1Biodata.vue";
 import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
+import StepPerusahaan from "./steps/StepPerusahaan.vue";
+import StepPekerjaan from "./steps/StepPekerjaan.vue";
 import Step3Jabatan from "./steps/Step3Jabatan.vue";
 import Step4Pangkat from "./steps/Step4Pangkat.vue";
 import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
@@ -189,6 +213,14 @@ import {
   addUserAchievement,
   updateUserAchievement,
 } from "@/services/general/personnel/userAchievments";
+import {
+  addUserWorkExperience,
+  updateUserWorkExperience,
+} from "@/services/general/personnel/userWorkExperiences";
+import {
+  addUserCompany,
+  updateUserCompany,
+} from "@/services/general/personnel/userCompanies";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
@@ -210,6 +242,18 @@ const allSteps = [
     key: "unitKerja",
     title: "Unit Kerja",
     icon: "fa-solid fa-building-user",
+    asnOnly: true,
+  },
+  {
+    key: "perusahaan",
+    title: "Perusahaan",
+    icon: "fa-solid fa-briefcase",
+    nonAsnOnly: true,
+  },
+  {
+    key: "pekerjaan",
+    title: "Pengalaman Kerja",
+    icon: "fa-solid fa-briefcase",
     asnOnly: false,
   },
   {
@@ -250,6 +294,8 @@ const selectedUserTypeName = ref("");
 // === Refs ===
 const step1Ref = ref(null);
 const step2Ref = ref(null);
+const stepPerusahaanRef = ref(null);
+const stepPekerjaanRef = ref(null);
 const step3Ref = ref(null);
 const step4Ref = ref(null);
 const step5Ref = ref(null);
@@ -266,6 +312,8 @@ const createdUserId = ref(null);
 const stepValidations = reactive({
   biodata: false,
   unitKerja: true,
+  perusahaan: true,
+  pekerjaan: true,
   jabatan: true,
   pangkat: true,
   pendidikan: true,
@@ -302,6 +350,8 @@ const wizardState = reactive({
     isPhotoRemoved: false,
   },
   unitKerja: { list: [] },
+  perusahaan: { list: [] },
+  pekerjaan: { list: [] },
   jabatan: { list: [] },
   pangkat: { list: [] },
   pendidikan: { list: [] },
@@ -309,7 +359,17 @@ const wizardState = reactive({
   prestasi: { list: [] },
 });
 
-const stepLoaded = reactive([false, false, false, false, false, false, false]);
+const stepLoaded = reactive([
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+]);
 
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
@@ -336,7 +396,7 @@ const filteredSteps = computed(() => {
   if (isNonAsn.value) {
     return allSteps.filter((step) => !step.asnOnly);
   }
-  return allSteps;
+  return allSteps.filter((step) => !step.nonAsnOnly);
 });
 
 const currentStepKey = computed(() => {
@@ -352,6 +412,7 @@ const canProceed = computed(() => {
 function resetWizardState() {
   // Reset all list data
   wizardState.unitKerja.list = [];
+  wizardState.perusahaan.list = [];
   wizardState.jabatan.list = [];
   wizardState.pangkat.list = [];
   wizardState.pendidikan.list = [];
@@ -419,6 +480,8 @@ async function loadStepData(stepIndex) {
   const currentKey = filteredSteps.value[stepIndex]?.key;
   const stepRefMap = {
     unitKerja: step2Ref,
+    perusahaan: stepPerusahaanRef,
+    pekerjaan: stepPekerjaanRef,
     jabatan: step3Ref,
     pangkat: step4Ref,
     pendidikan: step5Ref,
@@ -443,6 +506,8 @@ async function nextStep() {
   const stepRefMap = {
     biodata: step1Ref,
     unitKerja: step2Ref,
+    perusahaan: stepPerusahaanRef,
+    pekerjaan: stepPekerjaanRef,
     jabatan: step3Ref,
     pangkat: step4Ref,
     pendidikan: step5Ref,
@@ -502,7 +567,13 @@ async function submitForm() {
 
     validateSingleActiveStatus();
 
-    await saveUnitKerja(userId);
+    // Save based on user type
+    if (isNonAsn.value) {
+      await savePerusahaan(userId);
+    } else {
+      await saveUnitKerja(userId);
+    }
+    await savePekerjaan(userId);
     // Only save Jabatan and Pangkat for ASN users
     if (!isNonAsn.value) {
       await saveJabatan(userId);
@@ -527,11 +598,13 @@ async function submitForm() {
 
 function validateSingleActiveStatus() {
   const categories = [
-    { name: "Unit Kerja", data: wizardState.unitKerja.data },
-    { name: "Jabatan", data: wizardState.jabatan.data },
-    { name: "Pangkat", data: wizardState.pangkat.data },
-    { name: "Pelatihan", data: wizardState.pelatihan.data },
-    { name: "Prestasi", data: wizardState.prestasi.data },
+    { name: "Unit Kerja", data: wizardState.unitKerja.list },
+    { name: "Perusahaan", data: wizardState.perusahaan.list },
+    { name: "Pekerjaan", data: wizardState.pekerjaan.list },
+    { name: "Jabatan", data: wizardState.jabatan.list },
+    { name: "Pangkat", data: wizardState.pangkat.list },
+    { name: "Pelatihan", data: wizardState.pelatihan.list },
+    { name: "Prestasi", data: wizardState.prestasi.list },
   ];
 
   for (const category of categories) {
@@ -557,6 +630,7 @@ function createBiodataFormData() {
     "idlevel",
     "idjeniskelamin",
     "idjenispengguna",
+    "idjenispegawai",
     "email",
     "nama",
     "telp",
@@ -570,6 +644,7 @@ function createBiodataFormData() {
     "tempatlahir",
     "tanggallahir",
     "status",
+    "minat",
     "idpenggunajenjang",
     "idpenggunapangkat",
     "idpenggunapendidikan",
@@ -652,6 +727,30 @@ async function saveUnitKerja(userId) {
       await updateUserWorkUnit(item.idpenggunaunitkerja, formData);
     } else {
       await addUserWorkUnit(formData);
+    }
+  }
+}
+
+async function savePerusahaan(userId) {
+  for (const item of wizardState.perusahaan.list) {
+    const formData = createFormData(item, null, userId);
+    if (item.idpenggunaperusahaan) {
+      formData.append("_method", "PUT");
+      await updateUserCompany(item.idpenggunaperusahaan, formData);
+    } else {
+      await addUserCompany(formData);
+    }
+  }
+}
+
+async function savePekerjaan(userId) {
+  for (const item of wizardState.pekerjaan.list) {
+    const formData = createFormData(item, null, userId);
+    if (item.idpenggunapekerjaan) {
+      formData.append("_method", "PUT");
+      await updateUserWorkExperience(item.idpenggunapekerjaan, formData);
+    } else {
+      await addUserWorkExperience(formData);
     }
   }
 }

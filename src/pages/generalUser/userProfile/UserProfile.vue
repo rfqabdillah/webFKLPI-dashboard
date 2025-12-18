@@ -113,7 +113,7 @@
                     Biodata
                   </button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li v-if="!isNonAsn" class="nav-item" role="presentation">
                   <button
                     class="nav-link"
                     :class="{ active: activeTab === 'unit_kerja' }"
@@ -126,6 +126,36 @@
                       class="me-2"
                     ></vue-feather>
                     Unit Kerja
+                  </button>
+                </li>
+                <li v-if="isNonAsn" class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    :class="{ active: activeTab === 'perusahaan' }"
+                    @click="activeTab = 'perusahaan'"
+                    type="button"
+                  >
+                    <vue-feather
+                      type="briefcase"
+                      size="14"
+                      class="me-2"
+                    ></vue-feather>
+                    Perusahaan
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    :class="{ active: activeTab === 'pengalaman_kerja' }"
+                    @click="activeTab = 'pengalaman_kerja'"
+                    type="button"
+                  >
+                    <vue-feather
+                      type="folder"
+                      size="14"
+                      class="me-2"
+                    ></vue-feather>
+                    Pengalaman Kerja
                   </button>
                 </li>
                 <li v-if="!isNonAsn" class="nav-item" role="presentation">
@@ -215,13 +245,33 @@
                   <PersonalDetailsTab :user="user" :isNonAsn="isNonAsn" />
                 </div>
 
-                <!-- Tab Unit Kerja -->
+                <!-- Tab Unit Kerja (ASN) -->
                 <div
+                  v-if="!isNonAsn"
                   class="tab-pane fade"
                   :class="{ 'show active': activeTab === 'unit_kerja' }"
                   role="tabpanel"
                 >
                   <WorkUnitTab :items="userWorkUnits" :user="user" />
+                </div>
+
+                <!-- Tab Perusahaan (Non-ASN) -->
+                <div
+                  v-if="isNonAsn"
+                  class="tab-pane fade"
+                  :class="{ 'show active': activeTab === 'perusahaan' }"
+                  role="tabpanel"
+                >
+                  <CompanyTab :items="userCompanies" :user="user" />
+                </div>
+
+                <!-- Tab Pengalaman Kerja -->
+                <div
+                  class="tab-pane fade"
+                  :class="{ 'show active': activeTab === 'pengalaman_kerja' }"
+                  role="tabpanel"
+                >
+                  <WorkExperienceTab :items="userWorkExperience" :user="user" />
                 </div>
 
                 <!-- Tab Jabatan -->
@@ -297,6 +347,8 @@ import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 // Tab Components
 import PersonalDetailsTab from "./tabs/PersonalDetailsTab.vue";
 import WorkUnitTab from "./tabs/WorkUnitTab.vue";
+import CompanyTab from "./tabs/CompanyTab.vue";
+import WorkExperienceTab from "./tabs/WorkExperienceTab.vue";
 import PositionTab from "./tabs/PositionTab.vue";
 import RankTab from "./tabs/RankTab.vue";
 import EducationTab from "./tabs/EducationTab.vue";
@@ -305,6 +357,8 @@ import AchievementTab from "./tabs/AchievementTab.vue";
 
 const user = ref({});
 const userWorkUnits = ref([]);
+const userCompanies = ref([]);
+const userWorkExperience = ref([]);
 const userLevels = ref([]);
 const userRanks = ref([]);
 const userEducations = ref([]);
@@ -406,6 +460,13 @@ async function fetchUserProfile() {
 
                 // Work Units
                 userWorkUnits.value = fetchedUser["user-work-units"] || [];
+
+                // Companies (for Non-ASN)
+                userCompanies.value = fetchedUser["user-companies"] || [];
+
+                // Work Experience
+                userWorkExperience.value =
+                  fetchedUser["user-work-experiences"] || [];
 
                 // Position / Levels
                 userLevels.value = fetchedUser["user-levels"] || [];

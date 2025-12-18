@@ -2,7 +2,7 @@
   <div class="row">
     <div
       v-for="item in items"
-      :key="item.idpenggunapangkat"
+      :key="item.idpenggunapekerjaan"
       class="col-12"
       style="margin-bottom: 5px"
     >
@@ -15,7 +15,7 @@
                 class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
                 style="width: 50px; height: 50px"
               >
-                <i class="fa fa-star fa-lg"></i>
+                <i class="fa fa-suitcase fa-lg"></i>
               </div>
             </div>
 
@@ -24,29 +24,36 @@
               <div class="d-flex justify-content-between align-items-start">
                 <div>
                   <h6 class="fw-bold text-dark mb-1">
-                    {{ getFullRankDisplay(item) }}
+                    {{ item.namapekerjaan || "-" }}
                   </h6>
-                  <div class="text-muted small">
+                  <div class="text-muted small mb-2">
+                    <span class="d-block mb-1">
+                      <i class="fa fa-building me-1 text-info"></i>
+                      {{ item.namaperusahaankerja || "-" }}
+                      <span class="mx-2">•</span>
+                      <i class="fa fa-tag me-1"></i>
+                      {{ getJobTypeName(item.idtipepekerjaan) }}
+                    </span>
                     <span class="me-3">
                       <i class="fa fa-calendar-check me-1 text-success"></i>
-                      Mulai: {{ formatDate(item.tglmulaipangkat) }}
+                      Mulai: {{ formatDate(item.tglmulaipekerjaan) }}
                     </span>
                     <span>
                       <i class="fa fa-calendar-times me-1 text-danger"></i>
                       Selesai:
-                      {{ formatDate(item.tglselesaipangkat) || "Sekarang" }}
+                      {{ formatDate(item.tglselesaipekerjaan) || "Sekarang" }}
                     </span>
                   </div>
                 </div>
                 <span
                   class="badge rounded-pill px-3 py-1"
                   :class="
-                    item.status === 'Aktif'
+                    item.statuspekerjaan === 'Aktif'
                       ? 'bg-soft-success text-success'
                       : 'bg-soft-secondary text-secondary'
                   "
                 >
-                  {{ item.status }}
+                  {{ item.statuspekerjaan || "Tidak Aktif" }}
                 </span>
               </div>
             </div>
@@ -64,7 +71,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Pangkat Tidak Ditemukan!
+            Data Pengalaman Kerja Tidak Ditemukan!
           </span>
         </div>
       </div>
@@ -88,31 +95,11 @@ const props = defineProps({
   },
 });
 
-function getFullRankDisplay(item) {
-  let rankName = "-";
-  let rankGol = "-";
-  let rankRuang = "";
-
-  if (item.pangkat) {
-    rankName = item.pangkat;
-  }
-  if (item.golongan) rankGol = item.golongan;
-  if (item.ruang) rankRuang = item.ruang;
-
-  if ((rankName === "-" || rankGol === "-") && props.user["ranks"]) {
-    const rank = props.user["ranks"].find(
-      (r) => r.idpangkat === item.idpangkat
-    );
-    if (rank) {
-      rankName = rank.pangkat;
-      rankGol = rank.golongan;
-      rankRuang = rank.ruang;
-    }
-  }
-
-  const golRuang = rankRuang ? `${rankGol}/${rankRuang}` : rankGol;
-
-  return `${golRuang}-${rankName}`;
+function getJobTypeName(idtipepekerjaan) {
+  if (!idtipepekerjaan) return "-";
+  const jobTypes = props.user["job-types"] || [];
+  const found = jobTypes.find((jt) => jt.idtipepekerjaan === idtipepekerjaan);
+  return found?.namatipepekerjaan || "-";
 }
 </script>
 

@@ -59,6 +59,7 @@ const formData = reactive({
   idlevel: "",
   idjeniskelamin: "",
   idjenispengguna: "",
+  idjenispegawai: "",
   email: "",
   nama: "",
   telp: "",
@@ -74,6 +75,7 @@ const formData = reactive({
   tanggallahir: "",
   foto: null,
   status: "Aktif",
+  minat: "",
 });
 
 // === Computed ===
@@ -163,32 +165,38 @@ async function selectUser(user) {
 function populateFormData(data) {
   if (!data) return;
 
-  formData.idpengguna = data.idpengguna || null;
+  formData.idpengguna = data.idpengguna || data.id_pengguna || null;
   formData.nama = data.nama || "";
-  formData.gelardepan = data.gelardepan || "";
-  formData.gelarbelakang = data.gelarbelakang || "";
+  formData.gelardepan = data.gelardepan || data.gelar_depan || "";
+  formData.gelarbelakang = data.gelarbelakang || data.gelar_belakang || "";
   formData.nik = data.nik || "";
   formData.email = data.email || "";
   formData.telp = data.telp || "";
   formData.nip = data.nip || "";
   formData.no_karpeg = data.no_karpeg || "";
-  formData.tempatlahir = data.tempatlahir || "";
-  formData.tanggallahir = data.tanggallahir || "";
+  formData.tempatlahir = data.tempatlahir || data.tempat_lahir || "";
+  formData.tanggallahir = data.tanggallahir || data.tanggal_lahir || "";
   formData.alamat = data.alamat || "";
   formData.foto = data.foto || null;
   formData.status = data.status || "Aktif";
-  formData.idjeniskelamin = data.idjeniskelamin || "";
-  formData.idjenispengguna = data.idjenispengguna || "";
+  formData.minat = data.minat || "";
+  formData.idjeniskelamin = data.idjeniskelamin || data.id_jenis_kelamin || "";
+  formData.idjenispengguna =
+    data.idjenispengguna || data.id_jenis_pengguna || "";
+  formData.idjenispegawai = data.idjenispegawai || data.id_jenis_pegawai || "";
 
   if (data.roles && data.roles.idlevel) {
     formData.idlevel = String(data.roles.idlevel);
   } else if (data.idlevel) {
     formData.idlevel = String(data.idlevel);
+  } else if (data.id_level) {
+    formData.idlevel = String(data.id_level);
   }
 
-  if (data.kodekabupaten) {
-    formData.kodekabupaten = data.kodekabupaten;
-    const kode = String(data.kodekabupaten);
+  const kodeKab = data.kodekabupaten || data.kode_kabupaten;
+  if (kodeKab) {
+    formData.kodekabupaten = kodeKab;
+    const kode = String(kodeKab);
     if (kode.includes(".")) {
       formData.kodepropinsi = kode.split(".")[0];
     } else if (kode.length >= 2) {

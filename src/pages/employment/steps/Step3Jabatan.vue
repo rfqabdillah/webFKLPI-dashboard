@@ -381,7 +381,7 @@ function removeJenjang(index) {
   Swal.fire({
     title: "Hapus Data?",
     text: item.idpenggunajenjang
-      ? "Data jenjang ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
+      ? "Data jenjang ini akan dihapus. Tindakan ini tidak dapat dibatalkan."
       : "Data jenjang ini akan dihapus.",
     icon: "warning",
     showCancelButton: true,

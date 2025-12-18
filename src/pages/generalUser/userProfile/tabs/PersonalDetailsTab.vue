@@ -226,6 +226,54 @@
         </div>
         <hr class="my-3 text-muted opacity-25" />
       </div>
+
+      <!-- Jenis Pegawai -->
+      <div class="col-md-6">
+        <div class="d-flex align-items-start">
+          <div class="flex-shrink-0 me-3">
+            <div
+              class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+              style="width: 50px; height: 50px"
+            >
+              <i class="fa fa-user-tie fa-lg"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1">
+            <label class="text-muted small fw-medium mb-1">Jenis Pegawai</label>
+            <div class="fw-medium text-dark">
+              {{ user["employee-types"]?.[0]?.namajenispegawai || "-" }}
+            </div>
+          </div>
+        </div>
+        <hr class="my-3 text-muted opacity-25" />
+      </div>
+
+      <!-- Minat -->
+      <div v-if="user.minat" class="col-12">
+        <div class="d-flex align-items-start">
+          <div class="flex-shrink-0 me-3">
+            <div
+              class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+              style="width: 50px; height: 50px"
+            >
+              <i class="fa fa-heart fa-lg"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1">
+            <label class="text-muted small fw-medium mb-1">Minat</label>
+            <div class="d-flex flex-wrap gap-2 mt-1">
+              <span
+                v-for="(interest, index) in parseBubble(user.minat)"
+                :key="index"
+                class="badge bg-light text-primary border border-primary px-3 py-2"
+              >
+                {{ interest }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <hr class="my-3 text-muted opacity-25" />
+      </div>
     </div>
   </div>
 </template>
@@ -233,6 +281,7 @@
 <script setup>
 import { defineProps, computed } from "vue";
 import { formatDate } from "@/utils/formatDate";
+import { parseBubble } from "@/utils/parseBubble";
 
 const props = defineProps({
   user: {
@@ -247,14 +296,11 @@ const props = defineProps({
 });
 
 const formattedName = computed(() => {
-  const parts = [
-    props.user.gelar_depan || props.user.gelardepan,
-    props.user.nama,
-  ].filter(Boolean);
+  const parts = [props.user.gelardepan, props.user.nama].filter(Boolean);
 
   let name = parts.join(" ");
 
-  const gelarBelakang = props.user.gelar_belakang || props.user.gelarbelakang;
+  const gelarBelakang = props.user.gelarbelakang;
   if (gelarBelakang) {
     name += `, ${gelarBelakang}`;
   }
