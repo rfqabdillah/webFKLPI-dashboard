@@ -139,7 +139,6 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-// Helper function to strip HTML tags for description
 const stripHtml = (html) => {
   if (!html) return "";
   const tmp = document.createElement("div");

@@ -4,7 +4,12 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h5 class="modal-title">{{ title }}</h5>
-          <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            @click="closeModal"
+            aria-label="Close"
+          ></button>
         </div>
 
         <div class="modal-body">
@@ -12,9 +17,21 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" @click="closeModal">Batal</button>
-          <button type="button" class="btn btn-primary" @click="saveForm" :disabled="isLoading">
-            <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status"></span>
+          <button type="button" class="btn btn-light" @click="closeModal">
+            Batal
+          </button>
+          <button
+            type="button"
+            class="btn text-white"
+            style="background-color: #0d6efd"
+            @click="saveForm"
+            :disabled="isLoading"
+          >
+            <span
+              v-if="isLoading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+            ></span>
             <span v-else>Simpan</span>
           </button>
         </div>
@@ -24,21 +41,21 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits } from "vue";
 
 defineProps({
-  title: { type: String, default: 'Form' },
-  isLoading: { type: Boolean, default: false }
+  title: { type: String, default: "Form" },
+  isLoading: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['close', 'save']);
+const emit = defineEmits(["close", "save"]);
 
 function closeModal() {
-  emit('close');
+  emit("close");
 }
 
 function saveForm() {
-  emit('save');
+  emit("save");
 }
 
 function handleOverlayClick(e) {

@@ -17,7 +17,7 @@
             Tambahkan riwayat penempatan unit kerja pegawai jika ada.
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addUnitKerja">
+        <button class="btn btn-success btn-sm" @click="addUnitKerja">
           <i class="fa fa-plus me-1"></i> Tambah Data
         </button>
       </div>
@@ -54,7 +54,9 @@
             class="card-header bg-white d-flex justify-content-between align-items-center py-3"
           >
             <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge bg-primary me-2">{{ index + 1 }}</span>
+              <span class="badge me-2" style="background-color: #0d6efd">{{
+                index + 1
+              }}</span>
               Data Unit Kerja
             </h6>
             <button

@@ -87,7 +87,7 @@
             <div class="mt-4 position-relative">
               <div class="position-absolute end-0 me-4" style="top: -150px">
                 <button
-                  class="btn btn-primary btn-sm px-3 fw-medium"
+                  class="btn btn-warning btn-sm px-3 fw-medium"
                   @click="handleEditData"
                 >
                   <i class="fa fa-edit me-2"></i>Edit Data

@@ -146,7 +146,8 @@
         <button
           v-if="currentStepIndex < filteredSteps.length - 1"
           type="button"
-          class="btn btn-primary"
+          class="btn text-white"
+          style="background-color: #0d6efd"
           @click="nextStep"
           :disabled="isLoading"
         >

@@ -29,11 +29,7 @@
 
                   <div class="text-muted small mb-2">
                     <i class="fa fa-user-tie me-1"></i>
-                    {{
-                      item.namapenyelenggarapelatihan ||
-                      item.namapenyelenggara ||
-                      "-"
-                    }}
+                    {{ item.namapenyelenggarapelatihan || "-" }}
                   </div>
                 </div>
                 <span

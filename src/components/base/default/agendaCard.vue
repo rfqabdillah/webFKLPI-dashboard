@@ -164,14 +164,14 @@ const handleAvatarError = (event) => {
 }
 
 .badge.bg-primary {
-  background-color: #7366ff !important;
+  background-color: #15406ae6 !important;
   font-weight: 500;
   font-size: 0.75rem;
 }
 
 .btn-selengkapnya {
   background-color: rgba(115, 102, 255, 0.1);
-  color: #7366ff;
+  color: #15406ae6;
   font-size: 14px;
   font-weight: 500;
   padding: 8px 16px;
@@ -181,7 +181,7 @@ const handleAvatarError = (event) => {
 }
 
 .btn-selengkapnya:hover {
-  background-color: #7366ff;
+  background-color: #15406ae6;
   color: white;
 }
 </style>

@@ -373,14 +373,14 @@ onMounted(() => {
 }
 
 .pagination .page-link:hover {
-  background-color: #7366ff;
-  border-color: #7366ff;
+  background-color: #15406ae6;
+  border-color: #15406ae6;
   color: white;
 }
 
 .pagination .page-item.active .page-link {
-  background-color: #7366ff;
-  border-color: #7366ff;
+  background-color: #15406ae6;
+  border-color: #15406ae6;
   color: white;
 }
 
