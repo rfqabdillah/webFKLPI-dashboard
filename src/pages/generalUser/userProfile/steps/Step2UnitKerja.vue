@@ -4,21 +4,23 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data referensi...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-building me-2"></i>Riwayat Unit Kerja
+            <i class="fa fa-building me-2"></i
+            >{{ t("ProfileSteps.WorkUnit.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat penempatan unit kerja pegawai jika ada.
+            {{ t("ProfileSteps.WorkUnit.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addUnitKerja">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.WorkUnit.AddData") }}
         </button>
       </div>
 
@@ -26,11 +28,12 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> Aktif</strong
-        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
-        menjadi "Tidak Aktif".
+          ><i class="fa fa-check-circle"></i>
+          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
+        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -38,9 +41,12 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-building-o text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data unit kerja.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.WorkUnit.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addUnitKerja">
-          <i class="fa fa-plus me-1"></i> Tambah Unit Kerja
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.WorkUnit.AddWorkUnit") }}
         </button>
       </div>
 
@@ -57,12 +63,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              Data Unit Kerja
+              {{ t("ProfileSteps.WorkUnit.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removeUnitKerja(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -71,7 +77,8 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Unit Kerja <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.WorkUnit.WorkUnitLabel") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -80,7 +87,9 @@
                   required
                   @blur="validateField(index, 'idunitkerja')"
                 >
-                  <option value="" disabled>Pilih Unit Kerja</option>
+                  <option value="" disabled>
+                    {{ t("ProfileSteps.WorkUnit.SelectWorkUnit") }}
+                  </option>
                   <option
                     v-for="unit in workUnitOptions"
                     :key="unit.idunitkerja"
@@ -96,7 +105,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Tanggal Mulai <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.WorkUnit.StartDate") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="date"
@@ -112,19 +122,23 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.EndDate")
+                }}</label>
                 <input
                   type="date"
                   class="form-control"
                   v-model="item.tglselesai"
                 />
                 <div class="form-text small">
-                  Kosongkan jika masih aktif menjabat.
+                  {{ t("ProfileSteps.WorkUnit.EndDateHelp") }}
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">File SK</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.SKFile")
+                }}</label>
 
                 <input
                   type="file"
@@ -142,11 +156,9 @@
                       <i class="fa fa-file-pdf-o fa-2x"></i>
                     </div>
                     <div class="text-truncate">
-                      <small
-                        class="text-muted d-block"
-                        style="font-size: 0.75rem"
-                        >File Tersimpan:</small
-                      >
+                      <small style="font-size: 0.75rem">{{
+                        t("ProfileSteps.WorkUnit.SavedFile")
+                      }}</small>
                       <span
                         class="fw-bold text-dark text-truncate d-block"
                         :title="item.filesk_preview"
@@ -161,7 +173,8 @@
                     target="_blank"
                     class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
                   >
-                    <i class="fa fa-external-link me-1"></i> Buka
+                    <i class="fa fa-external-link me-1"></i>
+                    {{ t("ProfileSteps.WorkUnit.Open") }}
                   </a>
                 </div>
 
@@ -172,9 +185,9 @@
                   <div class="d-flex align-items-center">
                     <i class="fa fa-check-circle fa-lg me-2"></i>
                     <div class="overflow-hidden">
-                      <small class="d-block text-muted"
-                        >File baru dipilih:</small
-                      >
+                      <small class="d-block text-muted">{{
+                        t("ProfileSteps.WorkUnit.NewFileSelected")
+                      }}</small>
                       <strong class="text-truncate d-block">{{
                         item.filesk_preview
                       }}</strong>
@@ -184,7 +197,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
+                <label class="form-label fw-semibold d-block">{{
+                  t("ProfileSteps.WorkUnit.Status")
+                }}</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -198,7 +213,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || "Tidak Aktif" }}
+                    {{ item.status || t("Inactive") }}
                   </label>
                 </div>
               </div>
@@ -213,6 +228,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import { getWorkUnits } from "@/services/referensi/workUnits";
 import {
   getUserWorkUnits,
@@ -233,6 +249,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -320,8 +337,6 @@ async function loadData(userId) {
             : "",
         _tempId: Date.now() + Math.random(),
       }));
-
-      // Deduplicate by ID
       const uniqueData = uniqueByKey(apiData, "idpenggunaunitkerja");
 
       unitKerjaList.value = uniqueData;
@@ -355,7 +370,7 @@ async function fetchWorkUnits() {
     }
   } catch (error) {
     console.error("Error fetching work units:", error);
-    toast.error("Gagal memuat data unit kerja.");
+    toast.error(t("ProfileSteps.WorkUnit.LoadError"));
   }
 }
 
@@ -367,7 +382,8 @@ function addUnitKerja() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    status: "Tidak Aktif",
+    filesk_preview: "",
+    status: t("Inactive"),
   });
 
   formErrors.value.push({});
@@ -377,14 +393,18 @@ function removeUnitKerja(index) {
   const item = unitKerjaList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.WorkUnit.DeleteConfirmTitle"),
     text: item.idpenggunaunitkerja
-      ? "Data unit kerja ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data unit kerja ini akan dihapus.",
+      ? t("ProfileSteps.WorkUnit.DeleteConfirmTextDB")
+      : t("ProfileSteps.WorkUnit.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.WorkUnit.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.WorkUnit.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -394,13 +414,13 @@ function removeUnitKerja(index) {
         if (item.idpenggunaunitkerja) {
           await deleteUserWorkUnit(item.idpenggunaunitkerja);
         }
-        toast.success("Data unit kerja berhasil dihapus");
+        toast.success(t("ProfileSteps.WorkUnit.DeleteSuccess"));
 
         unitKerjaList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting unit kerja:", error);
-        toast.error("Gagal menghapus data unit kerja");
+        toast.error(t("ProfileSteps.WorkUnit.DeleteError"));
       }
     }
   });
@@ -421,13 +441,15 @@ function handleFileUpload(index, event) {
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  const newStatus = isChecked
+    ? t("ProfileSteps.WorkUnit.Active")
+    : t("Inactive");
   unitKerjaList.value[index].status = newStatus;
 
-  if (newStatus === "Aktif") {
+  if (newStatus === t("ProfileSteps.WorkUnit.Active")) {
     unitKerjaList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = "Tidak Aktif";
+        item.status = t("Inactive");
       }
     });
   }
@@ -444,7 +466,9 @@ function validateField(index, field) {
 
   if (field === "idunitkerja") {
     if (!item.idunitkerja) {
-      formErrors.value[index].idunitkerja = "Unit Kerja wajib dipilih.";
+      formErrors.value[index].idunitkerja = t(
+        "ProfileSteps.WorkUnit.Validation.WorkUnitRequired"
+      );
     } else {
       formErrors.value[index].idunitkerja = "";
     }
@@ -452,7 +476,9 @@ function validateField(index, field) {
 
   if (field === "tglmulai") {
     if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tglmulai = t(
+        "ProfileSteps.WorkUnit.Validation.StartDateRequired"
+      );
     } else {
       formErrors.value[index].tglmulai = "";
     }
@@ -470,14 +496,18 @@ function validate() {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     if (!item.idunitkerja) {
-      formErrors.value[index].idunitkerja = "Unit Kerja wajib dipilih.";
+      formErrors.value[index].idunitkerja = t(
+        "ProfileSteps.WorkUnit.Validation.WorkUnitRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].idunitkerja = "";
     }
 
     if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tglmulai = t(
+        "ProfileSteps.WorkUnit.Validation.StartDateRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].tglmulai = "";

@@ -23,6 +23,7 @@
 <script setup>
 import { ref, reactive, watch, computed, onMounted } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import UserTypeSelectionCards from "./components/UserTypeSelectionCards.vue";
 import BiodataFormFields from "./components/BiodataFormFields.vue";
 
@@ -39,6 +40,7 @@ const emit = defineEmits([
 ]);
 
 const toast = useToast();
+const { t } = useI18n();
 const formRef = ref(null);
 
 // === State ===
@@ -187,7 +189,7 @@ function handlePhotoChange(file) {
 
 async function validate() {
   if (!formData.idjenispengguna && !isEditMode.value) {
-    toast.error("Silakan pilih jenis pengguna terlebih dahulu");
+    toast.error(t("ProfileSteps.Biodata.Validation.UserTypeRequired"));
     return false;
   }
 

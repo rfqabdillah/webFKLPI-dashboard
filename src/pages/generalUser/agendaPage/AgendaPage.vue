@@ -2,7 +2,7 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header pb-3">
-        <h5 class="mb-3">Agenda</h5>
+        <h5 class="mb-3">{{ $t("Events") }}</h5>
 
         <!-- Search & Filter Row -->
         <div class="row g-3">
@@ -16,7 +16,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="form-control"
-                placeholder="Cari Agenda"
+                :placeholder="$t('Search Events')"
                 @input="onSearchChange"
               />
               <button
@@ -37,9 +37,9 @@
               class="form-select"
               @change="onCategoryChange"
             >
-              <option value="">Semua Kategori</option>
+              <option value="">{{ $t("All Categories") }}</option>
               <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                {{ cat.name }}
+                {{ $i18n.locale === "en" ? cat.name_en : cat.name }}
               </option>
             </select>
           </div>
@@ -49,7 +49,8 @@
             class="col-12 col-md-2 col-lg-5 d-flex align-items-center justify-content-md-end"
           >
             <span class="text-muted" v-if="!isLoading">
-              <strong>{{ filteredAgenda.length }}</strong> agenda ditemukan
+              <strong>{{ filteredAgenda.length }}</strong>
+              {{ $t("events found") }}
             </span>
           </div>
         </div>
@@ -60,7 +61,7 @@
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <p class="mt-2 text-muted">Memuat data agenda...</p>
+          <p class="mt-2 text-muted">{{ $t("Loading events data") }}...</p>
         </div>
 
         <!-- Error State -->
@@ -68,7 +69,7 @@
           <i class="fa fa-exclamation-circle text-danger fa-3x mb-3"></i>
           <p class="text-danger">{{ error }}</p>
           <button class="btn btn-outline-primary" @click="fetchAgenda">
-            Coba Lagi
+            {{ $t("Try Again") }}
           </button>
         </div>
 
@@ -76,17 +77,17 @@
         <div v-else-if="filteredAgenda.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
           <p class="text-muted" v-if="searchQuery || selectedCategory">
-            Tidak ada agenda yang sesuai dengan pencarian.
+            {{ $t("No events match your search") }}
           </p>
           <p class="text-muted" v-else>
-            Tidak ada agenda yang tersedia saat ini.
+            {{ $t("No events available at this time") }}
           </p>
           <button
             v-if="searchQuery || selectedCategory"
             class="btn btn-outline-primary"
             @click="resetFilters"
           >
-            Reset Filter
+            {{ $t("Reset Filter") }}
           </button>
         </div>
 
@@ -153,12 +154,14 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import AgendaCard from "@/components/base/default/agendaCard.vue";
 import { getEvents } from "@/services/public/eventsPublic";
 import { getEventCategories } from "@/services/general/events/eventsCategories";
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
 
 const router = useRouter();
+const { locale } = useI18n();
 
 // State
 const agendaList = ref([]);
@@ -233,16 +236,26 @@ const stripHtml = (html) => {
 };
 
 const mapAgendaToCard = (agenda) => {
+  const isEnglish = locale.value === "en";
   return {
     id: agenda.id_agenda,
     image: agenda.poster || defaultPosterUrl,
-    tag1: agenda.kategori_agenda?.nama_kategori_agenda || "Umum",
+    tag1: isEnglish
+      ? agenda.kategori_agenda?.nama_kategori_agenda_en ||
+        agenda.kategori_agenda?.nama_kategori_agenda ||
+        "General"
+      : agenda.kategori_agenda?.nama_kategori_agenda || "Umum",
     registration_deadline: agenda.tanggal_batas_pendaftaran,
     implementation_date: agenda.tanggal_pelaksanaan,
     place: agenda.tempat_pelaksanaan || "-",
-    title: agenda.judul || "Tanpa Judul",
-    desc: stripHtml(agenda.konten),
+    title: isEnglish
+      ? agenda.judul_en || agenda.judul || "Untitled"
+      : agenda.judul || "Tanpa Judul",
+    desc: isEnglish
+      ? stripHtml(agenda.konten_en || agenda.konten)
+      : stripHtml(agenda.konten),
     students: registrantCounts.value[agenda.id_agenda] || 0,
+    locale: locale.value,
   };
 };
 
@@ -331,6 +344,7 @@ const fetchCategories = async () => {
     categories.value = categoryData.map((cat) => ({
       id: cat.idakategoriagenda,
       name: cat.namakategoriagenda,
+      name_en: cat.namakategoriagenda_en || cat.namakategoriagenda,
     }));
   } catch (err) {
     console.error("Error fetching categories:", err);

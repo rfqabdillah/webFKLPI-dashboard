@@ -5,7 +5,7 @@
         <img
           class="b-r-10 profile-img"
           :src="user.photo"
-          alt="Foto Profil"
+          :alt="$t('Profile Photo')"
           @error="handleImageError"
         />
       </div>
@@ -29,11 +29,11 @@
     <ul class="profile-dropdown onhover-show-div">
       <li>
         <vue-feather type="user"></vue-feather>
-        <span>Account</span>
+        <span>{{ $t("Account") }}</span>
       </li>
       <li @click="logout" style="cursor: pointer">
         <vue-feather type="log-in"></vue-feather>
-        <span>Log out</span>
+        <span>{{ $t("Logout") }}</span>
       </li>
     </ul>
   </li>
@@ -48,8 +48,8 @@ export default {
   data() {
     return {
       user: {
-        nama: "Pengguna",
-        nama_level: "Role",
+        nama: this.$t("User"),
+        nama_level: this.$t("Role"),
         photo: null,
       },
       userDataCheckInterval: null,
@@ -115,10 +115,10 @@ export default {
         if (userProfile) {
           // Only update if data actually changed (to avoid unnecessary re-renders)
           if (this.user.nama !== userProfile.nama) {
-            this.user.nama = userProfile.nama || "Pengguna";
+            this.user.nama = userProfile.nama || this.$t("User");
           }
           if (this.user.nama_level !== userProfile.nama_level) {
-            this.user.nama_level = userProfile.nama_level || "Role";
+            this.user.nama_level = userProfile.nama_level || this.$t("Role");
           }
           if (this.user.photo !== userProfile.foto) {
             this.user.photo = userProfile.foto || null;
@@ -131,13 +131,13 @@ export default {
 
     async logout() {
       const result = await this.$swal.fire({
-        text: "Apakah Anda yakin ingin keluar?",
+        text: this.$t("Are you sure you want to logout?"),
         icon: "warning",
         showCancelButton: true,
         cancelButtonColor: "#efefef",
         confirmButtonColor: "#0d6efd",
-        cancelButtonText: "Batal",
-        confirmButtonText: "Konfirmasi",
+        cancelButtonText: this.$t("Cancel"),
+        confirmButtonText: this.$t("Confirm"),
         reverseButtons: true,
       });
 
@@ -165,8 +165,8 @@ export default {
 
           this.$router.replace("/auth");
           this.$swal.fire(
-            "Berhasil!",
-            "Anda telah berhasil keluar.",
+            this.$t("Success"),
+            this.$t("You have successfully logged out"),
             "success"
           );
         }

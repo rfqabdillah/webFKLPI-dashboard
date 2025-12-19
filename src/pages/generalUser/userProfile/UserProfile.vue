@@ -12,11 +12,10 @@
           </div>
           <div class="alert-content">
             <span class="fw-bold d-block" style="color: #ff5b57">
-              Data Profil Belum Lengkap!
+              {{ $t("Profile Data Incomplete") }}
             </span>
             <span class="small" style="color: #ff5b57">
-              Mohon lengkapi data diri Anda (NIK, Alamat, No. Telepon, Tempat &
-              Tanggal Lahir).
+              {{ $t("Please complete your personal data") }}
             </span>
           </div>
         </div>
@@ -90,7 +89,7 @@
                   class="btn btn-warning btn-sm px-3 fw-medium"
                   @click="handleEditData"
                 >
-                  <i class="fa fa-edit me-2"></i>Edit Data
+                  <i class="fa fa-edit me-2"></i>{{ $t("Edit Data") }}
                 </button>
               </div>
               <ul
@@ -110,7 +109,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Biodata
+                    {{ $t("Biodata") }}
                   </button>
                 </li>
                 <li v-if="!isNonAsn" class="nav-item" role="presentation">
@@ -125,7 +124,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Unit Kerja
+                    {{ $t("Work Unit") }}
                   </button>
                 </li>
                 <li v-if="isNonAsn" class="nav-item" role="presentation">
@@ -140,7 +139,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Perusahaan
+                    {{ $t("Company") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -155,7 +154,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pengalaman Kerja
+                    {{ $t("Work Experience") }}
                   </button>
                 </li>
                 <li v-if="!isNonAsn" class="nav-item" role="presentation">
@@ -170,7 +169,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Jabatan
+                    {{ $t("Position") }}
                   </button>
                 </li>
                 <li v-if="!isNonAsn" class="nav-item" role="presentation">
@@ -185,7 +184,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pangkat
+                    {{ $t("Rank") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -200,7 +199,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pendidikan
+                    {{ $t("Education") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -215,7 +214,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pelatihan
+                    {{ $t("Training") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -230,7 +229,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Prestasi
+                    {{ $t("Achievements") }}
                   </button>
                 </li>
               </ul>

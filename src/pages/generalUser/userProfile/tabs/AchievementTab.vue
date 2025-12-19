@@ -34,7 +34,7 @@
 
                   <div class="d-flex align-items-center mt-2 text-muted small">
                     <i class="fa fa-globe me-2"></i>
-                    <span>Skala: </span>
+                    <span>{{ $t("Scale") }}: </span>
                     <span class="fw-bold ms-1">{{ getScaleName(item) }}</span>
                   </div>
                 </div>
@@ -64,7 +64,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Prestasi Tidak Ditemukan!
+            {{ $t("Achievement Data Not Found") }}
           </span>
         </div>
       </div>

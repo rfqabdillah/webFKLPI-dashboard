@@ -28,7 +28,7 @@
                   </h6>
                   <div class="text-muted small mb-2">
                     <span class="d-block mb-1">
-                      <i class="fa fa-building me-1 text-info"></i>
+                      <i class="fa fa-building me-1"></i>
                       {{ item.namaperusahaankerja || "-" }}
                       <span class="mx-2">•</span>
                       <i class="fa fa-tag me-1"></i>
@@ -36,12 +36,16 @@
                     </span>
                     <span class="me-3">
                       <i class="fa fa-calendar-check me-1 text-success"></i>
-                      Mulai: {{ formatDate(item.tglmulaipekerjaan) }}
+                      {{ $t("Start") }}:
+                      {{ formatDate(item.tglmulaipekerjaan, locale) }}
                     </span>
                     <span>
                       <i class="fa fa-calendar-times me-1 text-danger"></i>
-                      Selesai:
-                      {{ formatDate(item.tglselesaipekerjaan) || "Sekarang" }}
+                      {{ $t("End") }}:
+                      {{
+                        formatDate(item.tglselesaipekerjaan, locale) ||
+                        $t("Now")
+                      }}
                     </span>
                   </div>
                 </div>
@@ -71,7 +75,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Pengalaman Kerja Tidak Ditemukan!
+            {{ $t("Work Experience Data Not Found") }}
           </span>
         </div>
       </div>
@@ -81,7 +85,10 @@
 
 <script setup>
 import { defineProps } from "vue";
+import { useI18n } from "vue-i18n";
 import { formatDate } from "@/utils/formatDate";
+
+const { locale } = useI18n();
 
 const props = defineProps({
   items: {

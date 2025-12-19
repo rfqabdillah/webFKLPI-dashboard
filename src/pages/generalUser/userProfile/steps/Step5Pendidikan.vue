@@ -4,21 +4,23 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Mem uat data referensi...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-graduation-cap me-2"></i>Riwayat Pendidikan
+            <i class="fa fa-graduation-cap me-2"></i
+            >{{ t("ProfileSteps.Education.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat pendidikan pegawai jika ada.
+            {{ t("ProfileSteps.Education.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addPendidikan">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Education.AddData") }}
         </button>
       </div>
 
@@ -27,9 +29,12 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-graduation-cap text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data pendidikan.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.Education.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPendidikan">
-          <i class="fa fa-plus me-1"></i> Tambah Pendidikan
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Education.AddEducation") }}
         </button>
       </div>
 
@@ -46,12 +51,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              Data Pendidikan
+              {{ t("ProfileSteps.Education.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePendidikan(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -60,7 +65,8 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Jenjang Pendidikan <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Education.EducationLevel") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -71,7 +77,9 @@
                   required
                   @blur="validateField(index, 'idjenjangpendidikan')"
                 >
-                  <option value="" disabled>Pilih Jenjang Pendidikan</option>
+                  <option value="" disabled>
+                    {{ t("ProfileSteps.Education.SelectEducationLevel") }}
+                  </option>
                   <option
                     v-for="jenjang in educationLevelOptions"
                     :key="jenjang.idjenjangpendidikan"
@@ -87,7 +95,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Tahun Lulus <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Education.GraduationYear") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -106,7 +115,8 @@
 
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Program Studi <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Education.Major") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -114,7 +124,7 @@
                   v-model="item.programstudi"
                   :class="{ 'is-invalid': getError(index, 'programstudi') }"
                   required
-                  placeholder="Contoh: Teknik Informatika"
+                  :placeholder="t('ProfileSteps.Education.MajorPlaceholder')"
                   @blur="validateField(index, 'programstudi')"
                 />
                 <div class="invalid-feedback">
@@ -124,7 +134,7 @@
 
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Nama Perguruan Tinggi / Sekolah
+                  {{ t("ProfileSteps.Education.Institution") }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -135,7 +145,9 @@
                     'is-invalid': getError(index, 'namaperguruantinggi'),
                   }"
                   required
-                  placeholder="Contoh: Universitas Indonesia"
+                  :placeholder="
+                    t('ProfileSteps.Education.InstitutionPlaceholder')
+                  "
                   @blur="validateField(index, 'namaperguruantinggi')"
                 />
                 <div class="invalid-feedback">
@@ -153,6 +165,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
 import {
   getUserEducations,
@@ -174,6 +187,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -185,16 +199,18 @@ const formErrors = ref([]);
 const validationSchema = yup.object().shape({
   idjenjangpendidikan: yup
     .string()
-    .required("Jenjang Pendidikan wajib dipilih."),
-  programstudi: yup.string().required("Program Studi wajib diisi."),
+    .required(t("ProfileSteps.Education.Validation.LevelRequired")),
+  programstudi: yup
+    .string()
+    .required(t("ProfileSteps.Education.Validation.MajorRequired")),
   namaperguruantinggi: yup
     .string()
-    .required("Nama Perguruan Tinggi wajib diisi."),
+    .required(t("ProfileSteps.Education.Validation.InstitutionRequired")),
   tahunlulus: yup
     .number()
-    .required("Tahun Lulus wajib diisi.")
-    .min(1900, "Tahun tidak valid")
-    .max(2100, "Tahun tidak valid"),
+    .required(t("ProfileSteps.Education.Validation.YearRequired"))
+    .min(1900, t("ProfileSteps.Education.Validation.YearInvalid"))
+    .max(2100, t("ProfileSteps.Education.Validation.YearInvalid")),
 });
 
 onMounted(async () => {
@@ -295,7 +311,7 @@ async function fetchEducationLevels() {
     }
   } catch (error) {
     console.error("Error fetching education levels:", error);
-    toast.error("Gagal memuat data jenjang pendidikan.");
+    toast.error(t("ProfileSteps.Education.LoadError"));
   }
 }
 
@@ -314,14 +330,18 @@ function removePendidikan(index) {
   const item = pendidikanList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.Education.DeleteConfirmTitle"),
     text: item.idpenggunapendidikan
-      ? "Data pendidikan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data pendidikan ini akan dihapus.",
+      ? t("ProfileSteps.Education.DeleteConfirmTextDB")
+      : t("ProfileSteps.Education.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.Education.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.Education.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -331,13 +351,13 @@ function removePendidikan(index) {
         if (item.idpenggunapendidikan) {
           await deleteUserEducation(item.idpenggunapendidikan);
         }
-        toast.success("Data pendidikan berhasil dihapus");
+        toast.success(t("ProfileSteps.Education.DeleteSuccess"));
 
         pendidikanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pendidikan:", error);
-        toast.error("Gagal menghapus data pendidikan");
+        toast.error(t("ProfileSteps.Education.DeleteError"));
       }
     }
   });

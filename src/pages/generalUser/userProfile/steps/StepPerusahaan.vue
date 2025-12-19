@@ -4,21 +4,23 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-briefcase me-2"></i>Riwayat Perusahaan
+            <i class="fa fa-briefcase me-2"></i
+            >{{ t("ProfileSteps.Company.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat perusahaan tempat Anda bekerja.
+            {{ t("ProfileSteps.Company.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addPerusahaan">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Company.AddData") }}
         </button>
       </div>
 
@@ -26,11 +28,12 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> Aktif</strong
-        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
-        menjadi "Tidak Aktif".
+          ><i class="fa fa-check-circle"></i>
+          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
+        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -38,9 +41,12 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-briefcase text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data perusahaan.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.Company.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPerusahaan">
-          <i class="fa fa-plus me-1"></i> Tambah Perusahaan
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Company.AddCompany") }}
         </button>
       </div>
 
@@ -57,12 +63,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              Data Perusahaan
+              {{ t("ProfileSteps.Company.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePerusahaan(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -71,14 +77,17 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Nama Perusahaan <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Company.CompanyName") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   class="form-control"
                   v-model="item.namaperusahaan"
                   :class="{ 'is-invalid': getError(index, 'namaperusahaan') }"
-                  placeholder="Masukkan nama perusahaan"
+                  :placeholder="
+                    t('ProfileSteps.Company.CompanyNamePlaceholder')
+                  "
                   @blur="validateField(index, 'namaperusahaan')"
                 />
                 <div class="invalid-feedback">
@@ -87,18 +96,23 @@
               </div>
 
               <div class="col-md-12">
-                <label class="form-label fw-semibold">Alamat Perusahaan</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.Company.CompanyLocation")
+                }}</label>
                 <textarea
                   class="form-control"
                   v-model="item.alamat"
-                  placeholder="Masukkan alamat perusahaan"
+                  :placeholder="
+                    t('ProfileSteps.Company.CompanyLocationPlaceholder')
+                  "
                   rows="2"
                 ></textarea>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Tanggal Mulai <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.WorkUnit.StartDate") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="date"
@@ -113,19 +127,23 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.EndDate")
+                }}</label>
                 <input
                   type="date"
                   class="form-control"
                   v-model="item.tanggalselesai"
                 />
                 <div class="form-text small">
-                  Kosongkan jika masih bekerja di perusahaan ini.
+                  {{ t("ProfileSteps.WorkUnit.EndDateHelp") }}
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
+                <label class="form-label fw-semibold d-block">{{
+                  t("ProfileSteps.WorkUnit.Status")
+                }}</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -139,7 +157,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || "Tidak Aktif" }}
+                    {{ item.status || t("Inactive") }}
                   </label>
                 </div>
               </div>
@@ -154,6 +172,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import {
   getUserCompanies,
   deleteUserCompany,
@@ -173,6 +192,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -236,7 +256,7 @@ async function loadData(userId) {
         alamat: d.alamat || "",
         tanggalmulai: d.tanggalmulai || "",
         tanggalselesai: d.tanggalselesai || "",
-        status: d.status || "Tidak Aktif",
+        status: d.status || t("Inactive"),
         _tempId: Date.now() + Math.random(),
       }));
 
@@ -262,7 +282,7 @@ function addPerusahaan() {
     alamat: "",
     tanggalmulai: "",
     tanggalselesai: "",
-    status: "Tidak Aktif",
+    status: t("Inactive"),
   });
 
   formErrors.value.push({});
@@ -272,14 +292,18 @@ function removePerusahaan(index) {
   const item = perusahaanList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.Company.DeleteConfirmTitle"),
     text: item.idpenggunaperusahaan
-      ? "Data perusahaan ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data perusahaan ini akan dihapus.",
+      ? t("ProfileSteps.Company.DeleteConfirmTextDB")
+      : t("ProfileSteps.Company.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.Company.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.Company.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -289,26 +313,28 @@ function removePerusahaan(index) {
         if (item.idpenggunaperusahaan) {
           await deleteUserCompany(item.idpenggunaperusahaan);
         }
-        toast.success("Data perusahaan berhasil dihapus");
+        toast.success(t("ProfileSteps.Company.DeleteSuccess"));
 
         perusahaanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting perusahaan:", error);
-        toast.error("Gagal menghapus data perusahaan");
+        toast.error(t("ProfileSteps.Company.DeleteError"));
       }
     }
   });
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  const newStatus = isChecked
+    ? t("ProfileSteps.WorkUnit.Active")
+    : t("Inactive");
   perusahaanList.value[index].status = newStatus;
 
   if (newStatus === "Aktif") {
     perusahaanList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = "Tidak Aktif";
+        item.status = t("Inactive");
       }
     });
   }
@@ -325,7 +351,9 @@ function validateField(index, field) {
 
   if (field === "namaperusahaan") {
     if (!item.namaperusahaan) {
-      formErrors.value[index].namaperusahaan = "Nama Perusahaan wajib diisi.";
+      formErrors.value[index].namaperusahaan = t(
+        "ProfileSteps.Company.Validation.NameRequired"
+      );
     } else {
       formErrors.value[index].namaperusahaan = "";
     }
@@ -333,7 +361,9 @@ function validateField(index, field) {
 
   if (field === "tanggalmulai") {
     if (!item.tanggalmulai) {
-      formErrors.value[index].tanggalmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tanggalmulai = t(
+        "ProfileSteps.Company.Validation.StartDateRequired"
+      );
     } else {
       formErrors.value[index].tanggalmulai = "";
     }
@@ -351,14 +381,18 @@ function validate() {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     if (!item.namaperusahaan) {
-      formErrors.value[index].namaperusahaan = "Nama Perusahaan wajib diisi.";
+      formErrors.value[index].namaperusahaan = t(
+        "ProfileSteps.Company.Validation.NameRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].namaperusahaan = "";
     }
 
     if (!item.tanggalmulai) {
-      formErrors.value[index].tanggalmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tanggalmulai = t(
+        "ProfileSteps.Company.Validation.StartDateRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].tanggalmulai = "";

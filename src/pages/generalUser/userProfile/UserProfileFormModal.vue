@@ -140,7 +140,8 @@
           @click="prevStep"
           :disabled="isLoading"
         >
-          <i class="fa fa-arrow-left me-1"></i> Sebelumnya
+          <i class="fa fa-arrow-left me-1"></i>
+          {{ t("ProfileSteps.Modal.Buttons.Previous") }}
         </button>
 
         <button
@@ -151,7 +152,8 @@
           @click="nextStep"
           :disabled="isLoading"
         >
-          Selanjutnya <i class="fa fa-arrow-right ms-1"></i>
+          {{ t("ProfileSteps.Modal.Buttons.Next") }}
+          <i class="fa fa-arrow-right ms-1"></i>
         </button>
 
         <button
@@ -168,7 +170,11 @@
             aria-hidden="true"
           ></span>
           <i v-else class="fa fa-check me-1"></i>
-          {{ isLoading ? "Menyimpan..." : "Selesai" }}
+          {{
+            isLoading
+              ? t("ProfileSteps.Modal.Buttons.Saving")
+              : t("ProfileSteps.Modal.Buttons.Finish")
+          }}
         </button>
       </div>
     </div>
@@ -176,6 +182,7 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
 import { ref, reactive, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
 
@@ -230,64 +237,65 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "save-successful"]);
 const toast = useToast();
+const { t } = useI18n();
 
 // === Steps Configuration ===
-const allSteps = [
+const allSteps = computed(() => [
   {
     key: "biodata",
-    title: "Biodata",
+    title: t("ProfileSteps.Modal.Steps.Biodata"),
     icon: "fa-solid fa-id-card",
     asnOnly: false,
   },
   {
     key: "unitKerja",
-    title: "Unit Kerja",
+    title: t("ProfileSteps.Modal.Steps.WorkUnit"),
     icon: "fa-solid fa-building-user",
     asnOnly: true,
   },
   {
     key: "perusahaan",
-    title: "Perusahaan",
+    title: t("ProfileSteps.Modal.Steps.Company"),
     icon: "fa-solid fa-briefcase",
     nonAsnOnly: true,
   },
   {
     key: "pekerjaan",
-    title: "Pengalaman Kerja",
+    title: t("ProfileSteps.Modal.Steps.Job"),
     icon: "fa-solid fa-briefcase",
     asnOnly: false,
   },
   {
     key: "jabatan",
-    title: "Jabatan",
+    title: t("ProfileSteps.Modal.Steps.Position"),
     icon: "fa-solid fa-user-tie",
     asnOnly: true,
   },
   {
     key: "pangkat",
-    title: "Pangkat",
+    title: t("ProfileSteps.Modal.Steps.Rank"),
     icon: "fa-solid fa-ranking-star",
     asnOnly: true,
   },
   {
     key: "pendidikan",
-    title: "Pendidikan",
+    title: t("ProfileSteps.Modal.Steps.Education"),
     icon: "fa-solid fa-graduation-cap",
     asnOnly: false,
   },
   {
     key: "pelatihan",
-    title: "Pelatihan",
+    title: t("ProfileSteps.Modal.Steps.Training"),
     icon: "fa-solid fa-chalkboard-user",
     asnOnly: false,
   },
   {
     key: "prestasi",
-    title: "Prestasi",
+    title: t("ProfileSteps.Modal.Steps.Achievement"),
     icon: "fa-solid fa-award",
     asnOnly: false,
   },
-];
+]);
 
 // State for user type
 const selectedUserTypeName = ref("");
@@ -345,7 +353,7 @@ const wizardState = reactive({
       tempatlahir: "",
       tanggallahir: "",
       foto: null,
-      status: "Aktif",
+      status: t("ProfileSteps.WorkUnit.Active"),
     },
     photoFile: null,
     isPhotoRemoved: false,
@@ -376,8 +384,8 @@ const stepLoaded = reactive([
 const isEditMode = computed(() => !!props.fieldToEdit);
 const modalTitle = computed(() =>
   isEditMode.value
-    ? `Edit Data ${props.entityName}`
-    : `Tambah Data ${props.entityName}`
+    ? t("ProfileSteps.Modal.EditTitle", { entity: props.entityName })
+    : t("ProfileSteps.Modal.AddTitle", { entity: props.entityName })
 );
 
 const currentUserId = computed(() => {
@@ -395,9 +403,9 @@ const isNonAsn = computed(() => {
 
 const filteredSteps = computed(() => {
   if (isNonAsn.value) {
-    return allSteps.filter((step) => !step.asnOnly);
+    return allSteps.value.filter((step) => !step.asnOnly);
   }
-  return allSteps.filter((step) => !step.nonAsnOnly);
+  return allSteps.value.filter((step) => !step.nonAsnOnly);
 });
 
 const currentStepKey = computed(() => {
@@ -497,7 +505,9 @@ async function loadStepData(stepIndex) {
       stepLoaded[stepIndex] = true;
     } catch (error) {
       console.error(`Error loading data for step ${currentKey}:`, error);
-      toast.error(`Gagal memuat data: ${error.message}`);
+      toast.error(
+        t("ProfileSteps.Modal.Messages.LoadError", { message: error.message })
+      );
     }
   }
 }
@@ -525,7 +535,7 @@ async function nextStep() {
   }
 
   if (!canProceed.value) {
-    toast.warning("Mohon lengkapi data yang diperlukan");
+    toast.warning(t("ProfileSteps.Modal.Messages.CompleteRequired"));
     return;
   }
 
@@ -561,10 +571,10 @@ async function submitForm() {
     } else if (wizardState.biodata.mode === "new") {
       userId = await saveBiodataCreate();
     } else {
-      throw new Error("Mode biodata tidak valid");
+      throw new Error(t("ProfileSteps.Modal.Messages.InvalidMode"));
     }
 
-    if (!userId) throw new Error("Gagal mendapatkan ID pengguna");
+    if (!userId) throw new Error(t("ProfileSteps.Modal.Messages.UserIdError"));
 
     validateSingleActiveStatus();
 
@@ -584,13 +594,15 @@ async function submitForm() {
     await savePelatihan(userId);
     await savePrestasi(userId);
 
-    toast.success("Data berhasil disimpan.");
+    toast.success(t("ProfileSteps.Modal.Messages.SaveSuccess"));
     emit("save-successful");
     closeModal();
   } catch (error) {
     console.error("Error submitting form:", error);
     errorMessage.value =
-      error.response?.data?.message || error.message || "Gagal menyimpan data.";
+      error.response?.data?.message ||
+      error.message ||
+      t("ProfileSteps.Modal.Messages.SaveError");
     toast.error(errorMessage.value);
   } finally {
     isLoading.value = false;
@@ -599,23 +611,46 @@ async function submitForm() {
 
 function validateSingleActiveStatus() {
   const categories = [
-    { name: "Unit Kerja", data: wizardState.unitKerja.list },
-    { name: "Perusahaan", data: wizardState.perusahaan.list },
-    { name: "Pekerjaan", data: wizardState.pekerjaan.list },
-    { name: "Jabatan", data: wizardState.jabatan.list },
-    { name: "Pangkat", data: wizardState.pangkat.list },
-    { name: "Pelatihan", data: wizardState.pelatihan.list },
-    { name: "Prestasi", data: wizardState.prestasi.list },
+    {
+      name: t("ProfileSteps.Modal.Steps.WorkUnit"),
+      data: wizardState.unitKerja.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Company"),
+      data: wizardState.perusahaan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Job"),
+      data: wizardState.pekerjaan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Position"),
+      data: wizardState.jabatan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Rank"),
+      data: wizardState.pangkat.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Training"),
+      data: wizardState.pelatihan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Achievement"),
+      data: wizardState.prestasi.list,
+    },
   ];
 
   for (const category of categories) {
     if (!category.data) continue;
     const activeCount = category.data.filter(
-      (item) => item.status === "Aktif"
+      (item) => item.status === t("ProfileSteps.WorkUnit.Active")
     ).length;
     if (activeCount > 1) {
       throw new Error(
-        `Kategori ${category.name} hanya boleh memiliki satu data dengan status aktif.`
+        t("ProfileSteps.Modal.Messages.SingleActiveError", {
+          category: category.name,
+        })
       );
     }
   }

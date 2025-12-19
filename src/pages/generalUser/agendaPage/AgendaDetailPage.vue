@@ -7,7 +7,7 @@
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <p class="mt-2 text-muted">Memuat detail agenda...</p>
+          <p class="mt-2 text-muted">{{ $t("Loading event details") }}...</p>
         </div>
 
         <!-- Error State -->
@@ -15,7 +15,7 @@
           <i class="fa fa-exclamation-circle text-danger fa-3x mb-3"></i>
           <p class="text-danger">{{ error }}</p>
           <router-link to="/list-agenda" class="btn btn-outline-primary">
-            Kembali ke Daftar Agenda
+            {{ $t("Back to Events List") }}
           </router-link>
         </div>
 
@@ -27,7 +27,7 @@
                 to="/list-agenda"
                 class="btn btn-outline-primary px-4"
               >
-                <i class="fa fa-arrow-left me-2"></i> Kembali
+                <i class="fa fa-arrow-left me-2"></i> {{ $t("Back") }}
               </router-link>
             </div>
 
@@ -51,39 +51,51 @@
                   color: #15406a;
                 "
               >
-                {{ data.kategori || "Umum" }}
+                {{
+                  $i18n.locale === "en"
+                    ? data.kategori_en || data.kategori || "General"
+                    : data.kategori || "Umum"
+                }}
               </span>
             </div>
 
             <!-- Title -->
-            <h4 class="fw-medium text-dark mb-3">{{ data.title }}</h4>
+            <h4 class="fw-medium text-dark mb-3">
+              {{
+                $i18n.locale === "en" ? data.title_en || data.title : data.title
+              }}
+            </h4>
 
             <!-- Info List -->
             <div class="agenda-info-list mb-4">
               <div class="d-flex align-items-center mb-2">
                 <i class="fa fa-calendar me-2" style="color: #15406a"></i>
-                <span class="text-muted">Tanggal Pelaksanaan: </span>
+                <span class="text-muted"
+                  >{{ $t("Implementation Date") }}:
+                </span>
                 <span class="text-dark fw-medium ms-1">{{
-                  formatDate(data.implementation_date)
+                  formatDate(data.implementation_date, $i18n.locale)
                 }}</span>
               </div>
               <div class="d-flex align-items-center mb-2">
                 <i class="fa fa-clock-o me-2" style="color: #15406a"></i>
-                <span class="text-muted">Batas Pendaftaran: </span>
+                <span class="text-muted"
+                  >{{ $t("Registration Deadline") }}:
+                </span>
                 <span class="text-dark fw-medium ms-1">{{
-                  formatDate(data.registration_deadline)
+                  formatDate(data.registration_deadline, $i18n.locale)
                 }}</span>
               </div>
               <div class="d-flex align-items-center mb-2">
                 <i class="fa fa-map-marker me-2" style="color: #15406a"></i>
-                <span class="text-muted">Tempat: </span>
+                <span class="text-muted">{{ $t("Location") }}: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   data.place || "-"
                 }}</span>
               </div>
               <div class="d-flex align-items-center mb-2">
                 <i class="fa fa-user me-2" style="color: #15406a"></i>
-                <span class="text-muted">Penyelenggara: </span>
+                <span class="text-muted">{{ $t("Organizer") }}: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   data.author || "Administrator"
                 }}</span>
@@ -101,7 +113,9 @@
               </div>
               <div class="status-content">
                 <div class="status-header">
-                  <span class="status-label">Status Pendaftaran Anda</span>
+                  <span class="status-label">{{
+                    $t("Your Registration Status")
+                  }}</span>
                   <span
                     class="status-badge"
                     :class="getStatusClass(registrationStatusId)"
@@ -118,14 +132,19 @@
             <hr class="my-4" />
 
             <!-- Content / Description -->
-            <div class="agenda-content" v-html="data.desc"></div>
+            <div
+              class="agenda-content"
+              v-html="
+                $i18n.locale === 'en' ? data.desc_en || data.desc : data.desc
+              "
+            ></div>
 
             <!-- Action Buttons -->
             <div class="mt-4 d-flex gap-3 flex-wrap">
               <!-- Already Registered - Show Cancel Button -->
               <template v-if="isRegistered">
                 <button class="btn btn-success px-4" disabled>
-                  <i class="fa fa-check-circle me-2"></i> Terdaftar
+                  <i class="fa fa-check-circle me-2"></i> {{ $t("Registered") }}
                 </button>
                 <button
                   @click="cancelRegistration"
@@ -134,10 +153,11 @@
                 >
                   <span v-if="isCancelling">
                     <span class="spinner-border spinner-border-sm me-2"></span>
-                    Membatalkan...
+                    {{ $t("Cancelling") }}...
                   </span>
                   <span v-else>
-                    <i class="fa fa-times-circle me-2"></i> Batalkan Pendaftaran
+                    <i class="fa fa-times-circle me-2"></i>
+                    {{ $t("Cancel Registration") }}
                   </span>
                 </button>
               </template>
@@ -150,14 +170,15 @@
               >
                 <span v-if="isRegistering">
                   <span class="spinner-border spinner-border-sm me-2"></span>
-                  Mendaftar...
+                  {{ $t("Registering") }}...
                 </span>
                 <span v-else>
-                  <i class="fa fa-check-circle me-2"></i> Daftar Sekarang
+                  <i class="fa fa-check-circle me-2"></i>
+                  {{ $t("Register Now") }}
                 </span>
               </button>
               <button @click="downloadPoster" class="btn btn-light border px-4">
-                <i class="fa fa-download me-2"></i> Download Poster
+                <i class="fa fa-download me-2"></i> {{ $t("Download Poster") }}
               </button>
             </div>
           </div>
@@ -175,6 +196,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
 import AgendaDetailPageSidebar from "@/components/base/default/agendaDetailPageSidebar.vue";
 import { formatDate } from "@/utils/formatDate";
@@ -187,6 +209,7 @@ import {
 import { getStatuses } from "@/services/referensi/status";
 
 const route = useRoute();
+const { t, locale } = useI18n();
 
 const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
 const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
@@ -228,6 +251,10 @@ const fetchDetail = async () => {
       kategori:
         item.kategori_agenda?.nama_kategori_agenda ||
         item["event-categories"]?.namakategoriagenda ||
+        "",
+      kategori_en:
+        item.kategori_agenda?.nama_kategori_agenda_en ||
+        item["event-categories"]?.namakategoriagenda_en ||
         "",
       implementation_date: item.tanggal_pelaksanaan,
       registration_deadline: item.tanggal_batas_pendaftaran,
@@ -355,8 +382,8 @@ const registerAgenda = async () => {
   if (!userDataString) {
     Swal.fire({
       icon: "warning",
-      title: "Belum Login",
-      text: "Silakan login terlebih dahulu untuk mendaftar agenda.",
+      title: t("Not Logged In"),
+      text: t("Please login first to register for this event"),
       confirmButtonColor: "#7366ff",
     });
     return;
@@ -369,7 +396,7 @@ const registerAgenda = async () => {
     Swal.fire({
       icon: "error",
       title: "Error",
-      text: "Data pengguna tidak ditemukan. Silakan login ulang.",
+      text: t("User data not found. Please login again"),
       confirmButtonColor: "#7366ff",
     });
     return;
@@ -379,19 +406,26 @@ const registerAgenda = async () => {
     Swal.fire({
       icon: "error",
       title: "Error",
-      text: "Data agenda tidak ditemukan.",
+      text: t("Event data not found"),
       confirmButtonColor: "#7366ff",
     });
     return;
   }
 
+  const eventTitle =
+    locale.value === "en"
+      ? data.value.title_en || data.value.title
+      : data.value.title;
+
   const result = await Swal.fire({
     icon: "question",
-    title: "Konfirmasi Pendaftaran",
-    html: `Apakah Anda yakin ingin mendaftar untuk agenda:<br><br><strong>${data.value.title}</strong>?`,
+    title: t("Registration Confirmation"),
+    html: `${t(
+      "Are you sure you want to register for event"
+    )}:<br><br><strong>${eventTitle}</strong>?`,
     showCancelButton: true,
-    confirmButtonText: "Ya, Daftar",
-    cancelButtonText: "Batal",
+    confirmButtonText: t("Yes Register"),
+    cancelButtonText: t("Cancel"),
     confirmButtonColor: "#7366ff",
     cancelButtonColor: "#efefef",
   });
@@ -412,20 +446,19 @@ const registerAgenda = async () => {
 
     Swal.fire({
       icon: "success",
-      title: "Berhasil!",
-      text: "Anda telah berhasil mendaftar untuk agenda ini.",
+      title: t("Success") + "!",
+      text: t("You have successfully registered for this event"),
       confirmButtonColor: "#7366ff",
     });
   } catch (err) {
     console.error("Registration error:", err);
 
     const errorMessage =
-      err.response?.data?.message ||
-      "Gagal mendaftar agenda. Silakan coba lagi.";
+      err.response?.data?.message || t("Failed to register. Please try again");
 
     Swal.fire({
       icon: "error",
-      title: "Gagal Mendaftar",
+      title: t("Registration Failed"),
       text: errorMessage,
       confirmButtonColor: "#7366ff",
     });
@@ -439,19 +472,26 @@ const cancelRegistration = async () => {
     Swal.fire({
       icon: "error",
       title: "Error",
-      text: "Data pendaftaran tidak ditemukan.",
+      text: t("Registration data not found"),
       confirmButtonColor: "#7366ff",
     });
     return;
   }
 
+  const eventTitle =
+    locale.value === "en"
+      ? data.value.title_en || data.value.title
+      : data.value.title;
+
   const result = await Swal.fire({
     icon: "warning",
-    title: "Batalkan Pendaftaran",
-    html: `Apakah Anda yakin ingin membatalkan pendaftaran untuk agenda:<br><br><strong>${data.value.title}</strong>?`,
+    title: t("Cancel Registration"),
+    html: `${t(
+      "Are you sure you want to cancel registration for event"
+    )}:<br><br><strong>${eventTitle}</strong>?`,
     showCancelButton: true,
-    confirmButtonText: "Ya, Batalkan",
-    cancelButtonText: "Tidak",
+    confirmButtonText: t("Yes Cancel"),
+    cancelButtonText: t("No"),
     confirmButtonColor: "#dc3545",
     cancelButtonColor: "#efefef",
   });
@@ -465,12 +505,12 @@ const cancelRegistration = async () => {
 
     isRegistered.value = false;
     registrationId.value = null;
-    registrationStatus.value = "Terdaftar";
+    registrationStatus.value = t("Registered");
 
     Swal.fire({
       icon: "success",
-      title: "Berhasil!",
-      text: "Pendaftaran Anda telah dibatalkan.",
+      title: t("Success") + "!",
+      text: t("Your registration has been cancelled"),
       confirmButtonColor: "#7366ff",
     });
   } catch (err) {
@@ -478,11 +518,11 @@ const cancelRegistration = async () => {
 
     const errorMessage =
       err.response?.data?.message ||
-      "Gagal membatalkan pendaftaran. Silakan coba lagi.";
+      t("Failed to cancel registration. Please try again");
 
     Swal.fire({
       icon: "error",
-      title: "Gagal Membatalkan",
+      title: t("Cancellation Failed"),
       text: errorMessage,
       confirmButtonColor: "#7366ff",
     });

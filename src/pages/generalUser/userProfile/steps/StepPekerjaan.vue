@@ -4,21 +4,22 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data referensi...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-briefcase me-2"></i>Riwayat Pekerjaan
+            <i class="fa fa-briefcase me-2"></i
+            >{{ t("ProfileSteps.Job.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat pekerjaan pegawai jika ada.
+            {{ t("ProfileSteps.Job.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addPekerjaan">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+          <i class="fa fa-plus me-1"></i> {{ t("ProfileSteps.Job.AddData") }}
         </button>
       </div>
 
@@ -26,11 +27,12 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> Aktif</strong
-        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
-        menjadi "Tidak Aktif".
+          ><i class="fa fa-check-circle"></i>
+          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
+        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -38,9 +40,11 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-briefcase text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data pekerjaan.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.Job.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPekerjaan">
-          <i class="fa fa-plus me-1"></i> Tambah Pekerjaan
+          <i class="fa fa-plus me-1"></i> {{ t("ProfileSteps.Job.AddJob") }}
         </button>
       </div>
 
@@ -57,12 +61,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              Data Pekerjaan
+              {{ t("ProfileSteps.Job.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePekerjaan(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -71,14 +75,15 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Nama Pekerjaan <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Job.JobName") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   class="form-control"
                   v-model="item.namapekerjaan"
                   :class="{ 'is-invalid': getError(index, 'namapekerjaan') }"
-                  placeholder="Masukkan nama pekerjaan"
+                  :placeholder="t('ProfileSteps.Job.JobNamePlaceholder')"
                   required
                   @blur="validateField(index, 'namapekerjaan')"
                 />
@@ -89,14 +94,15 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Nama Perusahaan <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Job.CompanyName") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   class="form-control"
                   v-model="item.namaperusahaan"
                   :class="{ 'is-invalid': getError(index, 'namaperusahaan') }"
-                  placeholder="Masukkan nama perusahaan"
+                  :placeholder="t('ProfileSteps.Job.CompanyNamePlaceholder')"
                   required
                   @blur="validateField(index, 'namaperusahaan')"
                 />
@@ -107,7 +113,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Tipe Pekerjaan <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Job.JobType") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -116,7 +123,9 @@
                   required
                   @blur="validateField(index, 'idtipepekerjaan')"
                 >
-                  <option value="" disabled>Pilih Tipe Pekerjaan</option>
+                  <option value="" disabled>
+                    {{ t("ProfileSteps.Job.SelectJobType") }}
+                  </option>
                   <option
                     v-for="jt in jobTypeOptions"
                     :key="jt.idtipepekerjaan"
@@ -132,7 +141,8 @@
 
               <div class="col-md-3">
                 <label class="form-label fw-semibold">
-                  Tanggal Mulai <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.WorkUnit.StartDate") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="date"
@@ -148,17 +158,23 @@
               </div>
 
               <div class="col-md-3">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.EndDate")
+                }}</label>
                 <input
                   type="date"
                   class="form-control"
                   v-model="item.tanggalselesai"
                 />
-                <div class="form-text small">Kosongkan jika masih bekerja.</div>
+                <div class="form-text small">
+                  {{ t("ProfileSteps.Job.EndDateHelp") }}
+                </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
+                <label class="form-label fw-semibold d-block">{{
+                  t("ProfileSteps.WorkUnit.Status")
+                }}</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -172,7 +188,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || "Tidak Aktif" }}
+                    {{ item.status || t("Inactive") }}
                   </label>
                 </div>
               </div>
@@ -187,6 +203,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import { getJobTypes } from "@/services/referensi/jobTypes";
 import {
   getUserWorkExperiences,
@@ -207,6 +224,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -279,7 +297,7 @@ async function loadData(userId) {
         idtipepekerjaan: d.idtipepekerjaan || "",
         tanggalmulai: d.tanggalmulai || "",
         tanggalselesai: d.tanggalselesai || "",
-        status: d.status || "Tidak Aktif",
+        status: d.status || t("Inactive"),
         _tempId: Date.now() + Math.random(),
       }));
 
@@ -321,7 +339,7 @@ async function fetchJobTypes() {
     }
   } catch (error) {
     console.error("Error fetching job types:", error);
-    toast.error("Gagal memuat data tipe pekerjaan.");
+    toast.error(t("ProfileSteps.Job.LoadError"));
   }
 }
 
@@ -333,7 +351,7 @@ function addPekerjaan() {
     idtipepekerjaan: "",
     tanggalmulai: "",
     tanggalselesai: "",
-    status: "Tidak Aktif",
+    status: t("Inactive"),
   });
 
   formErrors.value.push({});
@@ -343,14 +361,18 @@ function removePekerjaan(index) {
   const item = pekerjaanList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.Job.DeleteConfirmTitle"),
     text: item.idpenggunapekerjaan
-      ? "Data pekerjaan ini akan dihapus. Tindakan ini tidak dapat dibatalkan."
-      : "Data pekerjaan ini akan dihapus.",
+      ? t("ProfileSteps.Job.DeleteConfirmTextDB")
+      : t("ProfileSteps.Job.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.Job.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.Job.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -360,26 +382,28 @@ function removePekerjaan(index) {
         if (item.idpenggunapekerjaan) {
           await deleteUserWorkExperience(item.idpenggunapekerjaan);
         }
-        toast.success("Data pekerjaan berhasil dihapus");
+        toast.success(t("ProfileSteps.Job.DeleteSuccess"));
 
         pekerjaanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pekerjaan:", error);
-        toast.error("Gagal menghapus data pekerjaan");
+        toast.error(t("ProfileSteps.Job.DeleteError"));
       }
     }
   });
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  const newStatus = isChecked
+    ? t("ProfileSteps.WorkUnit.Active")
+    : t("Inactive");
   pekerjaanList.value[index].status = newStatus;
 
   if (newStatus === "Aktif") {
     pekerjaanList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = "Tidak Aktif";
+        item.status = t("Inactive");
       }
     });
   }
@@ -396,7 +420,9 @@ function validateField(index, field) {
 
   if (field === "namapekerjaan") {
     if (!item.namapekerjaan) {
-      formErrors.value[index].namapekerjaan = "Nama Pekerjaan wajib diisi.";
+      formErrors.value[index].namapekerjaan = t(
+        "ProfileSteps.Job.Validation.JobNameRequired"
+      );
     } else {
       formErrors.value[index].namapekerjaan = "";
     }
@@ -404,7 +430,9 @@ function validateField(index, field) {
 
   if (field === "namaperusahaan") {
     if (!item.namaperusahaan) {
-      formErrors.value[index].namaperusahaan = "Nama Perusahaan wajib diisi.";
+      formErrors.value[index].namaperusahaan = t(
+        "ProfileSteps.Job.Validation.CompanyNameRequired"
+      );
     } else {
       formErrors.value[index].namaperusahaan = "";
     }
@@ -412,7 +440,9 @@ function validateField(index, field) {
 
   if (field === "idtipepekerjaan") {
     if (!item.idtipepekerjaan) {
-      formErrors.value[index].idtipepekerjaan = "Tipe Pekerjaan wajib dipilih.";
+      formErrors.value[index].idtipepekerjaan = t(
+        "ProfileSteps.Job.Validation.JobTypeRequired"
+      );
     } else {
       formErrors.value[index].idtipepekerjaan = "";
     }
@@ -420,7 +450,9 @@ function validateField(index, field) {
 
   if (field === "tanggalmulai") {
     if (!item.tanggalmulai) {
-      formErrors.value[index].tanggalmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tanggalmulai = t(
+        "ProfileSteps.Job.Validation.StartDateRequired"
+      );
     } else {
       formErrors.value[index].tanggalmulai = "";
     }
@@ -438,28 +470,36 @@ function validate() {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     if (!item.namapekerjaan) {
-      formErrors.value[index].namapekerjaan = "Nama Pekerjaan wajib diisi.";
+      formErrors.value[index].namapekerjaan = t(
+        "ProfileSteps.Job.Validation.JobNameRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].namapekerjaan = "";
     }
 
     if (!item.namaperusahaan) {
-      formErrors.value[index].namaperusahaan = "Nama Perusahaan wajib diisi.";
+      formErrors.value[index].namaperusahaan = t(
+        "ProfileSteps.Job.Validation.CompanyNameRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].namaperusahaan = "";
     }
 
     if (!item.idtipepekerjaan) {
-      formErrors.value[index].idtipepekerjaan = "Tipe Pekerjaan wajib dipilih.";
+      formErrors.value[index].idtipepekerjaan = t(
+        "ProfileSteps.Job.Validation.JobTypeRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].idtipepekerjaan = "";
     }
 
     if (!item.tanggalmulai) {
-      formErrors.value[index].tanggalmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tanggalmulai = t(
+        "ProfileSteps.Job.Validation.StartDateRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].tanggalmulai = "";

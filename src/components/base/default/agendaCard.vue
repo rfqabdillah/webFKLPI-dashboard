@@ -29,11 +29,16 @@
       <div class="d-flex flex-wrap gap-3 mb-3 text-muted agenda-info">
         <span class="d-flex align-items-center">
           <i class="fa fa-calendar me-1"></i>
-          {{ formatDate(props.item.registration_deadline) }}
+          {{
+            formatDate(
+              props.item.registration_deadline,
+              props.item.locale || "id"
+            )
+          }}
         </span>
         <span class="d-flex align-items-center">
           <i class="fa fa-users me-1"></i>
-          {{ props.item.students }} Peserta
+          {{ props.item.students }} {{ $t("Participants") }}
         </span>
       </div>
 
@@ -47,7 +52,13 @@
         <div class="d-flex align-items-start mb-1">
           <i class="fa fa-clock-o me-2 mt-1"></i>
           <span
-            >Pelaksanaan: {{ formatDate(props.item.implementation_date) }}</span
+            >{{ $t("Implementation") }}:
+            {{
+              formatDate(
+                props.item.implementation_date,
+                props.item.locale || "id"
+              )
+            }}</span
           >
         </div>
         <div class="d-flex align-items-start">
@@ -61,7 +72,7 @@
         class="d-flex justify-content-end align-items-center pt-3 border-top"
       >
         <span class="btn-selengkapnya">
-          Selengkapnya <i class="fa fa-arrow-right ms-1"></i>
+          {{ $t("Read More") }} <i class="fa fa-arrow-right ms-1"></i>
         </span>
       </div>
     </div>
@@ -92,6 +103,7 @@ const props = defineProps({
       photo: "",
       author: "",
       students: 0,
+      locale: "id",
     }),
   },
 });

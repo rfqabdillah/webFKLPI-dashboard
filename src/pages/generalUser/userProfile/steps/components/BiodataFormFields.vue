@@ -3,14 +3,19 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h6 class="mb-0">
         <i class="fa fa-edit me-2"></i>
-        {{ isEditMode ? "Edit Biodata" : "Input Biodata" }}
+        {{
+          isEditMode
+            ? t("ProfileSteps.Biodata.EditTitle")
+            : t("ProfileSteps.Biodata.InputTitle")
+        }}
       </h6>
       <button
         v-if="!isEditMode"
         class="btn btn-outline-secondary btn-sm"
         @click="$emit('back')"
       >
-        <i class="fa fa-arrow-left me-1"></i> Ubah Jenis Pengguna
+        <i class="fa fa-arrow-left me-1"></i>
+        {{ t("ProfileSteps.Biodata.ChangeUserType") }}
       </button>
     </div>
 
@@ -18,14 +23,17 @@
       <!-- Nama Lengkap -->
       <div class="col-12 mb-3">
         <label class="form-label fw-semibold"
-          >Nama Lengkap <span class="text-danger">*</span></label
+          >{{ t("ProfileSteps.Biodata.FullName") }}
+          <span class="text-danger">*</span></label
         >
         <input
           type="text"
           class="form-control"
           v-model="formData.nama"
           :class="{ 'is-invalid': formErrors.nama }"
-          :placeholder="isLoading ? 'Memuat...' : 'Nama lengkap'"
+          :placeholder="
+            isLoading ? t('Loading') : t('ProfileSteps.Biodata.FullName')
+          "
           :disabled="isLoading"
           @blur="validateField('nama')"
         />
@@ -34,7 +42,9 @@
 
       <!-- Gelar -->
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Gelar Depan</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.FrontTitle")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -43,7 +53,9 @@
         />
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Gelar Belakang</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.BackTitle")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -55,14 +67,17 @@
       <!-- NIK -->
       <div class="col-12 mb-3">
         <label class="form-label fw-semibold"
-          >NIK <span class="text-danger">*</span></label
+          >{{ t("ProfileSteps.Biodata.NIK") }}
+          <span class="text-danger">*</span></label
         >
         <input
           type="text"
           class="form-control"
           v-model="formData.nik"
           :class="{ 'is-invalid': formErrors.nik }"
-          :placeholder="isLoading ? 'Memuat...' : 'Nomor Induk Kependudukan'"
+          :placeholder="
+            isLoading ? t('Loading') : t('ProfileSteps.Biodata.NIK')
+          "
           :disabled="isLoading"
           @blur="validateField('nik')"
         />
@@ -72,14 +87,14 @@
       <!-- Email & Telepon -->
       <div class="col-md-6 mb-3">
         <label class="form-label fw-semibold"
-          >Email <span class="text-danger">*</span></label
+          >{{ t("Email") }} <span class="text-danger">*</span></label
         >
         <input
           type="email"
           class="form-control"
           v-model="formData.email"
           :class="{ 'is-invalid': formErrors.email }"
-          :placeholder="isLoading ? 'Memuat...' : 'email@instansi.go.id'"
+          :placeholder="isLoading ? t('Loading') : t('Email')"
           :disabled="isLoading"
           @blur="validateField('email')"
         />
@@ -87,7 +102,9 @@
       </div>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">No. Telepon</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Phone")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -99,7 +116,9 @@
       <!-- NIP & Karpeg (Only for ASN) -->
       <template v-if="!isNonAsn">
         <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">NIP</label>
+          <label class="form-label fw-semibold">{{
+            t("ProfileSteps.Biodata.NIP")
+          }}</label>
           <input
             type="text"
             class="form-control"
@@ -109,7 +128,9 @@
         </div>
 
         <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">No. Karpeg</label>
+          <label class="form-label fw-semibold">{{
+            t("ProfileSteps.Biodata.KarpegCard")
+          }}</label>
           <input
             type="text"
             class="form-control"
@@ -120,14 +141,20 @@
       </template>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Jenis Kelamin</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Gender")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.idjeniskelamin"
           :disabled="gendersLoading || isLoading"
         >
           <option value="" disabled>
-            {{ gendersLoading ? "Memuat..." : "Pilih Jenis Kelamin" }}
+            {{
+              gendersLoading
+                ? t("Loading")
+                : t("ProfileSteps.Biodata.SelectGender")
+            }}
           </option>
           <option
             v-for="gender in genderOptions"
@@ -143,14 +170,20 @@
       <!-- Hidden: nilai sudah di-set dari step sebelumnya -->
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Jenis Pegawai</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.EmployeeType")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.idjenispegawai"
           :disabled="employeeTypesLoading || isLoading"
         >
           <option value="" disabled>
-            {{ employeeTypesLoading ? "Memuat..." : "Pilih Jenis Pegawai" }}
+            {{
+              employeeTypesLoading
+                ? t("Loading")
+                : t("ProfileSteps.Biodata.SelectEmployeeType")
+            }}
           </option>
           <option
             v-for="employeeType in employeeTypeOptions"
@@ -164,7 +197,9 @@
 
       <!-- Tempat & Tanggal Lahir -->
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Tempat Lahir</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.BirthPlace")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -173,7 +208,9 @@
         />
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Tanggal Lahir</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.BirthDate")
+        }}</label>
         <input
           type="date"
           class="form-control"
@@ -183,7 +220,9 @@
 
       <!-- Alamat -->
       <div class="col-12 mb-3">
-        <label class="form-label fw-semibold">Alamat Lengkap</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.FullAddress")
+        }}</label>
         <textarea
           class="form-control"
           v-model="formData.alamat"
@@ -193,14 +232,20 @@
 
       <!-- Provinsi & Kabupaten -->
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Provinsi</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Province")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.kodepropinsi"
           :disabled="regionsLoading"
         >
           <option value="" disabled>
-            {{ regionsLoading ? "Memuat..." : "Pilih Provinsi" }}
+            {{
+              regionsLoading
+                ? t("Loading")
+                : t("ProfileSteps.Biodata.SelectProvince")
+            }}
           </option>
           <template v-if="!regionsLoading">
             <option
@@ -215,7 +260,9 @@
       </div>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Kabupaten</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.District")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.kodekabupaten"
@@ -226,8 +273,8 @@
               kabupatenLoading
                 ? "Memuat..."
                 : formData.kodepropinsi
-                ? "Pilih Kabupaten"
-                : "Silakan pilih Provinsi terlebih dahulu"
+                ? t("ProfileSteps.Biodata.SelectDistrict")
+                : t("ProfileSteps.Biodata.SelectDistrictPlaceholder")
             }}
           </option>
           <template v-if="!kabupatenLoading">
@@ -244,7 +291,9 @@
 
       <!-- Minat -->
       <div class="col-12 mb-3">
-        <label class="form-label fw-semibold">Minat</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Interests")
+        }}</label>
         <div class="interest-input-container">
           <div class="interest-bubbles">
             <span
@@ -266,18 +315,20 @@
               class="interest-input"
               v-model="interestInput"
               @keydown="handleInterestKeydown"
-              placeholder="Ketik minat, pisahkan dengan koma"
+              :placeholder="t('ProfileSteps.Biodata.InterestsPlaceholder')"
             />
           </div>
         </div>
         <small class="form-text text-muted">
-          Tekan koma (,) atau Enter untuk menambahkan minat.
+          {{ t("ProfileSteps.Biodata.InterestsHelp") }}
         </small>
       </div>
 
       <!-- Upload Foto -->
       <div class="col-12 mb-3">
-        <label class="form-label fw-semibold">Upload Foto</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.UploadPhoto")
+        }}</label>
         <input
           type="file"
           class="form-control"
@@ -285,9 +336,9 @@
           accept="image/*"
           ref="fileInput"
         />
-        <small class="form-text text-muted"
-          >Kosongkan jika tidak ingin mengubah foto.</small
-        >
+        <small class="form-text text-muted">{{
+          t("ProfileSteps.Biodata.UploadPhotoHelp")
+        }}</small>
 
         <div class="mt-3" v-if="photoPreviewUrl || formData.foto">
           <div class="position-relative d-inline-block">
@@ -307,7 +358,7 @@
                 border: 2px solid white;
               "
               @click="removePhoto"
-              title="Hapus Foto"
+              :title="t('ProfileSteps.Biodata.RemovePhoto')"
             >
               <i class="fa fa-times" style="font-size: 12px"></i>
             </button>
@@ -327,6 +378,7 @@ import { getEmployeeTypes } from "@/services/referensi/employeeTypes";
 import { compressImage } from "@/utils/imageCompressor";
 import { parseBubble } from "@/utils/parseBubble";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import * as yup from "yup";
 
 const props = defineProps({
@@ -354,6 +406,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "back", "photo-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 // State
 const formData = reactive(props.modelValue);
@@ -375,16 +428,18 @@ const employeeTypeOptions = ref([]);
 
 // Validation Schema
 const validationSchema = yup.object().shape({
-  nama: yup.string().required("Nama wajib diisi."),
+  nama: yup
+    .string()
+    .required(t("ProfileSteps.Biodata.Validation.NameRequired")),
   nik: yup
     .string()
-    .matches(/^[0-9]+$/, "NIK hanya boleh berisi angka")
-    .length(16, "NIK harus terdiri dari 16 digit")
-    .required("NIK wajib diisi."),
+    .matches(/^[0-9]+$/, t("ProfileSteps.Biodata.Validation.NIKNumeric"))
+    .length(16, t("ProfileSteps.Biodata.Validation.NIKLength"))
+    .required(t("ProfileSteps.Biodata.Validation.NIKRequired")),
   email: yup
     .string()
-    .email("Format email salah")
-    .required("Email wajib diisi."),
+    .email(t("ProfileSteps.Biodata.Validation.EmailInvalid"))
+    .required(t("ProfileSteps.Biodata.Validation.EmailRequired")),
 });
 
 // Watchers
@@ -529,11 +584,11 @@ async function handlePhotoUpload(event) {
   if (!file) return;
 
   try {
-    toast.info("Sedang mengompres gambar...", { timeout: 2000 });
+    toast.info(t("ProfileSteps.Biodata.Compressing"), { timeout: 2000 });
     const compressed = await compressImage(file);
     photoPreviewUrl.value = URL.createObjectURL(compressed);
     emit("photo-change", compressed);
-    toast.success("Gambar berhasil dikompres", { timeout: 2000 });
+    toast.success(t("ProfileSteps.Biodata.PhotoCompressed"), { timeout: 2000 });
   } catch (error) {
     toast.error("Gagal memproses gambar");
   }

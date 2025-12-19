@@ -7,8 +7,10 @@
             <i class="fa fa-star"></i>
           </div>
           <div class="header-text">
-            <h5 class="card-title mb-1">Berikan Testimoni Anda</h5>
-            <p class="card-subtitle mb-0">Bagikan pengalaman Anda disini</p>
+            <h5 class="card-title mb-1">{{ $t("Give Your Testimonial") }}</h5>
+            <p class="card-subtitle mb-0">
+              {{ $t("Share your experience here") }}
+            </p>
           </div>
         </div>
       </div>
@@ -19,13 +21,16 @@
           <div class="success-icon mb-4">
             <i class="fa fa-check-circle"></i>
           </div>
-          <h4 class="text-success mb-3">Terima Kasih!</h4>
+          <h4 class="text-success mb-3">{{ $t("Thank You") }}!</h4>
           <p class="text-muted mb-4">
-            Testimoni Anda telah berhasil dikirim dan sedang menunggu
-            persetujuan admin.
+            {{
+              $t(
+                "Your testimonial has been sent and is waiting for admin approval"
+              )
+            }}
           </p>
           <button class="btn btn-primary" @click="resetForm">
-            <i class="fa fa-plus me-2"></i>Kirim Testimoni Lagi
+            <i class="fa fa-plus me-2"></i>{{ $t("Send Another Testimonial") }}
           </button>
         </div>
 
@@ -34,7 +39,8 @@
           <!-- Star Rating -->
           <div class="mb-4">
             <label class="form-label fw-semibold">
-              <i class="fa fa-star text-warning me-2"></i>Rating Kepuasan
+              <i class="fa fa-star text-warning me-2"></i
+              >{{ $t("Satisfaction Rating") }}
             </label>
             <div class="star-rating-container">
               <div class="star-rating">
@@ -63,14 +69,15 @@
           <!-- Testimonial Content -->
           <div class="mb-4">
             <label class="form-label fw-semibold">
-              <i class="fa fa-comment text-primary me-2"></i>Isi Testimoni
+              <i class="fa fa-comment text-primary me-2"></i
+              >{{ $t("Testimonial Content") }}
             </label>
             <textarea
               v-model="formData.konten"
               class="form-control testimonial-textarea"
               :class="{ 'is-invalid': errors.konten }"
               rows="5"
-              placeholder="Apa pengalaman Anda menggunakan layanan kami?"
+              :placeholder="$t('What is your experience using our service?')"
               maxlength="1000"
             ></textarea>
             <div class="d-flex justify-content-between mt-2">
@@ -78,7 +85,7 @@
                 {{ errors.konten }}
               </small>
               <small class="text-muted ms-auto">
-                {{ formData.konten.length }}/1000 karakter
+                {{ formData.konten.length }}/1000 {{ $t("characters") }}
               </small>
             </div>
           </div>
@@ -115,10 +122,11 @@
               :disabled="isSubmitting"
             >
               <span v-if="isSubmitting">
-                <i class="fa fa-spinner fa-spin me-2"></i>Mengirim...
+                <i class="fa fa-spinner fa-spin me-2"></i>{{ $t("Sending") }}...
               </span>
               <span v-else>
-                <i class="fa fa-paper-plane me-2"></i>Kirim Testimoni
+                <i class="fa fa-paper-plane me-2"></i
+                >{{ $t("Send Testimonial") }}
               </span>
             </button>
           </div>
@@ -130,7 +138,8 @@
     <div v-if="userTestimonials.length > 0" class="card mt-4">
       <div class="card-header">
         <h6 class="mb-0">
-          <i class="fa fa-history me-2"></i>Testimoni Anda Sebelumnya
+          <i class="fa fa-history me-2"></i
+          >{{ $t("Your Previous Testimonials") }}
         </h6>
       </div>
       <div class="card-body p-0">
@@ -166,11 +175,12 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useToast } from "vue-toastification";
 import { addTestimoni, getTestimoni } from "@/services/general/testimoni";
 import * as yup from "yup";
-
 const toast = useToast();
+const { t } = useI18n();
 
 // State
 const isSubmitting = ref(false);
@@ -199,12 +209,12 @@ const errors = reactive({
 // Computed
 const ratingText = computed(() => {
   const texts = [
-    "Pilih rating",
-    "Sangat Buruk",
-    "Buruk",
-    "Cukup",
-    "Baik",
-    "Sangat Baik",
+    t("Select Rating"),
+    t("Very Bad"),
+    t("Bad"),
+    t("Average"),
+    t("Good"),
+    t("Very Good"),
   ];
   return texts[formData.nilai] || texts[0];
 });

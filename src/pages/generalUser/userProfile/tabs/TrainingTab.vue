@@ -58,7 +58,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Pelatihan Tidak Ditemukan!
+            {{ $t("Training Data Not Found") }}
           </span>
         </div>
       </div>
