@@ -7,7 +7,7 @@
     <div class="card-body">
       <!-- Search -->
       <div class="mb-4">
-        <label class="form-label fw-semibold">Cari Agenda</label>
+        <label class="form-label fw-semibold">{{ $t("Search Events") }}</label>
         <div class="input-group">
           <span class="input-group-text bg-light border-end-0">
             <i class="fa fa-search text-muted"></i>
@@ -16,14 +16,14 @@
             v-model="searchQuery"
             type="text"
             class="form-control border-start-0 ps-0"
-            placeholder="Cari Agenda"
+            :placeholder="$t('Search Events')"
           />
         </div>
       </div>
 
       <!-- Recent Posts -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3">Agenda Terbaru</h6>
+        <h6 class="fw-semibold mb-3">{{ $t("Recent Events") }}</h6>
 
         <div v-if="isLoading" class="text-center py-3">
           <div
@@ -35,7 +35,7 @@
         </div>
 
         <div v-else-if="eventsRecentPost.length === 0" class="text-muted small">
-          Tidak ada agenda terbaru.
+          {{ $t("No recent events") }}
         </div>
 
         <div v-else>
@@ -57,9 +57,16 @@
                 class="fw-medium text-dark text-decoration-none hover-primary d-block"
                 style="font-size: 14px"
               >
-                {{ truncateText(item.title, 40) }}
+                {{
+                  truncateText(
+                    $i18n.locale === "en" ? item.title_en : item.title,
+                    40
+                  )
+                }}
               </router-link>
-              <small class="text-muted">{{ formatDate(item.date) }}</small>
+              <small class="text-muted">{{
+                formatDate(item.date, $i18n.locale)
+              }}</small>
             </div>
           </div>
         </div>
@@ -123,6 +130,7 @@ const fetchEvents = async () => {
         id: item.id_agenda,
         image: item.poster || defaultPosterUrl,
         title: item.judul,
+        title_en: item.judul_en || item.judul,
         date: item.tanggal_pelaksanaan,
       })) || [];
 

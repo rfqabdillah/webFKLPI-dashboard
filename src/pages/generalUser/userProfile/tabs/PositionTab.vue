@@ -29,12 +29,15 @@
                   <div class="text-muted small mb-2">
                     <span class="me-3">
                       <i class="fa fa-calendar-check me-1 text-success"></i>
-                      Mulai: {{ formatDate(item.tglmulaijenjang) }}
+                      {{ $t("Start") }}:
+                      {{ formatDate(item.tglmulaijenjang, locale) }}
                     </span>
                     <span>
                       <i class="fa fa-calendar-times me-1 text-danger"></i>
-                      Selesai:
-                      {{ formatDate(item.tglselesaijenjang) || "Sekarang" }}
+                      {{ $t("End") }}:
+                      {{
+                        formatDate(item.tglselesaijenjang, locale) || $t("Now")
+                      }}
                     </span>
                   </div>
                 </div>
@@ -64,7 +67,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Jabatan Tidak Ditemukan!
+            {{ $t("Position Data Not Found") }}
           </span>
         </div>
       </div>
@@ -74,7 +77,10 @@
 
 <script setup>
 import { defineProps } from "vue";
+import { useI18n } from "vue-i18n";
 import { formatDate } from "@/utils/formatDate";
+
+const { locale } = useI18n();
 
 const props = defineProps({
   items: {
@@ -89,8 +95,7 @@ const props = defineProps({
 });
 
 function getLevelName(item) {
-  if (item.nama_jenjang || item.namajenjang)
-    return item.nama_jenjang || item.namajenjang;
+  if (item.namajenjang) return item.namajenjang;
 
   if (props.user["level"]) {
     const level = props.user["level"].find(

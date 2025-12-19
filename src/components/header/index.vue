@@ -7,6 +7,7 @@
       class="nav-right col-xxl-7 col-xl-6 col-md-7 col-8 pull-right right-header p-0 ms-auto"
     >
       <ul class="nav-menus">
+        <Language />
         <Profile />
       </ul>
     </div>
@@ -24,6 +25,7 @@ import Cart from "./cart";
 import Profile from "./profile";
 import Logo from "./logo.vue";
 import SearchBar from "./search";
+import Language from "./language.vue";
 
 export default {
   //   name: 'Search',
@@ -37,6 +39,7 @@ export default {
     Swiper,
     SwiperSlide,
     SearchBar,
+    Language,
   },
   data() {
     return {

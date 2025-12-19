@@ -29,12 +29,15 @@
                   <div class="text-muted small">
                     <span class="me-3">
                       <i class="fa fa-calendar-check me-1 text-success"></i>
-                      Mulai: {{ formatDate(item.tglmulaipangkat) }}
+                      {{ $t("Start") }}:
+                      {{ formatDate(item.tglmulaipangkat, locale) }}
                     </span>
                     <span>
                       <i class="fa fa-calendar-times me-1 text-danger"></i>
-                      Selesai:
-                      {{ formatDate(item.tglselesaipangkat) || "Sekarang" }}
+                      {{ $t("End") }}:
+                      {{
+                        formatDate(item.tglselesaipangkat, locale) || $t("Now")
+                      }}
                     </span>
                   </div>
                 </div>
@@ -64,7 +67,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Pangkat Tidak Ditemukan!
+            {{ $t("Rank Data Not Found") }}
           </span>
         </div>
       </div>
@@ -74,7 +77,10 @@
 
 <script setup>
 import { defineProps } from "vue";
+import { useI18n } from "vue-i18n";
 import { formatDate } from "@/utils/formatDate";
+
+const { locale } = useI18n();
 
 const props = defineProps({
   items: {
@@ -93,8 +99,8 @@ function getFullRankDisplay(item) {
   let rankGol = "-";
   let rankRuang = "";
 
-  if (item.nama_pangkat || item.namapangkat || item.pangkat) {
-    rankName = item.nama_pangkat || item.namapangkat || item.pangkat;
+  if (item.pangkat) {
+    rankName = item.pangkat;
   }
   if (item.golongan) rankGol = item.golongan;
   if (item.ruang) rankRuang = item.ruang;

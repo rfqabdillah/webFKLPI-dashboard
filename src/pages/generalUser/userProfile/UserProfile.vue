@@ -12,11 +12,10 @@
           </div>
           <div class="alert-content">
             <span class="fw-bold d-block" style="color: #ff5b57">
-              Data Profil Belum Lengkap!
+              {{ $t("Profile Data Incomplete") }}
             </span>
             <span class="small" style="color: #ff5b57">
-              Mohon lengkapi data diri Anda (NIK, Alamat, No. Telepon, Tempat &
-              Tanggal Lahir).
+              {{ $t("Please complete your personal data") }}
             </span>
           </div>
         </div>
@@ -87,10 +86,10 @@
             <div class="mt-4 position-relative">
               <div class="position-absolute end-0 me-4" style="top: -150px">
                 <button
-                  class="btn btn-primary btn-sm px-3 fw-medium"
+                  class="btn btn-warning btn-sm px-3 fw-medium"
                   @click="handleEditData"
                 >
-                  <i class="fa fa-edit me-2"></i>Edit Data
+                  <i class="fa fa-edit me-2"></i>{{ $t("Edit Data") }}
                 </button>
               </div>
               <ul
@@ -110,10 +109,10 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Biodata
+                    {{ $t("Biodata") }}
                   </button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li v-if="!isNonAsn" class="nav-item" role="presentation">
                   <button
                     class="nav-link"
                     :class="{ active: activeTab === 'unit_kerja' }"
@@ -125,7 +124,37 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Unit Kerja
+                    {{ $t("Work Unit") }}
+                  </button>
+                </li>
+                <li v-if="isNonAsn" class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    :class="{ active: activeTab === 'perusahaan' }"
+                    @click="activeTab = 'perusahaan'"
+                    type="button"
+                  >
+                    <vue-feather
+                      type="briefcase"
+                      size="14"
+                      class="me-2"
+                    ></vue-feather>
+                    {{ $t("Company") }}
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    :class="{ active: activeTab === 'pengalaman_kerja' }"
+                    @click="activeTab = 'pengalaman_kerja'"
+                    type="button"
+                  >
+                    <vue-feather
+                      type="folder"
+                      size="14"
+                      class="me-2"
+                    ></vue-feather>
+                    {{ $t("Work Experience") }}
                   </button>
                 </li>
                 <li v-if="!isNonAsn" class="nav-item" role="presentation">
@@ -140,7 +169,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Jabatan
+                    {{ $t("Position") }}
                   </button>
                 </li>
                 <li v-if="!isNonAsn" class="nav-item" role="presentation">
@@ -155,7 +184,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pangkat
+                    {{ $t("Rank") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -170,7 +199,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pendidikan
+                    {{ $t("Education") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -185,7 +214,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Pelatihan
+                    {{ $t("Training") }}
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -200,7 +229,7 @@
                       size="14"
                       class="me-2"
                     ></vue-feather>
-                    Prestasi
+                    {{ $t("Achievements") }}
                   </button>
                 </li>
               </ul>
@@ -215,13 +244,33 @@
                   <PersonalDetailsTab :user="user" :isNonAsn="isNonAsn" />
                 </div>
 
-                <!-- Tab Unit Kerja -->
+                <!-- Tab Unit Kerja (ASN) -->
                 <div
+                  v-if="!isNonAsn"
                   class="tab-pane fade"
                   :class="{ 'show active': activeTab === 'unit_kerja' }"
                   role="tabpanel"
                 >
                   <WorkUnitTab :items="userWorkUnits" :user="user" />
+                </div>
+
+                <!-- Tab Perusahaan (Non-ASN) -->
+                <div
+                  v-if="isNonAsn"
+                  class="tab-pane fade"
+                  :class="{ 'show active': activeTab === 'perusahaan' }"
+                  role="tabpanel"
+                >
+                  <CompanyTab :items="userCompanies" :user="user" />
+                </div>
+
+                <!-- Tab Pengalaman Kerja -->
+                <div
+                  class="tab-pane fade"
+                  :class="{ 'show active': activeTab === 'pengalaman_kerja' }"
+                  role="tabpanel"
+                >
+                  <WorkExperienceTab :items="userWorkExperience" :user="user" />
                 </div>
 
                 <!-- Tab Jabatan -->
@@ -297,6 +346,8 @@ import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 // Tab Components
 import PersonalDetailsTab from "./tabs/PersonalDetailsTab.vue";
 import WorkUnitTab from "./tabs/WorkUnitTab.vue";
+import CompanyTab from "./tabs/CompanyTab.vue";
+import WorkExperienceTab from "./tabs/WorkExperienceTab.vue";
 import PositionTab from "./tabs/PositionTab.vue";
 import RankTab from "./tabs/RankTab.vue";
 import EducationTab from "./tabs/EducationTab.vue";
@@ -305,6 +356,8 @@ import AchievementTab from "./tabs/AchievementTab.vue";
 
 const user = ref({});
 const userWorkUnits = ref([]);
+const userCompanies = ref([]);
+const userWorkExperience = ref([]);
 const userLevels = ref([]);
 const userRanks = ref([]);
 const userEducations = ref([]);
@@ -406,6 +459,13 @@ async function fetchUserProfile() {
 
                 // Work Units
                 userWorkUnits.value = fetchedUser["user-work-units"] || [];
+
+                // Companies (for Non-ASN)
+                userCompanies.value = fetchedUser["user-companies"] || [];
+
+                // Work Experience
+                userWorkExperience.value =
+                  fetchedUser["user-work-experiences"] || [];
 
                 // Position / Levels
                 userLevels.value = fetchedUser["user-levels"] || [];

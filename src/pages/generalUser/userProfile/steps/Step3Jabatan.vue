@@ -4,21 +4,23 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data referensi...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-graduation-cap me-2"></i>Riwayat Jenjang
+            <i class="fa fa-graduation-cap me-2"></i
+            >{{ t("ProfileSteps.Position.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat jenjang/tingkatan pegawai jika ada.
+            {{ t("ProfileSteps.Position.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addJenjang">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+        <button class="btn btn-success btn-sm" @click="addJenjang">
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Position.AddData") }}
         </button>
       </div>
 
@@ -26,11 +28,12 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> Aktif</strong
-        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
-        menjadi "Tidak Aktif".
+          ><i class="fa fa-check-circle"></i>
+          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
+        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -38,9 +41,12 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-layer-group text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data jenjang jabatan.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.Position.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addJenjang">
-          <i class="fa fa-plus me-1"></i> Tambah Jenjang
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Position.AddPosition") }}
         </button>
       </div>
 
@@ -54,13 +60,15 @@
             class="card-header bg-white d-flex justify-content-between align-items-center py-3"
           >
             <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge bg-primary me-2">{{ index + 1 }}</span>
-              Data Jenjang
+              <span class="badge me-2" style="background-color: #0d6efd">{{
+                index + 1
+              }}</span>
+              {{ t("ProfileSteps.Position.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removeJenjang(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -69,7 +77,8 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Jenjang <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Position.PositionLabel") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -78,7 +87,9 @@
                   required
                   @blur="validateField(index, 'idjenjang')"
                 >
-                  <option value="" disabled>Pilih Jenjang</option>
+                  <option value="" disabled>
+                    {{ t("ProfileSteps.Position.SelectPosition") }}
+                  </option>
                   <option
                     v-for="opt in levelOptions"
                     :key="opt.idjenjang"
@@ -94,7 +105,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Tanggal Mulai <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.WorkUnit.StartDate") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="date"
@@ -110,17 +122,23 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.EndDate")
+                }}</label>
                 <input
                   type="date"
                   class="form-control"
                   v-model="item.tglselesai"
                 />
-                <div class="form-text small">Kosongkan jika masih aktif.</div>
+                <div class="form-text small">
+                  {{ t("ProfileSteps.WorkUnit.EndDateHelp") }}
+                </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">File SK</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.SKFile")
+                }}</label>
 
                 <input
                   type="file"
@@ -141,7 +159,7 @@
                       <small
                         class="text-muted d-block"
                         style="font-size: 0.75rem"
-                        >File Tersimpan:</small
+                        >{{ t("ProfileSteps.WorkUnit.SavedFile") }}</small
                       >
                       <span
                         class="fw-bold text-dark text-truncate d-block"
@@ -157,7 +175,8 @@
                     target="_blank"
                     class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
                   >
-                    <i class="fa fa-external-link me-1"></i> Buka
+                    <i class="fa fa-external-link me-1"></i>
+                    {{ t("ProfileSteps.WorkUnit.Open") }}
                   </a>
                 </div>
 
@@ -168,9 +187,9 @@
                   <div class="d-flex align-items-center">
                     <i class="fa fa-check-circle fa-lg me-2"></i>
                     <div class="overflow-hidden">
-                      <small class="d-block text-muted"
-                        >File baru dipilih:</small
-                      >
+                      <small class="d-block text-muted">{{
+                        t("ProfileSteps.WorkUnit.NewFileSelected")
+                      }}</small>
                       <strong class="text-truncate d-block">{{
                         item.filesk_preview
                       }}</strong>
@@ -180,7 +199,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
+                <label class="form-label fw-semibold d-block">{{
+                  t("ProfileSteps.WorkUnit.Status")
+                }}</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -194,7 +215,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || "Tidak Aktif" }}
+                    {{ item.status || t("Inactive") }}
                   </label>
                 </div>
               </div>
@@ -209,6 +230,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
 
 // === UPDATE IMPORT SESUAI PERMINTAAN ===
@@ -231,6 +253,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -302,7 +325,7 @@ async function fetchReferenceLevels() {
     }
   } catch (error) {
     console.error("Error fetching position levels:", error);
-    toast.error("Gagal memuat data referensi jenjang jabatan.");
+    toast.error(t("ProfileSteps.Position.LoadError"));
   }
 }
 
@@ -366,7 +389,8 @@ function addJenjang() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    status: "Tidak Aktif",
+    filesk_preview: "",
+    status: t("Inactive"),
   });
 
   formErrors.value.push({});
@@ -376,14 +400,18 @@ function removeJenjang(index) {
   const item = jenjangList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.Position.DeleteConfirmTitle"),
     text: item.idpenggunajenjang
-      ? "Data jenjang ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data jenjang ini akan dihapus.",
+      ? t("ProfileSteps.Position.DeleteConfirmTextDB")
+      : t("ProfileSteps.Position.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.Position.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.Position.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -393,13 +421,13 @@ function removeJenjang(index) {
         if (item.idpenggunajenjang) {
           await deleteUserLevel(item.idpenggunajenjang);
         }
-        toast.success("Data jenjang berhasil dihapus");
+        toast.success(t("ProfileSteps.Position.DeleteSuccess"));
 
         jenjangList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting user level:", error);
-        toast.error("Gagal menghapus data jenjang");
+        toast.error(t("ProfileSteps.Position.DeleteError"));
       }
     }
   });
@@ -420,13 +448,15 @@ function handleFileUpload(index, event) {
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  const newStatus = isChecked
+    ? t("ProfileSteps.WorkUnit.Active")
+    : t("Inactive");
   jenjangList.value[index].status = newStatus;
 
-  if (newStatus === "Aktif") {
+  if (newStatus === t("ProfileSteps.WorkUnit.Active")) {
     jenjangList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = "Tidak Aktif";
+        item.status = t("Inactive");
       }
     });
   }
@@ -443,7 +473,9 @@ function validateField(index, field) {
 
   if (field === "idjenjang") {
     if (!item.idjenjang) {
-      formErrors.value[index].idjenjang = "Jenjang wajib dipilih.";
+      formErrors.value[index].idjenjang = t(
+        "ProfileSteps.Position.Validation.PositionRequired"
+      );
     } else {
       formErrors.value[index].idjenjang = "";
     }
@@ -451,7 +483,9 @@ function validateField(index, field) {
 
   if (field === "tglmulai") {
     if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tglmulai = t(
+        "ProfileSteps.Position.Validation.StartDateRequired"
+      );
     } else {
       formErrors.value[index].tglmulai = "";
     }
@@ -469,14 +503,18 @@ function validate() {
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     if (!item.idjenjang) {
-      formErrors.value[index].idjenjang = "Jenjang wajib dipilih.";
+      formErrors.value[index].idjenjang = t(
+        "ProfileSteps.Position.Validation.PositionRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].idjenjang = "";
     }
 
     if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = "Tanggal Mulai wajib diisi.";
+      formErrors.value[index].tglmulai = t(
+        "ProfileSteps.Position.Validation.StartDateRequired"
+      );
       isValid = false;
     } else {
       formErrors.value[index].tglmulai = "";

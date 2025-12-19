@@ -3,14 +3,19 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h6 class="mb-0">
         <i class="fa fa-edit me-2"></i>
-        {{ isEditMode ? "Edit Biodata" : "Input Biodata" }}
+        {{
+          isEditMode
+            ? t("ProfileSteps.Biodata.EditTitle")
+            : t("ProfileSteps.Biodata.InputTitle")
+        }}
       </h6>
       <button
         v-if="!isEditMode"
         class="btn btn-outline-secondary btn-sm"
         @click="$emit('back')"
       >
-        <i class="fa fa-arrow-left me-1"></i> Ubah Jenis Pengguna
+        <i class="fa fa-arrow-left me-1"></i>
+        {{ t("ProfileSteps.Biodata.ChangeUserType") }}
       </button>
     </div>
 
@@ -18,14 +23,17 @@
       <!-- Nama Lengkap -->
       <div class="col-12 mb-3">
         <label class="form-label fw-semibold"
-          >Nama Lengkap <span class="text-danger">*</span></label
+          >{{ t("ProfileSteps.Biodata.FullName") }}
+          <span class="text-danger">*</span></label
         >
         <input
           type="text"
           class="form-control"
           v-model="formData.nama"
           :class="{ 'is-invalid': formErrors.nama }"
-          :placeholder="isLoading ? 'Memuat...' : 'Nama lengkap'"
+          :placeholder="
+            isLoading ? t('Loading') : t('ProfileSteps.Biodata.FullName')
+          "
           :disabled="isLoading"
           @blur="validateField('nama')"
         />
@@ -34,7 +42,9 @@
 
       <!-- Gelar -->
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Gelar Depan</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.FrontTitle")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -43,7 +53,9 @@
         />
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Gelar Belakang</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.BackTitle")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -55,14 +67,17 @@
       <!-- NIK -->
       <div class="col-12 mb-3">
         <label class="form-label fw-semibold"
-          >NIK <span class="text-danger">*</span></label
+          >{{ t("ProfileSteps.Biodata.NIK") }}
+          <span class="text-danger">*</span></label
         >
         <input
           type="text"
           class="form-control"
           v-model="formData.nik"
           :class="{ 'is-invalid': formErrors.nik }"
-          :placeholder="isLoading ? 'Memuat...' : 'Nomor Induk Kependudukan'"
+          :placeholder="
+            isLoading ? t('Loading') : t('ProfileSteps.Biodata.NIK')
+          "
           :disabled="isLoading"
           @blur="validateField('nik')"
         />
@@ -72,14 +87,14 @@
       <!-- Email & Telepon -->
       <div class="col-md-6 mb-3">
         <label class="form-label fw-semibold"
-          >Email <span class="text-danger">*</span></label
+          >{{ t("Email") }} <span class="text-danger">*</span></label
         >
         <input
           type="email"
           class="form-control"
           v-model="formData.email"
           :class="{ 'is-invalid': formErrors.email }"
-          :placeholder="isLoading ? 'Memuat...' : 'email@instansi.go.id'"
+          :placeholder="isLoading ? t('Loading') : t('Email')"
           :disabled="isLoading"
           @blur="validateField('email')"
         />
@@ -87,7 +102,9 @@
       </div>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">No. Telepon</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Phone")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -99,7 +116,9 @@
       <!-- NIP & Karpeg (Only for ASN) -->
       <template v-if="!isNonAsn">
         <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">NIP</label>
+          <label class="form-label fw-semibold">{{
+            t("ProfileSteps.Biodata.NIP")
+          }}</label>
           <input
             type="text"
             class="form-control"
@@ -109,7 +128,9 @@
         </div>
 
         <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">No. Karpeg</label>
+          <label class="form-label fw-semibold">{{
+            t("ProfileSteps.Biodata.KarpegCard")
+          }}</label>
           <input
             type="text"
             class="form-control"
@@ -120,14 +141,20 @@
       </template>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Jenis Kelamin</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Gender")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.idjeniskelamin"
           :disabled="gendersLoading || isLoading"
         >
-          <option value="">
-            {{ gendersLoading ? "Memuat..." : "Pilih Jenis Kelamin" }}
+          <option value="" disabled>
+            {{
+              gendersLoading
+                ? t("Loading")
+                : t("ProfileSteps.Biodata.SelectGender")
+            }}
           </option>
           <option
             v-for="gender in genderOptions"
@@ -139,29 +166,40 @@
         </select>
       </div>
 
+      <!-- Jenis Pengguna sudah dipilih di UserTypeSelectionCards -->
+      <!-- Hidden: nilai sudah di-set dari step sebelumnya -->
+
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Jenis Pengguna</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.EmployeeType")
+        }}</label>
         <select
           class="form-select"
-          v-model="formData.idjenispengguna"
-          :disabled="userTypesLoading || isLoading"
+          v-model="formData.idjenispegawai"
+          :disabled="employeeTypesLoading || isLoading"
         >
-          <option value="">
-            {{ userTypesLoading ? "Memuat..." : "Pilih Jenis Pengguna" }}
+          <option value="" disabled>
+            {{
+              employeeTypesLoading
+                ? t("Loading")
+                : t("ProfileSteps.Biodata.SelectEmployeeType")
+            }}
           </option>
           <option
-            v-for="userType in userTypeOptions"
-            :key="userType.idjenispengguna"
-            :value="userType.idjenispengguna"
+            v-for="employeeType in employeeTypeOptions"
+            :key="employeeType.idjenispegawai"
+            :value="employeeType.idjenispegawai"
           >
-            {{ userType.namajenispengguna }}
+            {{ employeeType.namajenispegawai }}
           </option>
         </select>
       </div>
 
       <!-- Tempat & Tanggal Lahir -->
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Tempat Lahir</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.BirthPlace")
+        }}</label>
         <input
           type="text"
           class="form-control"
@@ -170,7 +208,9 @@
         />
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Tanggal Lahir</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.BirthDate")
+        }}</label>
         <input
           type="date"
           class="form-control"
@@ -180,7 +220,9 @@
 
       <!-- Alamat -->
       <div class="col-12 mb-3">
-        <label class="form-label fw-semibold">Alamat Lengkap</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.FullAddress")
+        }}</label>
         <textarea
           class="form-control"
           v-model="formData.alamat"
@@ -190,14 +232,20 @@
 
       <!-- Provinsi & Kabupaten -->
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Provinsi</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Province")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.kodepropinsi"
           :disabled="regionsLoading"
         >
           <option value="" disabled>
-            {{ regionsLoading ? "Memuat..." : "Pilih Provinsi" }}
+            {{
+              regionsLoading
+                ? t("Loading")
+                : t("ProfileSteps.Biodata.SelectProvince")
+            }}
           </option>
           <template v-if="!regionsLoading">
             <option
@@ -212,7 +260,9 @@
       </div>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Kabupaten</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.District")
+        }}</label>
         <select
           class="form-select"
           v-model="formData.kodekabupaten"
@@ -223,8 +273,8 @@
               kabupatenLoading
                 ? "Memuat..."
                 : formData.kodepropinsi
-                ? "Pilih Kabupaten"
-                : "Silakan pilih Provinsi terlebih dahulu"
+                ? t("ProfileSteps.Biodata.SelectDistrict")
+                : t("ProfileSteps.Biodata.SelectDistrictPlaceholder")
             }}
           </option>
           <template v-if="!kabupatenLoading">
@@ -239,9 +289,46 @@
         </select>
       </div>
 
+      <!-- Minat -->
+      <div class="col-12 mb-3">
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.Interests")
+        }}</label>
+        <div class="interest-input-container">
+          <div class="interest-bubbles">
+            <span
+              v-for="(interest, index) in interestList"
+              :key="index"
+              class="interest-bubble"
+            >
+              {{ interest }}
+              <button
+                type="button"
+                class="bubble-remove"
+                @click="removeInterest(index)"
+              >
+                <i class="fa fa-times"></i>
+              </button>
+            </span>
+            <input
+              type="text"
+              class="interest-input"
+              v-model="interestInput"
+              @keydown="handleInterestKeydown"
+              :placeholder="t('ProfileSteps.Biodata.InterestsPlaceholder')"
+            />
+          </div>
+        </div>
+        <small class="form-text text-muted">
+          {{ t("ProfileSteps.Biodata.InterestsHelp") }}
+        </small>
+      </div>
+
       <!-- Upload Foto -->
       <div class="col-12 mb-3">
-        <label class="form-label fw-semibold">Upload Foto</label>
+        <label class="form-label fw-semibold">{{
+          t("ProfileSteps.Biodata.UploadPhoto")
+        }}</label>
         <input
           type="file"
           class="form-control"
@@ -249,9 +336,9 @@
           accept="image/*"
           ref="fileInput"
         />
-        <small class="form-text text-muted"
-          >Kosongkan jika tidak ingin mengubah foto.</small
-        >
+        <small class="form-text text-muted">{{
+          t("ProfileSteps.Biodata.UploadPhotoHelp")
+        }}</small>
 
         <div class="mt-3" v-if="photoPreviewUrl || formData.foto">
           <div class="position-relative d-inline-block">
@@ -271,7 +358,7 @@
                 border: 2px solid white;
               "
               @click="removePhoto"
-              title="Hapus Foto"
+              :title="t('ProfileSteps.Biodata.RemovePhoto')"
             >
               <i class="fa fa-times" style="font-size: 12px"></i>
             </button>
@@ -287,9 +374,11 @@ import { ref, reactive, watch, onMounted } from "vue";
 import { getRoles } from "@/services/referensi/roles";
 import { getRegions } from "@/services/referensi/regions";
 import { getGenders } from "@/services/referensi/genders";
-import { getUserTypes } from "@/services/referensi/userTypes";
+import { getEmployeeTypes } from "@/services/referensi/employeeTypes";
 import { compressImage } from "@/utils/imageCompressor";
+import { parseBubble } from "@/utils/parseBubble";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import * as yup from "yup";
 
 const props = defineProps({
@@ -317,35 +406,40 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "back", "photo-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 // State
 const formData = reactive(props.modelValue);
 const formErrors = reactive({});
 const roleOptions = ref([]);
 const genderOptions = ref([]);
-const userTypeOptions = ref([]);
 const provinceOptions = ref([]);
 const kabupatenOptions = ref([]);
 const rolesLoading = ref(false);
 const gendersLoading = ref(false);
-const userTypesLoading = ref(false);
+const employeeTypesLoading = ref(false);
 const regionsLoading = ref(false);
 const kabupatenLoading = ref(false);
 const photoPreviewUrl = ref(null);
 const fileInput = ref(null);
+const interestInput = ref("");
+const interestList = ref([]);
+const employeeTypeOptions = ref([]);
 
 // Validation Schema
 const validationSchema = yup.object().shape({
-  nama: yup.string().required("Nama wajib diisi."),
+  nama: yup
+    .string()
+    .required(t("ProfileSteps.Biodata.Validation.NameRequired")),
   nik: yup
     .string()
-    .matches(/^[0-9]+$/, "NIK hanya boleh berisi angka")
-    .length(16, "NIK harus terdiri dari 16 digit")
-    .required("NIK wajib diisi."),
+    .matches(/^[0-9]+$/, t("ProfileSteps.Biodata.Validation.NIKNumeric"))
+    .length(16, t("ProfileSteps.Biodata.Validation.NIKLength"))
+    .required(t("ProfileSteps.Biodata.Validation.NIKRequired")),
   email: yup
     .string()
-    .email("Format email salah")
-    .required("Email wajib diisi."),
+    .email(t("ProfileSteps.Biodata.Validation.EmailInvalid"))
+    .required(t("ProfileSteps.Biodata.Validation.EmailRequired")),
 });
 
 // Watchers
@@ -372,7 +466,7 @@ watch(
 onMounted(() => {
   fetchRoles();
   fetchGenders();
-  fetchUserTypes();
+  fetchEmployeeTypes();
   fetchProvinces();
 
   if (formData.foto) {
@@ -381,6 +475,11 @@ onMounted(() => {
 
   if (formData.kodepropinsi) {
     fetchKabupaten(formData.kodepropinsi);
+  }
+
+  // Parse existing minat
+  if (formData.minat) {
+    interestList.value = parseBubble(formData.minat);
   }
 });
 
@@ -416,22 +515,22 @@ async function fetchGenders() {
   }
 }
 
-async function fetchUserTypes() {
-  userTypesLoading.value = true;
+async function fetchEmployeeTypes() {
+  employeeTypesLoading.value = true;
   try {
-    const response = await getUserTypes({
+    const response = await getEmployeeTypes({
       page: 1,
       limit: 999,
-      sort: "namajenispengguna",
+      sort: "namajenispegawai",
       dir: "asc",
     });
-    userTypeOptions.value =
+    employeeTypeOptions.value =
       response.data?.[0]?.data || response.data?.data || [];
   } catch (error) {
     console.error(error);
-    toast.error("Gagal memuat daftar jenis pengguna");
+    toast.error("Gagal memuat daftar jenis pegawai");
   } finally {
-    userTypesLoading.value = false;
+    employeeTypesLoading.value = false;
   }
 }
 
@@ -485,11 +584,11 @@ async function handlePhotoUpload(event) {
   if (!file) return;
 
   try {
-    toast.info("Sedang mengompres gambar...", { timeout: 2000 });
+    toast.info(t("ProfileSteps.Biodata.Compressing"), { timeout: 2000 });
     const compressed = await compressImage(file);
     photoPreviewUrl.value = URL.createObjectURL(compressed);
     emit("photo-change", compressed);
-    toast.success("Gambar berhasil dikompres", { timeout: 2000 });
+    toast.success(t("ProfileSteps.Biodata.PhotoCompressed"), { timeout: 2000 });
   } catch (error) {
     toast.error("Gagal memproses gambar");
   }
@@ -500,6 +599,39 @@ function removePhoto() {
   formData.foto = null;
   if (fileInput.value) fileInput.value.value = null;
   emit("photo-change", null);
+}
+
+// Interest (Minat) handlers
+function handleInterestKeydown(event) {
+  if (event.key === "," || event.key === "Enter") {
+    event.preventDefault();
+    addInterest();
+  } else if (
+    event.key === "Backspace" &&
+    !interestInput.value &&
+    interestList.value.length > 0
+  ) {
+    interestList.value.pop();
+    updateMinatFormData();
+  }
+}
+
+function addInterest() {
+  const value = interestInput.value.replace(/,/g, "").trim();
+  if (value && !interestList.value.includes(value)) {
+    interestList.value.push(value);
+    updateMinatFormData();
+  }
+  interestInput.value = "";
+}
+
+function removeInterest(index) {
+  interestList.value.splice(index, 1);
+  updateMinatFormData();
+}
+
+function updateMinatFormData() {
+  formData.minat = interestList.value.join(", ");
 }
 
 async function validateField(field) {
@@ -532,5 +664,72 @@ defineExpose({ validate });
 <style scoped>
 .invalid-feedback {
   display: block;
+}
+
+/* Interest Bubble Styles */
+.interest-input-container {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #fff;
+  min-height: 80px;
+}
+
+.interest-input-container:focus-within {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.interest-bubbles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.interest-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e7f1ff;
+  color: #0d6efd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #b6d4fe;
+}
+
+.bubble-remove {
+  background: #0d6efd;
+  border: none;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 10px;
+  transition: background 0.2s;
+}
+
+.bubble-remove:hover {
+  background: #0b5ed7;
+}
+
+.interest-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 200px;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.interest-input::placeholder {
+  color: #adb5bd;
 }
 </style>

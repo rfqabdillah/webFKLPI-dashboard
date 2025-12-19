@@ -4,19 +4,21 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data referensi...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h6 class="mb-1"><i class="fa fa-star me-2"></i>Riwayat Pangkat</h6>
+          <h6 class="mb-1">
+            <i class="fa fa-star me-2"></i>{{ t("ProfileSteps.Rank.Title") }}
+          </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat kepangkatan pegawai jika ada.
+            {{ t("ProfileSteps.Rank.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addPangkat">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+        <button class="btn btn-success btn-sm" @click="addPangkat">
+          <i class="fa fa-plus me-1"></i> {{ t("ProfileSteps.Rank.AddData") }}
         </button>
       </div>
 
@@ -24,11 +26,12 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> Aktif</strong
-        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
-        menjadi "Tidak Aktif".
+          ><i class="fa fa-check-circle"></i>
+          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
+        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -36,9 +39,11 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-star text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data pangkat.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.Rank.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPangkat">
-          <i class="fa fa-plus me-1"></i> Tambah Pangkat
+          <i class="fa fa-plus me-1"></i> {{ t("ProfileSteps.Rank.AddRank") }}
         </button>
       </div>
 
@@ -52,13 +57,15 @@
             class="card-header bg-white d-flex justify-content-between align-items-center py-3"
           >
             <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge bg-primary me-2">{{ index + 1 }}</span>
-              Data Pangkat
+              <span class="badge me-2" style="background-color: #0d6efd">{{
+                index + 1
+              }}</span>
+              {{ t("ProfileSteps.Rank.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePangkat(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -67,7 +74,8 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Pangkat <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Rank.RankLabel") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -76,7 +84,9 @@
                   required
                   @blur="validateField(index, 'idpangkat')"
                 >
-                  <option value="" disabled>Pilih Pangkat</option>
+                  <option value="" disabled>
+                    {{ t("ProfileSteps.Rank.SelectRank") }}
+                  </option>
                   <option
                     v-for="pangkat in rankOptions"
                     :key="pangkat.idpangkat"
@@ -94,7 +104,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Tanggal Mulai <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.WorkUnit.StartDate") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="date"
@@ -109,17 +120,23 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.EndDate")
+                }}</label>
                 <input
                   type="date"
                   class="form-control"
                   v-model="item.tglselesai"
                 />
-                <div class="form-text small">Kosongkan jika masih aktif.</div>
+                <div class="form-text small">
+                  {{ t("ProfileSteps.WorkUnit.EndDateHelp") }}
+                </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">File SK</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.WorkUnit.SKFile")
+                }}</label>
 
                 <input
                   type="file"
@@ -140,7 +157,7 @@
                       <small
                         class="text-muted d-block"
                         style="font-size: 0.75rem"
-                        >File Tersimpan:</small
+                        >{{ t("ProfileSteps.WorkUnit.SavedFile") }}</small
                       >
                       <span
                         class="fw-bold text-dark text-truncate d-block"
@@ -156,7 +173,8 @@
                     target="_blank"
                     class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
                   >
-                    <i class="fa fa-external-link me-1"></i> Buka
+                    <i class="fa fa-external-link me-1"></i>
+                    {{ t("ProfileSteps.WorkUnit.Open") }}
                   </a>
                 </div>
 
@@ -167,9 +185,9 @@
                   <div class="d-flex align-items-center">
                     <i class="fa fa-check-circle fa-lg me-2"></i>
                     <div class="overflow-hidden">
-                      <small class="d-block text-muted"
-                        >File baru dipilih:</small
-                      >
+                      <small class="d-block text-muted">{{
+                        t("ProfileSteps.WorkUnit.NewFileSelected")
+                      }}</small>
                       <strong class="text-truncate d-block">{{
                         item.filesk_preview
                       }}</strong>
@@ -179,7 +197,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
+                <label class="form-label fw-semibold d-block">{{
+                  t("ProfileSteps.WorkUnit.Status")
+                }}</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -193,7 +213,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || "Tidak Aktif" }}
+                    {{ item.status || t("Inactive") }}
                   </label>
                 </div>
               </div>
@@ -208,6 +228,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import { getRanks } from "@/services/referensi/ranks";
 import {
   getUserRanks,
@@ -229,6 +250,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -238,8 +260,12 @@ const formErrors = ref([]);
 
 // === Yup Validation Schema ===
 const validationSchema = yup.object().shape({
-  idpangkat: yup.string().required("Pangkat wajib dipilih."),
-  tglmulai: yup.string().required("Tanggal Mulai wajib diisi."),
+  idpangkat: yup
+    .string()
+    .required(t("ProfileSteps.Rank.Validation.RankRequired")),
+  tglmulai: yup
+    .string()
+    .required(t("ProfileSteps.Rank.Validation.StartDateRequired")),
 });
 
 // === Helper Functions ===
@@ -347,7 +373,7 @@ async function fetchRanks() {
     }
   } catch (error) {
     console.error("Error fetching ranks:", error);
-    toast.error("Gagal memuat data pangkat.");
+    toast.error(t("ProfileSteps.Rank.LoadError"));
   }
 }
 
@@ -359,7 +385,8 @@ function addPangkat() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    status: "Tidak Aktif",
+
+    status: t("Inactive"),
   });
   formErrors.value.push({});
 }
@@ -368,14 +395,18 @@ function removePangkat(index) {
   const item = pangkatList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.Rank.DeleteConfirmTitle"),
     text: item.idpenggunapangkat
-      ? "Data pangkat ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data pangkat ini akan dihapus.",
+      ? t("ProfileSteps.Rank.DeleteConfirmTextDB")
+      : t("ProfileSteps.Rank.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.Rank.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.Rank.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -385,13 +416,13 @@ function removePangkat(index) {
         if (item.idpenggunapangkat) {
           await deleteUserRank(item.idpenggunapangkat);
         }
-        toast.success("Data pangkat berhasil dihapus");
+        toast.success(t("ProfileSteps.Rank.DeleteSuccess"));
 
         pangkatList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pangkat:", error);
-        toast.error("Gagal menghapus data pangkat");
+        toast.error(t("ProfileSteps.Rank.DeleteError"));
       }
     }
   });
@@ -411,12 +442,14 @@ function handleFileUpload(index, event) {
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  const newStatus = isChecked
+    ? t("ProfileSteps.WorkUnit.Active")
+    : t("Inactive");
   pangkatList.value[index].status = newStatus;
-  if (newStatus === "Aktif") {
+  if (newStatus === t("ProfileSteps.WorkUnit.Active")) {
     pangkatList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = "Tidak Aktif";
+        item.status = t("Inactive");
       }
     });
   }

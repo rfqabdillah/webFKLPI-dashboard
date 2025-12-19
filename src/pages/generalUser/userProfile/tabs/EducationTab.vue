@@ -34,7 +34,8 @@
 
                 <div class="d-flex align-items-center">
                   <small class="text-muted fw-bold">
-                    <i class="fa fa-calendar-check me-1"></i> Lulus:
+                    <i class="fa fa-calendar-check me-1"></i>
+                    {{ $t("Graduated") }}:
                     {{ item.tahunlulus }}
                   </small>
                 </div>
@@ -54,7 +55,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            Data Pendidikan Tidak Ditemukan!
+            {{ $t("Education Data Not Found") }}
           </span>
         </div>
       </div>

@@ -19,7 +19,7 @@
             alt=""
         /></router-link>
         <div class="mobile-back text-end">
-          <span>Back</span
+          <span>{{ $t("Back") }}</span
           ><i class="fa fa-angle-right ps-2" aria-hidden="true"></i>
         </div>
       </li>
@@ -33,7 +33,7 @@
         ]"
       >
         <div v-if="menuItem.type == 'headtitle'">
-          <h6 class="lan-1">{{ menuItem.headTitle1 }}</h6>
+          <h6 class="lan-1">{{ $t(menuItem.headTitle1) }}</h6>
         </div>
 
         <!-- <i v-if="menuItem.type != 'headtitle'" class="fa fa-thumb-tack"
@@ -167,7 +167,7 @@
               v-if="childrenItem.type == 'sub'"
               @click="setNavActive(childrenItem, index)"
             >
-              {{ childrenItem.title }}
+              {{ $t(childrenItem.title) }}
               <label
                 :class="'badge badge-' + childrenItem.badgeType + ' pull-right'"
                 v-if="childrenItem.badgeType"
@@ -192,7 +192,7 @@
               @click="setNavActive(childrenItem, index)"
               v-on:click="hidesecondmenu()"
             >
-              {{ childrenItem.title }}
+              {{ $t(childrenItem.title) }}
               <label
                 :class="'badge badge-' + childrenItem.badgeType + ' pull-right'"
                 v-if="childrenItem.badgeType"
@@ -209,7 +209,7 @@
               v-if="childrenItem.type == 'extLink'"
               class="submenu-title"
             >
-              {{ childrenItem.title }}
+              {{ $t(childrenItem.title) }}
               <label
                 :class="'badge badge-' + childrenItem.badgeType + ' pull-right'"
                 v-if="childrenItem.badgeType"
@@ -227,7 +227,7 @@
               target="_blank"
               v-if="childrenItem.type == 'extTabLink'"
             >
-              {{ childrenItem.title }}
+              {{ $t(childrenItem.title) }}
               <label
                 :class="'badge badge-' + childrenItem.badgeType + ' pull-right'"
                 v-if="childrenItem.badgeType"
@@ -255,7 +255,7 @@
                   v-on:click="hidesecondmenu()"
                   @click="setNavActive(childrenSubItem, index)"
                 >
-                  {{ childrenSubItem.title }}
+                  {{ $t(childrenSubItem.title) }}
                   <label
                     :class="
                       'badge badge-' + childrenSubItem.badgeType + ' pull-right'
@@ -273,7 +273,7 @@
                   :to="childrenSubItem.path"
                   v-if="childrenSubItem.type == 'extLink'"
                 >
-                  {{ childrenSubItem.title }}
+                  {{ $t(childrenSubItem.title) }}
                   <label
                     :class="
                       'badge badge-' + childrenSubItem.badgeType + ' pull-right'
@@ -291,7 +291,7 @@
                   :to="childrenSubItem.path"
                   v-if="childrenSubItem.type == 'extLink'"
                 >
-                  {{ childrenSubItem.title }}
+                  {{ $t(childrenSubItem.title) }}
                   <label
                     :class="
                       'badge badge-' + childrenSubItem.badgeType + ' pull-right'

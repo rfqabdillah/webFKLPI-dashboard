@@ -4,21 +4,23 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat data referensi...</p>
+      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
     </div>
 
     <div v-else>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-trophy me-2"></i>Riwayat Prestasi
+            <i class="fa fa-trophy me-2"></i
+            >{{ t("ProfileSteps.Achievement.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            Tambahkan riwayat prestasi pegawai jika ada.
+            {{ t("ProfileSteps.Achievement.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addPrestasi">
-          <i class="fa fa-plus me-1"></i> Tambah Data
+        <button class="btn btn-success btn-sm" @click="addPrestasi">
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Achievement.AddData") }}
         </button>
       </div>
 
@@ -26,11 +28,12 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>Catatan:</strong> Hanya satu data yang boleh memiliki status
+        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> Aktif</strong
-        >. Ketika Anda mengaktifkan satu data, data lainnya akan otomatis
-        menjadi "Tidak Aktif".
+          ><i class="fa fa-check-circle"></i>
+          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
+        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -38,9 +41,12 @@
         class="text-center py-4 border rounded bg-light mb-3"
       >
         <i class="fa fa-trophy text-muted fa-2x mb-2"></i>
-        <p class="text-muted mb-2 small">Belum ada data prestasi.</p>
+        <p class="text-muted mb-2 small">
+          {{ t("ProfileSteps.Achievement.EmptyState") }}
+        </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPrestasi">
-          <i class="fa fa-plus me-1"></i> Tambah Prestasi
+          <i class="fa fa-plus me-1"></i>
+          {{ t("ProfileSteps.Achievement.AddAchievement") }}
         </button>
       </div>
 
@@ -54,13 +60,15 @@
             class="card-header bg-white d-flex justify-content-between align-items-center py-3"
           >
             <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge bg-primary me-2">{{ index + 1 }}</span>
-              Data Prestasi
+              <span class="badge me-2" style="background-color: #0d6efd">{{
+                index + 1
+              }}</span>
+              {{ t("ProfileSteps.Achievement.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePrestasi(index)"
-              title="Hapus data ini"
+              :title="t('ProfileSteps.WorkUnit.RemoveData')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -69,7 +77,8 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  Nama Prestasi <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Achievement.AchievementName") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -77,7 +86,9 @@
                   v-model="item.namaprestasi"
                   :class="{ 'is-invalid': getError(index, 'namaprestasi') }"
                   required
-                  placeholder="Contoh: Juara 1 Lomba Inovasi Pelayanan Publik"
+                  :placeholder="
+                    t('ProfileSteps.Achievement.AchievementNamePlaceholder')
+                  "
                   @blur="validateField(index, 'namaprestasi')"
                 />
                 <div class="invalid-feedback">
@@ -87,7 +98,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Skala Prestasi <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Achievement.AchievementScale") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <select
                   class="form-select"
@@ -96,7 +108,9 @@
                   required
                   @blur="validateField(index, 'idskala')"
                 >
-                  <option value="" disabled>Pilih Skala</option>
+                  <option value="" disabled>
+                    {{ t("ProfileSteps.Achievement.SelectScale") }}
+                  </option>
                   <option
                     v-for="skala in scaleOptions"
                     :key="skala.idskala"
@@ -112,7 +126,8 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  Nama Penyelenggara <span class="text-danger">*</span>
+                  {{ t("ProfileSteps.Achievement.Organizer") }}
+                  <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -122,7 +137,9 @@
                     'is-invalid': getError(index, 'namapenyelenggara'),
                   }"
                   required
-                  placeholder="Contoh: Kementerian PANRB"
+                  :placeholder="
+                    t('ProfileSteps.Achievement.OrganizerPlaceholder')
+                  "
                   @blur="validateField(index, 'namapenyelenggara')"
                 />
                 <div class="invalid-feedback">
@@ -131,7 +148,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">File Sertifikat</label>
+                <label class="form-label fw-semibold">{{
+                  t("ProfileSteps.Training.CertificateFile")
+                }}</label>
 
                 <input
                   type="file"
@@ -152,7 +171,7 @@
                       <small
                         class="text-muted d-block"
                         style="font-size: 0.75rem"
-                        >File Tersimpan:</small
+                        >{{ t("ProfileSteps.WorkUnit.SavedFile") }}</small
                       >
                       <span
                         class="fw-bold text-dark text-truncate d-block"
@@ -168,7 +187,8 @@
                     target="_blank"
                     class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
                   >
-                    <i class="fa fa-external-link me-1"></i> Buka
+                    <i class="fa fa-external-link me-1"></i>
+                    {{ t("ProfileSteps.WorkUnit.Open") }}
                   </a>
                 </div>
 
@@ -179,9 +199,9 @@
                   <div class="d-flex align-items-center">
                     <i class="fa fa-check-circle fa-lg me-2"></i>
                     <div class="overflow-hidden">
-                      <small class="d-block text-muted"
-                        >File baru dipilih:</small
-                      >
+                      <small class="d-block text-muted">{{
+                        t("ProfileSteps.WorkUnit.NewFileSelected")
+                      }}</small>
                       <strong class="text-truncate d-block">{{
                         item.filesertifikat_preview
                       }}</strong>
@@ -191,7 +211,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
+                <label class="form-label fw-semibold d-block">{{
+                  t("ProfileSteps.WorkUnit.Status")
+                }}</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -205,7 +227,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || "Tidak Aktif" }}
+                    {{ item.status || t("Inactive") }}
                   </label>
                 </div>
               </div>
@@ -220,6 +242,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 import { getScales } from "@/services/referensi/scale";
 import {
   getUserAchievements,
@@ -241,6 +264,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -250,9 +274,15 @@ const formErrors = ref([]);
 
 // === Yup Validation Schema ===
 const validationSchema = yup.object().shape({
-  namaprestasi: yup.string().required("Nama Prestasi wajib diisi."),
-  idskala: yup.string().required("Skala Prestasi wajib dipilih."),
-  namapenyelenggara: yup.string().required("Nama Penyelenggara wajib diisi."),
+  namaprestasi: yup
+    .string()
+    .required(t("ProfileSteps.Achievement.Validation.NameRequired")),
+  idskala: yup
+    .string()
+    .required(t("ProfileSteps.Achievement.Validation.ScaleRequired")),
+  namapenyelenggara: yup
+    .string()
+    .required(t("ProfileSteps.Achievement.Validation.OrganizerRequired")),
 });
 
 // === Helper Functions ===
@@ -359,7 +389,7 @@ async function fetchScales() {
     }
   } catch (error) {
     console.error("Error fetching scales:", error);
-    toast.error("Gagal memuat data skala prestasi.");
+    toast.error(t("ProfileSteps.Achievement.LoadError"));
   }
 }
 
@@ -371,7 +401,8 @@ function addPrestasi() {
     namapenyelenggara: "",
     filesertifikat: null,
     filesertifikat_preview: "",
-    status: "Tidak Aktif",
+
+    status: t("Inactive"),
   });
   formErrors.value.push({});
 }
@@ -380,14 +411,18 @@ function removePrestasi(index) {
   const item = prestasiList.value[index];
 
   Swal.fire({
-    title: "Hapus Data?",
+    title: t("ProfileSteps.Achievement.DeleteConfirmTitle"),
     text: item.idpenggunaprestasi
-      ? "Data prestasi ini akan dihapus dari database. Tindakan ini tidak dapat dibatalkan."
-      : "Data prestasi ini akan dihapus.",
+      ? t("ProfileSteps.Achievement.DeleteConfirmTextDB")
+      : t("ProfileSteps.Achievement.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
-    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
+      "ProfileSteps.Achievement.DeleteButton"
+    )}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
+      "ProfileSteps.Achievement.CancelButton"
+    )}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -397,13 +432,13 @@ function removePrestasi(index) {
         if (item.idpenggunaprestasi) {
           await deleteUserAchievement(item.idpenggunaprestasi);
         }
-        toast.success("Data prestasi berhasil dihapus");
+        toast.success(t("ProfileSteps.Achievement.DeleteSuccess"));
 
         prestasiList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting prestasi:", error);
-        toast.error("Gagal menghapus data prestasi");
+        toast.error(t("ProfileSteps.Achievement.DeleteError"));
       }
     }
   });
@@ -423,12 +458,14 @@ function handleFileUpload(index, event) {
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
+  const newStatus = isChecked
+    ? t("ProfileSteps.WorkUnit.Active")
+    : t("Inactive");
   prestasiList.value[index].status = newStatus;
-  if (newStatus === "Aktif") {
+  if (newStatus === t("ProfileSteps.WorkUnit.Active")) {
     prestasiList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = "Tidak Aktif";
+        item.status = t("Inactive");
       }
     });
   }

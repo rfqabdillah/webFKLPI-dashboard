@@ -109,8 +109,11 @@
                     <div class="checkbox p-0">
                       <input id="checkbox1" type="checkbox" />
                       <label class="text-muted" for="checkbox1"
-                        >Remember password</label>
-                      <router-link class="link" to="/forgetpassword"> Lupa password?</router-link>
+                        >Remember password</label
+                      >
+                      <router-link class="link" to="/forgetpassword">
+                        Lupa password?</router-link
+                      >
                     </div>
                     <div class="text-end mt-3">
                       <button
@@ -210,23 +213,9 @@ async function onSubmit() {
       const userName = userProfile?.nama || "Pengguna";
       toast.success(`Login berhasil! Selamat datang, ${userName}`);
 
-      // Determine redirect path based on user level
-      // User "umum" goes to /my-profile, others go to home /
-      console.log("=== DEBUG LOGIN ===");
-      console.log("userProfile:", userProfile);
-      console.log("id_level dari userProfile:", userProfile?.id_level);
-      console.log("UMUM_LEVEL_ID:", UMUM_LEVEL_ID);
-
       const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
-      console.log("userLevel detected:", userLevel);
-      console.log("Is umum?", userLevel === UMUM_LEVEL_ID);
-
       const redirectPath = userLevel === UMUM_LEVEL_ID ? "/my-profile" : "/";
-      console.log("Redirect to:", redirectPath);
-      console.log("==================");
 
-      // Refresh menu based on user level before redirect
-      // This ensures the menu is filtered correctly for the logged-in user
       store.dispatch("menu/refreshMenuByUserLevel");
 
       router.push(redirectPath);

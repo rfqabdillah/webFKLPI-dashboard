@@ -2,8 +2,8 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header pb-0">
-        <h5>Agenda Saya</h5>
-        <p class="text-muted mb-0">Daftar agenda yang telah Anda ikuti</p>
+        <h5>{{ $t("Agenda Saya") }}</h5>
+        <p class="text-muted mb-0">{{ $t("My Events List") }}</p>
       </div>
       <div class="card-body">
         <!-- Loading State -->
@@ -11,7 +11,7 @@
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <p class="mt-2 text-muted">Memuat agenda Anda...</p>
+          <p class="mt-2 text-muted">{{ $t("Loading your events") }}...</p>
         </div>
 
         <!-- Error State -->
@@ -19,16 +19,18 @@
           <i class="fa fa-exclamation-circle text-danger fa-3x mb-3"></i>
           <p class="text-danger">{{ error }}</p>
           <button class="btn btn-outline-primary" @click="fetchMyAgenda">
-            Coba Lagi
+            {{ $t("Try Again") }}
           </button>
         </div>
 
         <!-- Empty State -->
         <div v-else-if="agendaList.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
-          <p class="text-muted">Anda belum mendaftar agenda apapun.</p>
+          <p class="text-muted">
+            {{ $t("You have not registered for any events yet") }}
+          </p>
           <router-link to="/list-agenda" class="btn btn-primary">
-            Lihat Daftar Agenda
+            {{ $t("View Events List") }}
           </router-link>
         </div>
 
@@ -95,10 +97,12 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import AgendaCard from "@/components/base/default/agendaCard.vue";
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
 
 const router = useRouter();
+const { t, locale } = useI18n();
 
 // State
 const agendaList = ref([]);
@@ -139,7 +143,6 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-// Helper function to strip HTML tags for description
 const stripHtml = (html) => {
   if (!html) return "";
   const tmp = document.createElement("div");
@@ -152,18 +155,31 @@ const mapAgendaToCard = (item) => {
   const agenda = item.events || item;
   const category = item["event-categories"];
   const agendaId = agenda.id_agenda || agenda.idagenda;
+  const isEnglish = locale.value === "en";
 
   return {
     id: agendaId,
     image: agenda.poster || defaultPosterUrl,
-    tag1:
-      category?.nama_kategori_agenda || category?.namakategoriagenda || "Umum",
+    tag1: isEnglish
+      ? category?.nama_kategori_agenda_en ||
+        category?.namakategoriagenda_en ||
+        category?.nama_kategori_agenda ||
+        category?.namakategoriagenda ||
+        "General"
+      : category?.nama_kategori_agenda ||
+        category?.namakategoriagenda ||
+        "Umum",
     registration_deadline: agenda.tanggal_batas_pendaftaran,
     implementation_date: agenda.tanggal_pelaksanaan,
     place: agenda.tempat_pelaksanaan || "-",
-    title: agenda.judul || "Tanpa Judul",
-    desc: stripHtml(agenda.konten),
+    title: isEnglish
+      ? agenda.judul_en || agenda.judul || "Untitled"
+      : agenda.judul || "Tanpa Judul",
+    desc: isEnglish
+      ? stripHtml(agenda.konten_en || agenda.konten)
+      : stripHtml(agenda.konten),
     students: registrantCounts.value[agendaId] || 0,
+    locale: locale.value,
   };
 };
 
@@ -174,7 +190,7 @@ const fetchMyAgenda = async () => {
 
   const userDataString = localStorage.getItem("userData");
   if (!userDataString) {
-    error.value = "Silakan login terlebih dahulu.";
+    error.value = t("Please login first");
     isLoading.value = false;
     return;
   }
@@ -183,7 +199,7 @@ const fetchMyAgenda = async () => {
   const userId = userData?.data?.[0]?.id_pengguna;
 
   if (!userId) {
-    error.value = "Data pengguna tidak ditemukan. Silakan login ulang.";
+    error.value = t("User data not found. Please login again");
     isLoading.value = false;
     return;
   }
@@ -211,7 +227,7 @@ const fetchMyAgenda = async () => {
     await fetchRegistrantCounts();
   } catch (err) {
     console.error("Error fetching my agenda:", err);
-    error.value = "Gagal memuat agenda Anda. Silakan coba lagi.";
+    error.value = t("Failed to load your events. Please try again");
   } finally {
     isLoading.value = false;
   }
@@ -255,6 +271,12 @@ onMounted(() => {
   fetchMyAgenda();
 });
 </script>
+
+<style scoped>
+.badge {
+  font-size: 12px;
+}
+</style>
 
 <style scoped>
 .badge {

@@ -2876,7 +2876,7 @@
       left: 0;
       width: 100%;
       height: 300px;
-      background-image: $gradient-bg-primary;
+      background-color: $primary-color;
     }
 
     .card {
@@ -2913,8 +2913,6 @@
     }
 
     .page-body-wrapper {
-      background-image: url(../images/other-images/boxbg.jpg);
-      background-blend-mode: overlay;
       background-color: rgba($white, 0.5);
 
       .sidebar-wrapper {
@@ -3304,7 +3302,7 @@
         left: 0;
         width: 100%;
         height: 200px;
-        background: $gradient-bg-primary;
+        background-color: $primary-color;
       }
       .toggle-sidebar {
         color: rgba($white, 0.8);
@@ -3475,6 +3473,32 @@
     i {
       font-size: 20px;
     }
+  }
+}
+
+// Custom active sidebar link with light background
+.sidebar-link.active,
+.router-link-active.router-link-exact-active.sidebar-link.active {
+  background-color: rgba($primary-color, 0.12) !important;
+  
+  span {
+    color: $primary-color !important;
+  }
+  
+  svg {
+    stroke: $primary-color !important;
+    
+    &.stroke-icon {
+      stroke: $primary-color !important;
+    }
+    
+    &.fill-icon {
+      fill: $primary-color !important;
+    }
+  }
+  
+  .according-menu i {
+    color: $primary-color !important;
   }
 }
 

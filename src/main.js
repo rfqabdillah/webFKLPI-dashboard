@@ -6,10 +6,8 @@ import 'bootstrap/dist/js/bootstrap.bundle'
 import '@/assets/scss/app.scss'
 import VueFeather from 'vue-feather';
 import { createI18n } from 'vue-i18n'
+import id from './locales/id.json';
 import en from './locales/en.json';
-import pt from './locales/pt.json';
-import fr from './locales/fr.json';
-import es from './locales/es.json';
 import { defaultLocale, localeOptions } from './constants/config';
 import Breadcrumbs from './components/bread_crumbs';
 import VueSweetalert2 from 'vue-sweetalert2';
@@ -26,11 +24,10 @@ import Lightbox from 'vue-easy-lightbox'
 const locale = (localStorage.getItem('currentLanguage') && localeOptions.filter(x => x.id === localStorage.getItem('currentLanguage')).length > 0) ? localStorage.getItem('currentLanguage') : defaultLocale;
 const i18n = createI18n({
   locale: locale,
+  fallbackLocale: 'en',
   messages: {
-    English: en,
-    Español: es,
-    Français: fr,   
-    Português: pt,
-    }
-  });
+    id: id,
+    en: en,
+  }
+});
 createApp(App).use(router).use(store).use(i18n).use(VueSweetalert2).use(Vue3Toasity).use(Toast).use(Lightbox).component(VueFeather.name, VueFeather).component('Breadcrumbs', Breadcrumbs).mount('#app')

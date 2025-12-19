@@ -44,13 +44,35 @@
             />
           </div>
 
-          <div v-show="currentStepKey === 'unitKerja'">
+          <div v-if="!isNonAsn" v-show="currentStepKey === 'unitKerja'">
             <Step2UnitKerja
               ref="step2Ref"
               v-model="wizardState.unitKerja"
               :currentUserId="currentUserId"
               @validation-change="
                 (valid) => (stepValidations.unitKerja = valid)
+              "
+            />
+          </div>
+
+          <div v-if="isNonAsn" v-show="currentStepKey === 'perusahaan'">
+            <StepPerusahaan
+              ref="stepPerusahaanRef"
+              v-model="wizardState.perusahaan"
+              :currentUserId="currentUserId"
+              @validation-change="
+                (valid) => (stepValidations.perusahaan = valid)
+              "
+            />
+          </div>
+
+          <div v-show="currentStepKey === 'pekerjaan'">
+            <StepPekerjaan
+              ref="stepPekerjaanRef"
+              v-model="wizardState.pekerjaan"
+              :currentUserId="currentUserId"
+              @validation-change="
+                (valid) => (stepValidations.pekerjaan = valid)
               "
             />
           </div>
@@ -118,17 +140,20 @@
           @click="prevStep"
           :disabled="isLoading"
         >
-          <i class="fa fa-arrow-left me-1"></i> Sebelumnya
+          <i class="fa fa-arrow-left me-1"></i>
+          {{ t("ProfileSteps.Modal.Buttons.Previous") }}
         </button>
 
         <button
           v-if="currentStepIndex < filteredSteps.length - 1"
           type="button"
-          class="btn btn-primary"
+          class="btn text-white"
+          style="background-color: #0d6efd"
           @click="nextStep"
           :disabled="isLoading"
         >
-          Selanjutnya <i class="fa fa-arrow-right ms-1"></i>
+          {{ t("ProfileSteps.Modal.Buttons.Next") }}
+          <i class="fa fa-arrow-right ms-1"></i>
         </button>
 
         <button
@@ -145,7 +170,11 @@
             aria-hidden="true"
           ></span>
           <i v-else class="fa fa-check me-1"></i>
-          {{ isLoading ? "Menyimpan..." : "Selesai" }}
+          {{
+            isLoading
+              ? t("ProfileSteps.Modal.Buttons.Saving")
+              : t("ProfileSteps.Modal.Buttons.Finish")
+          }}
         </button>
       </div>
     </div>
@@ -153,11 +182,14 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
 import { ref, reactive, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
 
 import Step1Biodata from "./steps/Step1Biodata.vue";
 import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
+import StepPerusahaan from "./steps/StepPerusahaan.vue";
+import StepPekerjaan from "./steps/StepPekerjaan.vue";
 import Step3Jabatan from "./steps/Step3Jabatan.vue";
 import Step4Pangkat from "./steps/Step4Pangkat.vue";
 import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
@@ -189,6 +221,14 @@ import {
   addUserAchievement,
   updateUserAchievement,
 } from "@/services/general/personnel/userAchievments";
+import {
+  addUserWorkExperience,
+  updateUserWorkExperience,
+} from "@/services/general/personnel/userWorkExperiences";
+import {
+  addUserCompany,
+  updateUserCompany,
+} from "@/services/general/personnel/userCompanies";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
@@ -197,52 +237,65 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "save-successful"]);
 const toast = useToast();
+const { t } = useI18n();
 
 // === Steps Configuration ===
-const allSteps = [
+const allSteps = computed(() => [
   {
     key: "biodata",
-    title: "Biodata",
+    title: t("ProfileSteps.Modal.Steps.Biodata"),
     icon: "fa-solid fa-id-card",
     asnOnly: false,
   },
   {
     key: "unitKerja",
-    title: "Unit Kerja",
+    title: t("ProfileSteps.Modal.Steps.WorkUnit"),
     icon: "fa-solid fa-building-user",
+    asnOnly: true,
+  },
+  {
+    key: "perusahaan",
+    title: t("ProfileSteps.Modal.Steps.Company"),
+    icon: "fa-solid fa-briefcase",
+    nonAsnOnly: true,
+  },
+  {
+    key: "pekerjaan",
+    title: t("ProfileSteps.Modal.Steps.Job"),
+    icon: "fa-solid fa-briefcase",
     asnOnly: false,
   },
   {
     key: "jabatan",
-    title: "Jabatan",
+    title: t("ProfileSteps.Modal.Steps.Position"),
     icon: "fa-solid fa-user-tie",
     asnOnly: true,
   },
   {
     key: "pangkat",
-    title: "Pangkat",
+    title: t("ProfileSteps.Modal.Steps.Rank"),
     icon: "fa-solid fa-ranking-star",
     asnOnly: true,
   },
   {
     key: "pendidikan",
-    title: "Pendidikan",
+    title: t("ProfileSteps.Modal.Steps.Education"),
     icon: "fa-solid fa-graduation-cap",
     asnOnly: false,
   },
   {
     key: "pelatihan",
-    title: "Pelatihan",
+    title: t("ProfileSteps.Modal.Steps.Training"),
     icon: "fa-solid fa-chalkboard-user",
     asnOnly: false,
   },
   {
     key: "prestasi",
-    title: "Prestasi",
+    title: t("ProfileSteps.Modal.Steps.Achievement"),
     icon: "fa-solid fa-award",
     asnOnly: false,
   },
-];
+]);
 
 // State for user type
 const selectedUserTypeName = ref("");
@@ -250,6 +303,8 @@ const selectedUserTypeName = ref("");
 // === Refs ===
 const step1Ref = ref(null);
 const step2Ref = ref(null);
+const stepPerusahaanRef = ref(null);
+const stepPekerjaanRef = ref(null);
 const step3Ref = ref(null);
 const step4Ref = ref(null);
 const step5Ref = ref(null);
@@ -266,6 +321,8 @@ const createdUserId = ref(null);
 const stepValidations = reactive({
   biodata: false,
   unitKerja: true,
+  perusahaan: true,
+  pekerjaan: true,
   jabatan: true,
   pangkat: true,
   pendidikan: true,
@@ -296,12 +353,14 @@ const wizardState = reactive({
       tempatlahir: "",
       tanggallahir: "",
       foto: null,
-      status: "Aktif",
+      status: t("ProfileSteps.WorkUnit.Active"),
     },
     photoFile: null,
     isPhotoRemoved: false,
   },
   unitKerja: { list: [] },
+  perusahaan: { list: [] },
+  pekerjaan: { list: [] },
   jabatan: { list: [] },
   pangkat: { list: [] },
   pendidikan: { list: [] },
@@ -309,14 +368,24 @@ const wizardState = reactive({
   prestasi: { list: [] },
 });
 
-const stepLoaded = reactive([false, false, false, false, false, false, false]);
+const stepLoaded = reactive([
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+]);
 
 // === Computed ===
 const isEditMode = computed(() => !!props.fieldToEdit);
 const modalTitle = computed(() =>
   isEditMode.value
-    ? `Edit Data ${props.entityName}`
-    : `Tambah Data ${props.entityName}`
+    ? t("ProfileSteps.Modal.EditTitle", { entity: props.entityName })
+    : t("ProfileSteps.Modal.AddTitle", { entity: props.entityName })
 );
 
 const currentUserId = computed(() => {
@@ -334,9 +403,9 @@ const isNonAsn = computed(() => {
 
 const filteredSteps = computed(() => {
   if (isNonAsn.value) {
-    return allSteps.filter((step) => !step.asnOnly);
+    return allSteps.value.filter((step) => !step.asnOnly);
   }
-  return allSteps;
+  return allSteps.value.filter((step) => !step.nonAsnOnly);
 });
 
 const currentStepKey = computed(() => {
@@ -352,6 +421,7 @@ const canProceed = computed(() => {
 function resetWizardState() {
   // Reset all list data
   wizardState.unitKerja.list = [];
+  wizardState.perusahaan.list = [];
   wizardState.jabatan.list = [];
   wizardState.pangkat.list = [];
   wizardState.pendidikan.list = [];
@@ -419,6 +489,8 @@ async function loadStepData(stepIndex) {
   const currentKey = filteredSteps.value[stepIndex]?.key;
   const stepRefMap = {
     unitKerja: step2Ref,
+    perusahaan: stepPerusahaanRef,
+    pekerjaan: stepPekerjaanRef,
     jabatan: step3Ref,
     pangkat: step4Ref,
     pendidikan: step5Ref,
@@ -433,7 +505,9 @@ async function loadStepData(stepIndex) {
       stepLoaded[stepIndex] = true;
     } catch (error) {
       console.error(`Error loading data for step ${currentKey}:`, error);
-      toast.error(`Gagal memuat data: ${error.message}`);
+      toast.error(
+        t("ProfileSteps.Modal.Messages.LoadError", { message: error.message })
+      );
     }
   }
 }
@@ -443,6 +517,8 @@ async function nextStep() {
   const stepRefMap = {
     biodata: step1Ref,
     unitKerja: step2Ref,
+    perusahaan: stepPerusahaanRef,
+    pekerjaan: stepPekerjaanRef,
     jabatan: step3Ref,
     pangkat: step4Ref,
     pendidikan: step5Ref,
@@ -459,7 +535,7 @@ async function nextStep() {
   }
 
   if (!canProceed.value) {
-    toast.warning("Mohon lengkapi data yang diperlukan");
+    toast.warning(t("ProfileSteps.Modal.Messages.CompleteRequired"));
     return;
   }
 
@@ -495,14 +571,20 @@ async function submitForm() {
     } else if (wizardState.biodata.mode === "new") {
       userId = await saveBiodataCreate();
     } else {
-      throw new Error("Mode biodata tidak valid");
+      throw new Error(t("ProfileSteps.Modal.Messages.InvalidMode"));
     }
 
-    if (!userId) throw new Error("Gagal mendapatkan ID pengguna");
+    if (!userId) throw new Error(t("ProfileSteps.Modal.Messages.UserIdError"));
 
     validateSingleActiveStatus();
 
-    await saveUnitKerja(userId);
+    // Save based on user type
+    if (isNonAsn.value) {
+      await savePerusahaan(userId);
+    } else {
+      await saveUnitKerja(userId);
+    }
+    await savePekerjaan(userId);
     // Only save Jabatan and Pangkat for ASN users
     if (!isNonAsn.value) {
       await saveJabatan(userId);
@@ -512,13 +594,15 @@ async function submitForm() {
     await savePelatihan(userId);
     await savePrestasi(userId);
 
-    toast.success("Data berhasil disimpan.");
+    toast.success(t("ProfileSteps.Modal.Messages.SaveSuccess"));
     emit("save-successful");
     closeModal();
   } catch (error) {
     console.error("Error submitting form:", error);
     errorMessage.value =
-      error.response?.data?.message || error.message || "Gagal menyimpan data.";
+      error.response?.data?.message ||
+      error.message ||
+      t("ProfileSteps.Modal.Messages.SaveError");
     toast.error(errorMessage.value);
   } finally {
     isLoading.value = false;
@@ -527,21 +611,46 @@ async function submitForm() {
 
 function validateSingleActiveStatus() {
   const categories = [
-    { name: "Unit Kerja", data: wizardState.unitKerja.data },
-    { name: "Jabatan", data: wizardState.jabatan.data },
-    { name: "Pangkat", data: wizardState.pangkat.data },
-    { name: "Pelatihan", data: wizardState.pelatihan.data },
-    { name: "Prestasi", data: wizardState.prestasi.data },
+    {
+      name: t("ProfileSteps.Modal.Steps.WorkUnit"),
+      data: wizardState.unitKerja.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Company"),
+      data: wizardState.perusahaan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Job"),
+      data: wizardState.pekerjaan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Position"),
+      data: wizardState.jabatan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Rank"),
+      data: wizardState.pangkat.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Training"),
+      data: wizardState.pelatihan.list,
+    },
+    {
+      name: t("ProfileSteps.Modal.Steps.Achievement"),
+      data: wizardState.prestasi.list,
+    },
   ];
 
   for (const category of categories) {
     if (!category.data) continue;
     const activeCount = category.data.filter(
-      (item) => item.status === "Aktif"
+      (item) => item.status === t("ProfileSteps.WorkUnit.Active")
     ).length;
     if (activeCount > 1) {
       throw new Error(
-        `Kategori ${category.name} hanya boleh memiliki satu data dengan status aktif.`
+        t("ProfileSteps.Modal.Messages.SingleActiveError", {
+          category: category.name,
+        })
       );
     }
   }
@@ -557,6 +666,7 @@ function createBiodataFormData() {
     "idlevel",
     "idjeniskelamin",
     "idjenispengguna",
+    "idjenispegawai",
     "email",
     "nama",
     "telp",
@@ -570,6 +680,7 @@ function createBiodataFormData() {
     "tempatlahir",
     "tanggallahir",
     "status",
+    "minat",
     "idpenggunajenjang",
     "idpenggunapangkat",
     "idpenggunapendidikan",
@@ -652,6 +763,30 @@ async function saveUnitKerja(userId) {
       await updateUserWorkUnit(item.idpenggunaunitkerja, formData);
     } else {
       await addUserWorkUnit(formData);
+    }
+  }
+}
+
+async function savePerusahaan(userId) {
+  for (const item of wizardState.perusahaan.list) {
+    const formData = createFormData(item, null, userId);
+    if (item.idpenggunaperusahaan) {
+      formData.append("_method", "PUT");
+      await updateUserCompany(item.idpenggunaperusahaan, formData);
+    } else {
+      await addUserCompany(formData);
+    }
+  }
+}
+
+async function savePekerjaan(userId) {
+  for (const item of wizardState.pekerjaan.list) {
+    const formData = createFormData(item, null, userId);
+    if (item.idpenggunapekerjaan) {
+      formData.append("_method", "PUT");
+      await updateUserWorkExperience(item.idpenggunapekerjaan, formData);
+    } else {
+      await addUserWorkExperience(formData);
     }
   }
 }

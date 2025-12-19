@@ -2,7 +2,7 @@
   <div class="row">
     <div
       v-for="item in items"
-      :key="item.idpenggunapelatihan"
+      :key="item.idpenggunaperusahaan"
       class="col-12"
       style="margin-bottom: 5px"
     >
@@ -15,7 +15,7 @@
                 class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
                 style="width: 50px; height: 50px"
               >
-                <i class="fa fa-chalkboard-teacher fa-lg"></i>
+                <i class="fa fa-briefcase fa-lg"></i>
               </div>
             </div>
 
@@ -24,23 +24,37 @@
               <div class="d-flex justify-content-between align-items-start">
                 <div>
                   <h6 class="fw-bold text-dark mb-1">
-                    {{ item.namapelatihan }}
+                    {{ item.namaperusahaan || "-" }}
                   </h6>
-
+                  <div v-if="item.alamat" class="text-muted small mb-2">
+                    <i class="fa fa-map-marker me-1"></i>
+                    {{ item.alamat }}
+                  </div>
                   <div class="text-muted small mb-2">
-                    <i class="fa fa-user-tie me-1"></i>
-                    {{ item.namapenyelenggarapelatihan || "-" }}
+                    <span class="me-3">
+                      <i class="fa fa-calendar-check me-1 text-success"></i>
+                      {{ $t("Start") }}:
+                      {{ formatDate(item.tglmulaiperusahaan, locale) }}
+                    </span>
+                    <span>
+                      <i class="fa fa-calendar-times me-1 text-danger"></i>
+                      {{ $t("End") }}:
+                      {{
+                        formatDate(item.tglselesaiperusahaan, locale) ||
+                        $t("Now")
+                      }}
+                    </span>
                   </div>
                 </div>
                 <span
                   class="badge rounded-pill px-3 py-1"
                   :class="
-                    item.status === 'Aktif'
+                    item.statusperusahaan === 'Aktif'
                       ? 'bg-soft-success text-success'
                       : 'bg-soft-secondary text-secondary'
                   "
                 >
-                  {{ item.status }}
+                  {{ item.statusperusahaan }}
                 </span>
               </div>
             </div>
@@ -58,7 +72,7 @@
         </div>
         <div class="alert-content">
           <span class="fw-bold d-block" style="color: #ff5b57">
-            {{ $t("Training Data Not Found") }}
+            {{ $t("Company Data Not Found") }}
           </span>
         </div>
       </div>
@@ -68,12 +82,20 @@
 
 <script setup>
 import { defineProps } from "vue";
+import { useI18n } from "vue-i18n";
+import { formatDate } from "@/utils/formatDate";
+
+const { locale } = useI18n();
 
 const props = defineProps({
   items: {
     type: Array,
     required: true,
     default: () => [],
+  },
+  user: {
+    type: Object,
+    default: () => ({}),
   },
 });
 </script>
