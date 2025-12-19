@@ -547,6 +547,19 @@
         "SingleActiveError": "Category {category} can only have one active record.",
         "InvalidMode": "Invalid biodata mode",
         "UserIdError": "Failed to get user ID"
+      },
+      "UserTypeSelection": {
+        "Title": "Select User Type",
+        "Subtitle": "Please select user type to continue",
+        "Loading": "Loading user types...",
+        "EmptyState": "No user types available",
+        "LoadError": "Failed to load user types",
+        "ToastLoadError": "Failed to load user type data",
+        "Descriptions": {
+          "ASN": "State Civil Apparatus with official NIP and rank",
+          "NonASN": "Non-ASN employees such as honorary, contract, or intern",
+          "Other": "Other user types"
+        }
       }
     }
   }

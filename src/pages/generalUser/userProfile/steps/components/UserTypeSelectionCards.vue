@@ -2,10 +2,11 @@
   <div class="user-type-selection">
     <div class="text-center mb-3">
       <h6 class="fw-bold text-dark mb-1">
-        <i class="fa fa-user-tag me-2"></i>Pilih Jenis Pengguna
+        <i class="fa fa-user-tag me-2"></i
+        >{{ t("ProfileSteps.Modal.UserTypeSelection.Title") }}
       </h6>
       <p class="text-muted small mb-0">
-        Silakan pilih jenis pengguna untuk melanjutkan
+        {{ t("ProfileSteps.Modal.UserTypeSelection.Subtitle") }}
       </p>
     </div>
 
@@ -14,7 +15,9 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2 text-muted">Memuat jenis pengguna...</p>
+      <p class="mt-2 text-muted">
+        {{ t("ProfileSteps.Modal.UserTypeSelection.Loading") }}
+      </p>
     </div>
 
     <!-- Error State -->
@@ -22,7 +25,7 @@
       <i class="fa fa-exclamation-triangle text-warning fa-3x mb-3"></i>
       <p class="text-muted">{{ error }}</p>
       <button class="btn btn-outline-primary btn-sm" @click="fetchUserTypes">
-        <i class="fa fa-refresh me-1"></i>Coba Lagi
+        <i class="fa fa-refresh me-1"></i>{{ t("Try Again") }}
       </button>
     </div>
 
@@ -65,9 +68,11 @@
 import { ref, onMounted } from "vue";
 import { getUserTypes } from "@/services/referensi/userTypes";
 import { useToast } from "vue-toastification";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits(["select-user-type"]);
 const toast = useToast();
+const { t } = useI18n();
 
 const userTypes = ref([]);
 const isLoading = ref(false);
@@ -103,12 +108,12 @@ async function fetchUserTypes() {
     }
 
     if (userTypes.value.length === 0) {
-      error.value = "Tidak ada jenis pengguna yang tersedia";
+      error.value = t("ProfileSteps.Modal.UserTypeSelection.EmptyState");
     }
   } catch (err) {
     console.error("Error fetching user types:", err);
-    error.value = "Gagal memuat jenis pengguna";
-    toast.error("Gagal memuat data jenis pengguna");
+    error.value = t("ProfileSteps.Modal.UserTypeSelection.LoadError");
+    toast.error(t("ProfileSteps.Modal.UserTypeSelection.ToastLoadError"));
   } finally {
     isLoading.value = false;
   }
@@ -141,11 +146,11 @@ function getIconClass(name) {
 function getDescription(name) {
   const nameLower = name?.toLowerCase() || "";
   if (nameLower.includes("asn") && !nameLower.includes("non")) {
-    return "Aparatur Sipil Negara dengan NIP dan kepangkatan resmi";
+    return t("ProfileSteps.Modal.UserTypeSelection.Descriptions.ASN");
   } else if (nameLower.includes("non")) {
-    return "Pegawai non-ASN seperti honorer, kontrak, atau magang";
+    return t("ProfileSteps.Modal.UserTypeSelection.Descriptions.NonASN");
   }
-  return "Jenis pengguna lainnya";
+  return t("ProfileSteps.Modal.UserTypeSelection.Descriptions.Other");
 }
 </script>
 

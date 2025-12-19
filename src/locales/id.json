@@ -547,6 +547,19 @@
         "SingleActiveError": "Kategori {category} hanya boleh memiliki satu data dengan status aktif.",
         "InvalidMode": "Mode biodata tidak valid",
         "UserIdError": "Gagal mendapatkan ID pengguna"
+      },
+      "UserTypeSelection": {
+        "Title": "Pilih Jenis Pengguna",
+        "Subtitle": "Silakan pilih jenis pengguna untuk melanjutkan",
+        "Loading": "Memuat jenis pengguna...",
+        "EmptyState": "Tidak ada jenis pengguna yang tersedia",
+        "LoadError": "Gagal memuat jenis pengguna",
+        "ToastLoadError": "Gagal memuat data jenis pengguna",
+        "Descriptions": {
+          "ASN": "Aparatur Sipil Negara dengan NIP dan kepangkatan resmi",
+          "NonASN": "Pegawai non-ASN seperti honorer, kontrak, atau magang",
+          "Other": "Jenis pengguna lainnya"
+        }
       }
     }
   }
