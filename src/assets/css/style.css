@@ -22982,7 +22982,9 @@ ul.dot-group li {
   left: 50%;
   margin-left: -30px;
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   position: absolute;
   top: 0;
   border-radius: 4px;

@@ -31,31 +31,35 @@ export default {
   },
   data() {
     return {
-      layoutWidth: "1320px", // default for Los Angeles
+      pageBodyWidth: null,
     };
   },
   computed: {
     pageTitleStyle() {
+      if (this.pageBodyWidth) {
+        return {
+          width: `${this.pageBodyWidth}px`,
+          maxWidth: `${this.pageBodyWidth}px`,
+        };
+      }
       return {
-        width: this.layoutWidth,
-        maxWidth: this.layoutWidth,
+        width: "100%",
+        maxWidth: "100%",
       };
     },
   },
   mounted() {
-    this.detectLayout();
+    this.updateWidth();
+    window.addEventListener("resize", this.updateWidth);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateWidth);
   },
   methods: {
-    detectLayout() {
-      const pageWrapper = document.querySelector(".page-wrapper");
-      if (pageWrapper) {
-        if (pageWrapper.classList.contains("compact-wrapper")) {
-          // Dubai layout
-          this.layoutWidth = "1430px";
-        } else if (pageWrapper.classList.contains("horizontal-wrapper")) {
-          // Los Angeles layout
-          this.layoutWidth = "1320px";
-        }
+    updateWidth() {
+      const pageBody = document.querySelector(".page-body");
+      if (pageBody) {
+        this.pageBodyWidth = pageBody.offsetWidth;
       }
     },
   },
