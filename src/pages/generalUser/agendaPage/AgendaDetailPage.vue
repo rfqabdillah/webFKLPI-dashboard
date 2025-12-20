@@ -562,14 +562,14 @@ const getCardClass = (statusId) => {
 const getStatusMessage = (statusId) => {
   switch (statusId) {
     case STATUS_SELESAI_ID:
-      return "Terima kasih telah menghadiri agenda ini!";
+      return t("Status Message Completed");
     case STATUS_DITOLAK_ID:
-      return "Maaf, pendaftaran Anda tidak dapat diproses.";
+      return t("Status Message Rejected");
     case STATUS_DITERIMA_ID:
-      return "Pendaftaran Anda telah diterima. Silakan hadir sesuai jadwal.";
+      return t("Status Message Accepted");
     case STATUS_TERDAFTAR_ID:
     default:
-      return "Pendaftaran Anda sedang dalam proses verifikasi.";
+      return t("Status Message Registered");
   }
 };
 
