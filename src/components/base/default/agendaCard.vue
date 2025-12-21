@@ -1,11 +1,14 @@
 <template>
   <div
     class="card agenda-card h-100 shadow-sm border-0"
-    @click="$emit('click')"
+    @click.self="$emit('click')"
     style="cursor: pointer"
   >
     <!-- Image Section -->
-    <div class="card-img-wrapper position-relative overflow-hidden">
+    <div
+      class="card-img-wrapper position-relative overflow-hidden"
+      @click="$emit('click')"
+    >
       <img
         :src="props.item.image"
         :alt="props.item.title"
@@ -24,7 +27,7 @@
     </div>
 
     <!-- Card Body -->
-    <div class="card-body d-flex flex-column">
+    <div class="card-body d-flex flex-column" @click="$emit('click')">
       <!-- Date & Participants Info -->
       <div class="d-flex flex-wrap gap-3 mb-3 text-muted agenda-info">
         <span class="d-flex align-items-center">
@@ -67,10 +70,41 @@
         </div>
       </div>
 
+      <!-- Status Bar (optional) - Full width bar below location -->
+      <div
+        v-if="showStatus && props.item.statusId"
+        class="status-bar mb-3"
+        :class="getStatusBarClass()"
+      >
+        <i :class="getStatusIcon()" class="me-2"></i>
+        <span class="status-label">{{ $t("Your Status") }}:</span>
+        <span class="status-text">{{ getStatusLabel() }}</span>
+      </div>
+
       <!-- Footer -->
       <div
-        class="d-flex justify-content-end align-items-center pt-3 border-top"
+        class="d-flex align-items-center pt-3 border-top mt-auto justify-content-between"
       >
+        <!-- Cancel Button (optional) - LEFT side -->
+        <div>
+          <button
+            v-if="showCancelButton && canCancel"
+            class="btn btn-outline-danger btn-sm"
+            @click.stop="handleCancelClick"
+            :disabled="isCancelling"
+          >
+            <span v-if="isCancelling">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              {{ $t("Cancelling") }}...
+            </span>
+            <span v-else>
+              <i class="fa fa-times-circle me-1"></i>
+              {{ $t("Cancel") }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Read More Button - RIGHT side -->
         <span class="btn-selengkapnya">
           {{ $t("Read More") }} <i class="fa fa-arrow-right ms-1"></i>
         </span>
@@ -80,11 +114,20 @@
 </template>
 
 <script setup>
-import { defineEmits } from "vue";
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { formatDate } from "@/utils/formatDate";
 
-// Emit event when card is clicked
-defineEmits(["click"]);
+const { t, locale } = useI18n();
+
+// Status constants
+const STATUS_TERDAFTAR_ID = "e194d29a-9bcc-42d6-8ed5-a35f84c6cfea";
+const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
+const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
+const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
+
+// Emit events
+const emit = defineEmits(["click", "cancel"]);
 
 // Props from parent component
 const props = defineProps({
@@ -104,24 +147,89 @@ const props = defineProps({
       author: "",
       students: 0,
       locale: "id",
+      // Optional status fields
+      registrationId: null,
+      statusId: null,
+      statusName: "",
+      statusNameEn: "",
     }),
+  },
+  showStatus: {
+    type: Boolean,
+    default: false,
+  },
+  showCancelButton: {
+    type: Boolean,
+    default: false,
+  },
+  isCancelling: {
+    type: Boolean,
+    default: false,
   },
 });
 
-// Default fallback images
+// Default fallback image
 const defaultPosterUrl =
   "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
-const defaultAvatarUrl = "https://placehold.co/40x40/E0E7FF/6366F1?text=User";
 
-// Use imported formatDate utility
+// Computed: Can cancel registration (only if Terdaftar/Registered)
+const canCancel = computed(() => {
+  const statusId = props.item.statusId;
+  return statusId === STATUS_TERDAFTAR_ID;
+});
+
+// Get status label based on locale
+const getStatusLabel = () => {
+  if (locale.value === "en" && props.item.statusNameEn) {
+    return props.item.statusNameEn;
+  }
+  return props.item.statusName || t("Registered");
+};
+
+// Get status icon based on status
+const getStatusIcon = () => {
+  const statusId = props.item.statusId;
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "fa fa-check-circle"; // Completed
+    case STATUS_DITOLAK_ID:
+      return "fa fa-times-circle"; // Rejected
+    case STATUS_DITERIMA_ID:
+      return "fa fa-check"; // Accepted
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "fa fa-clock-o"; // Registered/Pending
+  }
+};
+
+// Get status bar class based on status
+const getStatusBarClass = () => {
+  const statusId = props.item.statusId;
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "status-bar-purple"; // Completed - Purple
+    case STATUS_DITOLAK_ID:
+      return "status-bar-danger"; // Rejected - Red
+    case STATUS_DITERIMA_ID:
+      return "status-bar-success"; // Accepted - Green
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "status-bar-info"; // Registered - Blue
+  }
+};
 
 // Handle image loading error
 const handleImageError = (event) => {
   event.target.src = defaultPosterUrl;
 };
 
-const handleAvatarError = (event) => {
-  event.target.src = defaultAvatarUrl;
+// Handle cancel click
+const handleCancelClick = () => {
+  emit("cancel", {
+    registrationId: props.item.registrationId,
+    agendaId: props.item.id,
+    title: props.item.title,
+  });
 };
 </script>
 
@@ -167,28 +275,6 @@ const handleAvatarError = (event) => {
   font-size: 14px;
 }
 
-.agenda-desc {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.5;
-  font-size: 14px;
-}
-
-.badge.bg-primary {
-  background-color: #15406ae6 !important;
-  font-weight: 500;
-  font-size: 0.75rem;
-}
-
-/* Override text-primary color */
-.text-primary {
-  color: #15406a !important;
-}
-
 .btn-selengkapnya {
   background-color: rgba(21, 64, 106, 0.1);
   color: #15406a;
@@ -203,5 +289,57 @@ const handleAvatarError = (event) => {
 .btn-selengkapnya:hover {
   background-color: #15406a;
   color: white;
+}
+
+/* Cancel Button Style */
+.btn-outline-danger.btn-sm {
+  font-size: 13px;
+}
+
+/* Status Bar Styles */
+.status-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-bar i {
+  font-size: 16px;
+}
+
+.status-bar .status-text {
+  font-weight: 600;
+}
+
+.status-bar .status-label {
+  margin-right: 4px;
+  font-weight: 400;
+}
+
+.status-bar-info {
+  background-color: rgba(23, 162, 184, 0.12);
+  color: #117a8b;
+  border-left: 4px solid #17a2b8;
+}
+
+.status-bar-success {
+  background-color: rgba(40, 167, 69, 0.12);
+  color: #1e7e34;
+  border-left: 4px solid #28a745;
+}
+
+.status-bar-danger {
+  background-color: rgba(220, 53, 69, 0.12);
+  color: #bd2130;
+  border-left: 4px solid #dc3545;
+}
+
+.status-bar-purple {
+  background-color: rgba(111, 66, 193, 0.12);
+  color: #5a32a3;
+  border-left: 4px solid #6f42c1;
 }
 </style>

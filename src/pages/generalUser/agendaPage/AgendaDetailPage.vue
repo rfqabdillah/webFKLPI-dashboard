@@ -141,12 +141,23 @@
 
             <!-- Action Buttons -->
             <div class="mt-4 d-flex gap-3 flex-wrap">
+              <!-- Deadline Passed Info -->
+              <div
+                v-if="isDeadlinePassed && !isRegistered"
+                class="alert alert-warning w-100 mb-2"
+              >
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                {{ $t("Registration deadline has passed") }}
+              </div>
+
               <!-- Already Registered - Show Cancel Button -->
               <template v-if="isRegistered">
                 <button class="btn btn-success px-4" disabled>
                   <i class="fa fa-check-circle me-2"></i> {{ $t("Registered") }}
                 </button>
+                <!-- Cancel Button - Only show if canCancel (status is Terdaftar) -->
                 <button
+                  v-if="canCancel"
                   @click="cancelRegistration"
                   class="btn btn-outline-danger px-4"
                   :disabled="isCancelling"
@@ -165,12 +176,17 @@
               <button
                 v-else
                 @click="registerAgenda"
-                class="btn btn-primary px-4"
-                :disabled="isRegistering"
+                class="btn px-4"
+                :class="isDeadlinePassed ? 'btn-secondary' : 'btn-primary'"
+                :disabled="isRegistering || isDeadlinePassed"
               >
                 <span v-if="isRegistering">
                   <span class="spinner-border spinner-border-sm me-2"></span>
                   {{ $t("Registering") }}...
+                </span>
+                <span v-else-if="isDeadlinePassed">
+                  <i class="fa fa-clock-o me-2"></i>
+                  {{ $t("Registration Closed") }}
                 </span>
                 <span v-else>
                   <i class="fa fa-check-circle me-2"></i>
@@ -194,7 +210,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
@@ -230,6 +246,23 @@ const statusOptions = ref([]);
 
 const defaultPosterUrl =
   "https://placehold.co/800x400/EBF4FF/7F9CF5?text=Agenda";
+
+// Computed: Check if registration deadline has passed
+const isDeadlinePassed = computed(() => {
+  if (!data.value?.registration_deadline) return false;
+
+  const deadline = new Date(data.value.registration_deadline);
+  const today = new Date();
+  // Set time to end of day for deadline
+  deadline.setHours(23, 59, 59, 999);
+
+  return today > deadline;
+});
+
+// Computed: Can cancel registration (only if status is Terdaftar/Registered)
+const canCancel = computed(() => {
+  return registrationStatusId.value === STATUS_TERDAFTAR_ID;
+});
 
 const fetchDetail = async () => {
   isLoading.value = true;
