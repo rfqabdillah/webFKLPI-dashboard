@@ -19,8 +19,8 @@
           </router-link>
         </div>
 
-        <div v-else-if="data" class="row align-items-start">
-          <div class="col-lg-8">
+        <div v-else-if="data" class="row align-items-start detail-layout">
+          <div class="col-main">
             <!-- Back Button -->
             <div class="mb-3">
               <router-link
@@ -200,7 +200,7 @@
           </div>
 
           <!-- Sidebar -->
-          <div class="col-lg-4 mt-4 mt-lg-0 sidebar-column">
+          <div class="col-sidebar mt-4">
             <AgendaDetailPageSidebar />
           </div>
         </div>
@@ -804,15 +804,38 @@ onMounted(async () => {
   color: #4caf50;
 }
 
-/* Sidebar sticky behavior */
-.sidebar-column {
-  align-self: flex-start;
+/* Custom layout for detail page */
+.detail-layout {
+  display: flex;
+  flex-wrap: wrap;
 }
 
-@media (min-width: 992px) {
-  .sidebar-column {
+.col-main {
+  width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+}
+
+.col-sidebar {
+  width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+}
+
+/* On screens >= 1350px, show side by side */
+@media (min-width: 1350px) {
+  .col-main {
+    flex: 0 0 auto;
+    width: 66.666667%;
+  }
+
+  .col-sidebar {
+    flex: 0 0 auto;
+    width: 33.333333%;
+    margin-top: 0 !important;
     position: sticky;
     top: 100px;
+    align-self: flex-start;
   }
 }
 </style>
