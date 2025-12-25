@@ -130,7 +130,7 @@
 
       <!-- Riwayat Pengalaman Pekerjaan -->
       <div class="detail-section">
-        <h4><i class="fa fa-suitcase me-2"></i>Riwayat Pengalaman Kerja</h4>
+        <h4><i class="fa fa-suitcase me-2"></i>Riwayat Pekerjaan</h4>
         <SimpleHistoryTable
           :items="riwayatPekerjaan"
           :columns="pekerjaanColumns"

@@ -326,20 +326,13 @@
           </div>
         </div>
       </div>
-      <!-- Edit Profile Modal -->
-      <UserProfileFormModal
-        v-if="isEditModalOpen"
-        :fieldToEdit="user"
-        entityName="Profil"
-        @close="closeModal"
-        @save-successful="handleSaveSuccessful"
-      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import { getDetailUser } from "@/services/referensi/users";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
@@ -364,11 +357,8 @@ const userEducations = ref([]);
 const userTrainings = ref([]);
 const userAchievements = ref([]);
 
-// Modal
-import UserProfileFormModal from "./UserProfileFormModal.vue";
-
+const router = useRouter();
 const activeTab = ref("pribadi");
-const isEditModalOpen = ref(false);
 const isLoading = ref(true);
 
 const fullName = computed(() => {
@@ -407,16 +397,7 @@ function handleImageError(e) {
 }
 
 function handleEditData() {
-  isEditModalOpen.value = true;
-}
-
-function closeModal() {
-  isEditModalOpen.value = false;
-}
-
-function handleSaveSuccessful() {
-  closeModal();
-  fetchUserProfile();
+  router.push("/account");
 }
 
 async function fetchUserProfile() {

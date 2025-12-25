@@ -2,9 +2,9 @@
   <div class="step-pendidikan">
     <div v-if="isLoading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">{{ $t("Loading") }}...</span>
       </div>
-      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
+      <p class="mt-2 text-muted">{{ $t("Loading") }}...</p>
     </div>
 
     <div v-else>
@@ -12,15 +12,15 @@
         <div>
           <h6 class="mb-1">
             <i class="fa fa-graduation-cap me-2"></i
-            >{{ t("ProfileSteps.Education.Title") }}
+            >{{ $t("ProfileSteps.Education.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            {{ t("ProfileSteps.Education.Subtitle") }}
+            {{ $t("ProfileSteps.Education.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addPendidikan">
           <i class="fa fa-plus me-1"></i>
-          {{ t("ProfileSteps.Education.AddData") }}
+          {{ $t("ProfileSteps.Education.AddData") }}
         </button>
       </div>
 
@@ -30,11 +30,11 @@
       >
         <i class="fa fa-graduation-cap text-muted fa-2x mb-2"></i>
         <p class="text-muted mb-2 small">
-          {{ t("ProfileSteps.Education.EmptyState") }}
+          {{ $t("ProfileSteps.Education.EmptyState") }}
         </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPendidikan">
           <i class="fa fa-plus me-1"></i>
-          {{ t("ProfileSteps.Education.AddEducation") }}
+          {{ $t("ProfileSteps.Education.AddEducation") }}
         </button>
       </div>
 
@@ -51,12 +51,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              {{ t("ProfileSteps.Education.DataHeader") }}
+              {{ $t("ProfileSteps.Education.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePendidikan(index)"
-              :title="t('ProfileSteps.WorkUnit.RemoveData')"
+              :title="$t('ProfileSteps.Education.RemoveData') || $t('Delete')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -65,7 +65,7 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Education.EducationLevel") }}
+                  {{ $t("ProfileSteps.Education.EducationLevel") }}
                   <span class="text-danger">*</span>
                 </label>
                 <select
@@ -78,7 +78,7 @@
                   @blur="validateField(index, 'idjenjangpendidikan')"
                 >
                   <option value="" disabled>
-                    {{ t("ProfileSteps.Education.SelectEducationLevel") }}
+                    {{ $t("ProfileSteps.Education.SelectEducationLevel") }}
                   </option>
                   <option
                     v-for="jenjang in educationLevelOptions"
@@ -95,7 +95,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Education.GraduationYear") }}
+                  {{ $t("ProfileSteps.Education.GraduationYear") }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -115,7 +115,7 @@
 
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Education.Major") }}
+                  {{ $t("ProfileSteps.Education.Major") }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -124,7 +124,7 @@
                   v-model="item.programstudi"
                   :class="{ 'is-invalid': getError(index, 'programstudi') }"
                   required
-                  :placeholder="t('ProfileSteps.Education.MajorPlaceholder')"
+                  :placeholder="$t('ProfileSteps.Education.MajorPlaceholder')"
                   @blur="validateField(index, 'programstudi')"
                 />
                 <div class="invalid-feedback">
@@ -134,7 +134,7 @@
 
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Education.Institution") }}
+                  {{ $t("ProfileSteps.Education.Institution") }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -146,7 +146,7 @@
                   }"
                   required
                   :placeholder="
-                    t('ProfileSteps.Education.InstitutionPlaceholder')
+                    $t('ProfileSteps.Education.InstitutionPlaceholder')
                   "
                   @blur="validateField(index, 'namaperguruantinggi')"
                 />
@@ -158,6 +158,26 @@
           </div>
         </div>
       </transition-group>
+
+      <!-- Save Button -->
+      <div
+        v-if="pendidikanList.length > 0"
+        class="d-flex justify-content-end mt-3"
+      >
+        <button
+          class="btn btn-success save-btn"
+          @click="saveData"
+          :disabled="isSaving"
+        >
+          <span
+            v-if="isSaving"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          ></span>
+          <i v-else class="fa fa-save me-2"></i>
+          {{ isSaving ? $t("Saving") + "..." : $t("Save") + " " + $t("Data") }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -169,10 +189,14 @@ import { useI18n } from "vue-i18n";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
 import {
   getUserEducations,
+  addUserEducation,
+  updateUserEducation,
   deleteUserEducation,
 } from "@/services/general/personnel/userEducation";
 import Swal from "sweetalert2";
 import * as yup from "yup";
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
   modelValue: {
@@ -187,7 +211,6 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
-const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -196,38 +219,74 @@ const pendidikanList = ref([]);
 const formErrors = ref([]);
 
 // === Yup Validation Schema ===
-const validationSchema = yup.object().shape({
-  idjenjangpendidikan: yup
-    .string()
-    .required(t("ProfileSteps.Education.Validation.LevelRequired")),
-  programstudi: yup
-    .string()
-    .required(t("ProfileSteps.Education.Validation.MajorRequired")),
-  namaperguruantinggi: yup
-    .string()
-    .required(t("ProfileSteps.Education.Validation.InstitutionRequired")),
-  tahunlulus: yup
-    .number()
-    .required(t("ProfileSteps.Education.Validation.YearRequired"))
-    .min(1900, t("ProfileSteps.Education.Validation.YearInvalid"))
-    .max(2100, t("ProfileSteps.Education.Validation.YearInvalid")),
-});
+const getValidationSchema = () =>
+  yup.object().shape({
+    idjenjangpendidikan: yup
+      .string()
+      .required(() => t("ProfileSteps.Education.Validation.LevelRequired")),
+    programstudi: yup
+      .string()
+      .required(() => t("ProfileSteps.Education.Validation.MajorRequired")),
+    namaperguruantinggi: yup
+      .string()
+      .required(() =>
+        t("ProfileSteps.Education.Validation.InstitutionRequired")
+      ),
+    tahunlulus: yup
+      .number()
+      .required(() => t("ProfileSteps.Education.Validation.YearRequired"))
+      .min(1900, () => t("ProfileSteps.Education.Validation.YearInvalid"))
+      .max(2100, () => t("ProfileSteps.Education.Validation.YearInvalid")),
+  });
+
+// Re-validate when locale changes to update error messages
+watch(
+  () => locale.value,
+  () => {
+    formErrors.value.forEach((errors, index) => {
+      if (Object.keys(errors).some((key) => errors[key])) {
+        const item = pendidikanList.value[index];
+        if (item) {
+          Object.keys(errors).forEach((field) => {
+            if (errors[field]) {
+              validateField(index, field);
+            }
+          });
+        }
+      }
+    });
+  }
+);
 
 onMounted(async () => {
   await fetchEducationLevels();
 
-  if (props.modelValue && Array.isArray(props.modelValue.list)) {
-    pendidikanList.value = props.modelValue.list.map((item) => ({
-      ...item,
-      _tempId: Date.now() + Math.random(),
-    }));
-    formErrors.value = pendidikanList.value.map(() => ({}));
-  } else {
-    pendidikanList.value = [];
-    formErrors.value = [];
+  // Only set initial values if data hasn't been loaded from API yet
+  if (!isDataLoaded.value) {
+    if (props.modelValue && Array.isArray(props.modelValue.list)) {
+      pendidikanList.value = props.modelValue.list.map((item) => ({
+        ...item,
+        _tempId: Date.now() + Math.random(),
+      }));
+      formErrors.value = pendidikanList.value.map(() => ({}));
+    } else {
+      pendidikanList.value = [];
+      formErrors.value = [];
+    }
   }
   emit("validation-change", true);
 });
+
+// Watch for currentUserId changes to auto-load data
+watch(
+  () => props.currentUserId,
+  async (newUserId) => {
+    if (newUserId && !isDataLoaded.value) {
+      await loadData(newUserId);
+    }
+  },
+  { immediate: true }
+);
 
 /**
  * Remove duplicates from array based on a key
@@ -264,7 +323,7 @@ async function loadData(userId) {
       } else if (res.data && res.data.data) {
         rawData = res.data.data;
       }
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      const filteredData = rawData; // API already filters by idpengguna
       const apiData = filteredData.map((d) => ({
         idpenggunapendidikan: d.idpenggunapendidikan,
         idjenjangpendidikan: d.idjenjangpendidikan || d.id_jenjang_pendidikan,
@@ -311,7 +370,62 @@ async function fetchEducationLevels() {
     }
   } catch (error) {
     console.error("Error fetching education levels:", error);
-    toast.error(t("ProfileSteps.Education.LoadError"));
+    toast.error("Gagal memuat data jenjang pendidikan.");
+  }
+}
+
+const isSaving = ref(false);
+
+// === Save Function ===
+async function saveData() {
+  // Validate first
+  const isValid = await validate();
+  if (!isValid) {
+    toast.error("Mohon lengkapi data yang diperlukan");
+    return;
+  }
+
+  if (!props.currentUserId) {
+    toast.error("User ID tidak ditemukan");
+    return;
+  }
+
+  isSaving.value = true;
+
+  try {
+    for (const item of pendidikanList.value) {
+      const formData = new FormData();
+      formData.append("record[idpengguna]", props.currentUserId);
+      formData.append("record[idjenjangpendidikan]", item.idjenjangpendidikan);
+      formData.append("record[programstudi]", item.programstudi || "");
+      formData.append(
+        "record[namaperguruantinggi]",
+        item.namaperguruantinggi || ""
+      );
+      formData.append("record[tahunlulus]", item.tahunlulus || "");
+
+      if (item.idpenggunapendidikan) {
+        // Update existing
+        formData.append("_method", "PUT");
+        await updateUserEducation(item.idpenggunapendidikan, formData);
+      } else {
+        // Create new
+        const response = await addUserEducation(formData);
+        // Update the item with the new ID
+        if (response?.data?.idpenggunapendidikan) {
+          item.idpenggunapendidikan = response.data.idpenggunapendidikan;
+        } else if (response?.data?.data?.idpenggunapendidikan) {
+          item.idpenggunapendidikan = response.data.data.idpenggunapendidikan;
+        }
+      }
+    }
+
+    toast.success("Data pendidikan berhasil disimpan");
+  } catch (error) {
+    console.error("Error saving pendidikan:", error);
+    toast.error("Gagal menyimpan data pendidikan");
+  } finally {
+    isSaving.value = false;
   }
 }
 
@@ -330,18 +444,14 @@ function removePendidikan(index) {
   const item = pendidikanList.value[index];
 
   Swal.fire({
-    title: t("ProfileSteps.Education.DeleteConfirmTitle"),
+    title: t("Swal.DeleteTitle"),
     text: item.idpenggunapendidikan
-      ? t("ProfileSteps.Education.DeleteConfirmTextDB")
-      : t("ProfileSteps.Education.DeleteConfirmText"),
+      ? t("Swal.DeletePermanent")
+      : t("Swal.DeleteConfirm"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
-      "ProfileSteps.Education.DeleteButton"
-    )}`,
-    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
-      "ProfileSteps.Education.CancelButton"
-    )}`,
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t("Cancel")}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -351,13 +461,13 @@ function removePendidikan(index) {
         if (item.idpenggunapendidikan) {
           await deleteUserEducation(item.idpenggunapendidikan);
         }
-        toast.success(t("ProfileSteps.Education.DeleteSuccess"));
+        toast.success(t("Swal.DeleteSuccess"));
 
         pendidikanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pendidikan:", error);
-        toast.error(t("ProfileSteps.Education.DeleteError"));
+        toast.error(t("Swal.DeleteError"));
       }
     }
   });
@@ -372,7 +482,8 @@ async function validateField(index, field) {
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
   try {
-    await validationSchema.validateAt(field, item);
+    const schema = getValidationSchema();
+    await schema.validateAt(field, item);
     formErrors.value[index][field] = "";
   } catch (error) {
     if (error instanceof yup.ValidationError) {
@@ -385,16 +496,15 @@ async function validate() {
   if (pendidikanList.value.length === 0) return true;
 
   let isValid = true;
+  const schema = getValidationSchema();
 
   for (let index = 0; index < pendidikanList.value.length; index++) {
     const item = pendidikanList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     try {
-      await validationSchema.validate(item, { abortEarly: false });
-      Object.keys(validationSchema.fields).forEach((field) => {
-        formErrors.value[index][field] = "";
-      });
+      await schema.validate(item, { abortEarly: false });
+      formErrors.value[index] = {};
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         isValid = false;
@@ -447,5 +557,12 @@ defineExpose({ validate, loadData });
 }
 .invalid-feedback {
   display: block;
+}
+.save-btn {
+  transition: all 0.3s ease;
+}
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
 }
 </style>

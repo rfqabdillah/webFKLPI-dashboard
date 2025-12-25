@@ -11,25 +11,7 @@
           @error="handleImageError"
         />
 
-        <div
-          v-else-if="isLoadingLogo"
-          class="d-flex align-items-center justify-content-center bg-light rounded shadow-sm"
-          style="
-            min-height: 45px;
-            max-height: 55px;
-            width: auto;
-            min-width: 45px;
-            border: 1px solid #dee2e6;
-          "
-        >
-          <div
-            class="spinner-border text-primary"
-            role="status"
-            style="width: 1.5rem; height: 1.5rem"
-          >
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <div v-else-if="isLoadingLogo" class="logo-skeleton shimmer"></div>
 
         <div
           v-else
@@ -134,5 +116,25 @@ onMounted(() => {
 .page-wrapper.horizontal-wrapper .logo-wrapper > a > div {
   min-height: 60px !important;
   max-height: 60px !important;
+}
+
+/* Skeleton Loader */
+.logo-skeleton {
+  width: 120px;
+  height: 45px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.shimmer {
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

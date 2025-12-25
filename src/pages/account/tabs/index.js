@@ -1,0 +1,9 @@
+export { default as BasicInfoTab } from "./BasicInfoTab.vue";
+export { default as SecurityTab } from "./SecurityTab.vue";
+export { default as PendidikanTab } from "./PendidikanTab.vue";
+export { default as PekerjaanTab } from "./PekerjaanTab.vue";
+export { default as PelatihanTab } from "./PelatihanTab.vue";
+export { default as PrestasiTab } from "./PrestasiTab.vue";
+export { default as UnitKerjaTab } from "./UnitKerjaTab.vue";
+export { default as JabatanTab } from "./JabatanTab.vue";
+export { default as PangkatTab } from "./PangkatTab.vue";

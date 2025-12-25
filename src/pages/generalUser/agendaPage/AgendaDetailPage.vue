@@ -2,12 +2,29 @@
   <div class="col-12">
     <div class="card">
       <div class="card-body">
-        <!-- Loading State -->
-        <div v-if="isLoading" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <!-- Loading State with Skeleton -->
+        <div v-if="isLoading" class="row align-items-start detail-layout">
+          <div class="col-main">
+            <div class="skeleton-btn shimmer mb-3"></div>
+            <div class="skeleton-poster shimmer mb-4"></div>
+            <div class="skeleton-badge-lg shimmer mb-3"></div>
+            <div class="skeleton-heading shimmer mb-3"></div>
+            <div class="skeleton-info-list mb-4">
+              <div class="skeleton-info-item shimmer mb-2"></div>
+              <div class="skeleton-info-item shimmer mb-2"></div>
+              <div class="skeleton-info-item shimmer mb-2"></div>
+            </div>
+            <hr class="my-4" />
+            <div class="skeleton-content">
+              <div class="skeleton-text shimmer mb-2" style="width: 100%"></div>
+              <div class="skeleton-text shimmer mb-2" style="width: 90%"></div>
+              <div class="skeleton-text shimmer mb-2" style="width: 85%"></div>
+              <div class="skeleton-text shimmer" style="width: 70%"></div>
+            </div>
           </div>
-          <p class="mt-2 text-muted">{{ $t("Loading event details") }}...</p>
+          <div class="col-sidebar mt-4">
+            <div class="skeleton-sidebar shimmer"></div>
+          </div>
         </div>
 
         <!-- Error State -->
@@ -836,6 +853,67 @@ onMounted(async () => {
     position: sticky;
     top: 100px;
     align-self: flex-start;
+  }
+}
+
+/* Skeleton Loader Styles */
+.skeleton-btn {
+  width: 100px;
+  height: 38px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-poster {
+  width: 100%;
+  height: 350px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-badge-lg {
+  width: 100px;
+  height: 30px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-heading {
+  width: 60%;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-info-item {
+  width: 250px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-text {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-sidebar {
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.shimmer {
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

@@ -1,6 +1,22 @@
 <template>
   <li class="profile-nav onhover-dropdown pe-0 py-0">
-    <div class="media profile-media">
+    <!-- Skeleton Loading State -->
+    <div v-if="isLoading" class="media profile-media">
+      <div class="profile-skeleton-avatar shimmer"></div>
+      <div class="media-body">
+        <div
+          class="profile-skeleton-text shimmer"
+          style="width: 80px; height: 14px"
+        ></div>
+        <div
+          class="profile-skeleton-text shimmer mt-1"
+          style="width: 60px; height: 12px"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Loaded State -->
+    <div v-else class="media profile-media">
       <div v-if="user.photo" class="b-r-10 profile-img-container">
         <img
           class="b-r-10 profile-img"
@@ -27,7 +43,7 @@
     </div>
 
     <ul class="profile-dropdown onhover-show-div">
-      <li>
+      <li @click="goToAccount" style="cursor: pointer">
         <vue-feather type="user"></vue-feather>
         <span>{{ $t("Account") }}</span>
       </li>
@@ -47,6 +63,7 @@ export default {
   name: "Profile",
   data() {
     return {
+      isLoading: true,
       user: {
         nama: this.$t("User"),
         nama_level: this.$t("Role"),
@@ -88,6 +105,10 @@ export default {
     }
   },
   methods: {
+    goToAccount() {
+      this.$router.push("/account");
+    },
+
     handleImageError() {
       this.user.photo = null;
     },
@@ -106,7 +127,13 @@ export default {
 
     loadUserData() {
       const storedUserData = localStorage.getItem("userData");
-      if (!storedUserData) return;
+      if (!storedUserData) {
+        // Small delay so skeleton is visible
+        setTimeout(() => {
+          this.isLoading = false;
+        }, 300);
+        return;
+      }
 
       try {
         const parsedData = JSON.parse(storedUserData);
@@ -126,6 +153,11 @@ export default {
         }
       } catch (error) {
         console.error("Gagal parse user data dari localStorage:", error);
+      } finally {
+        // Small delay so skeleton is visible
+        setTimeout(() => {
+          this.isLoading = false;
+        }, 300);
       }
     },
 
@@ -208,5 +240,30 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Skeleton Loader */
+.profile-skeleton-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.profile-skeleton-text {
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.shimmer {
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>
