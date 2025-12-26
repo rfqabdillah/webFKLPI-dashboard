@@ -88,10 +88,12 @@
         <!-- Cancel Button (optional) - LEFT side -->
         <div>
           <button
-            v-if="showCancelButton && canCancel"
-            class="btn btn-outline-danger btn-sm"
+            v-if="showCancelButton && props.item.statusId"
+            class="btn btn-sm"
+            :class="canCancel ? 'btn-outline-danger' : 'btn-outline-secondary'"
             @click.stop="handleCancelClick"
-            :disabled="isCancelling"
+            :disabled="!canCancel || isCancelling"
+            :title="!canCancel ? getCancelDisabledReason() : ''"
           >
             <span v-if="isCancelling">
               <span class="spinner-border spinner-border-sm me-1"></span>
@@ -99,7 +101,7 @@
             </span>
             <span v-else>
               <i class="fa fa-times-circle me-1"></i>
-              {{ $t("Cancel") }}
+              {{ $t("Batalkan") }}
             </span>
           </button>
         </div>
@@ -121,7 +123,7 @@ import { formatDate } from "@/utils/formatDate";
 const { t, locale } = useI18n();
 
 // Status constants
-const STATUS_TERDAFTAR_ID = "e194d29a-9bcc-42d6-8ed5-a35f84c6cfea";
+const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
 const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
 const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
 const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
@@ -223,8 +225,24 @@ const handleImageError = (event) => {
   event.target.src = defaultPosterUrl;
 };
 
+// Get reason why cancel is disabled
+const getCancelDisabledReason = () => {
+  const statusId = props.item.statusId;
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return t("Cannot cancel - Event completed");
+    case STATUS_DITOLAK_ID:
+      return t("Cannot cancel - Registration rejected");
+    case STATUS_DITERIMA_ID:
+      return t("Cannot cancel - Already accepted");
+    default:
+      return t("Cannot cancel registration");
+  }
+};
+
 // Handle cancel click
 const handleCancelClick = () => {
+  if (!canCancel.value) return;
   emit("cancel", {
     registrationId: props.item.registrationId,
     agendaId: props.item.id,

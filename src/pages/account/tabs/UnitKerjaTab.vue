@@ -1,10 +1,7 @@
 <template>
   <div class="step-unit-kerja">
-    <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">{{ $t("Loading") }}...</span>
-      </div>
-      <p class="mt-2 text-muted">{{ $t("Loading") }}...</p>
+    <div v-if="isLoading" class="py-3">
+      <SkeletonGroup type="form-card" :count="2" />
     </div>
 
     <div v-else>
@@ -272,6 +269,7 @@ import {
 } from "@/services/general/personnel/userWorkUnits";
 import Swal from "sweetalert2";
 import * as yup from "yup";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
 
 const { t, locale } = useI18n();
 
@@ -283,6 +281,10 @@ const props = defineProps({
   currentUserId: {
     type: String,
     default: "",
+  },
+  shouldLoad: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -353,12 +355,12 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
-// Watch for currentUserId changes to auto-load data
+// Watch for shouldLoad to trigger data loading (lazy load)
 watch(
-  () => props.currentUserId,
-  async (newUserId) => {
-    if (newUserId && !isDataLoaded.value) {
-      await loadData(newUserId);
+  () => props.shouldLoad,
+  async (shouldLoad) => {
+    if (shouldLoad && props.currentUserId && !isDataLoaded.value) {
+      await loadData(props.currentUserId);
     }
   },
   { immediate: true }

@@ -30739,14 +30739,13 @@ button[data-toggle=dropdown]:hover ~ .dropdown-menu {
 }
 .page-wrapper.material-type {
   position: relative;
+  /* Use background gradient instead of ::before - not affected by overflow:visible */
+  background: linear-gradient(to bottom, #15406A 0px, #15406A 300px, transparent 300px);
+  background-attachment: scroll;
 }
+/* Disable the old ::before if it still exists */
 .page-wrapper.material-type::before {
-  position: absolute;
-  content: "";
-  left: 0;
-  width: 100%;
-  height: 300px;
-  background-color: #15406A;
+  display: none;
 }
 .page-wrapper.material-type .card {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);

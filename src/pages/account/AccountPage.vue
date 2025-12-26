@@ -138,25 +138,21 @@
 
           <!-- RIGHT COLUMN: Tabs Content -->
           <div class="col-lg-8">
-            <!-- Tab Navigation (DRY: using v-for loop) -->
-            <ul class="nav nav-tabs mb-4 flex-wrap" role="tablist">
-              <li
-                v-for="tab in visibleTabs"
-                :key="tab.key"
-                class="nav-item"
-                role="presentation"
-              >
+            <!-- Modern Chip Tabs -->
+            <div class="chip-tabs-container">
+              <div class="chip-tabs">
                 <button
-                  class="nav-link"
+                  v-for="tab in visibleTabs"
+                  :key="tab.key"
+                  class="chip-tab"
                   :class="{ active: activeTab === tab.key }"
                   @click="activeTab = tab.key"
-                  type="button"
                 >
-                  <i :class="['fa', tab.icon, 'me-2']"></i
-                  >{{ $t(tab.labelKey) }}
+                  <i :class="['fa', tab.icon]"></i>
+                  <span>{{ $t(tab.labelKey) }}</span>
                 </button>
-              </li>
-            </ul>
+              </div>
+            </div>
 
             <!-- TAB: Basic Info -->
             <BasicInfoTab
@@ -205,24 +201,28 @@
             <PendidikanTab
               v-show="activeTab === 'pendidikan'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pendidikan')"
             />
 
             <!-- TAB: Pekerjaan -->
             <PekerjaanTab
               v-show="activeTab === 'pekerjaan'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pekerjaan')"
             />
 
             <!-- TAB: Pelatihan -->
             <PelatihanTab
               v-show="activeTab === 'pelatihan'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pelatihan')"
             />
 
             <!-- TAB: Prestasi -->
             <PrestasiTab
               v-show="activeTab === 'prestasi'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('prestasi')"
             />
 
             <!-- ASN-only Tabs -->
@@ -231,6 +231,7 @@
               v-if="isASN"
               v-show="activeTab === 'unitkerja'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('unitkerja')"
             />
 
             <!-- TAB: Jabatan -->
@@ -238,6 +239,7 @@
               v-if="isASN"
               v-show="activeTab === 'jabatan'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('jabatan')"
             />
 
             <!-- TAB: Pangkat -->
@@ -245,6 +247,7 @@
               v-if="isASN"
               v-show="activeTab === 'pangkat'"
               :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pangkat')"
             />
           </div>
         </div>
@@ -254,7 +257,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from "vue";
+import { ref, computed, reactive, onMounted, watch } from "vue";
 import { getDetailUser, updateUser } from "@/services/referensi/users";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 import { compressImage } from "@/utils/imageCompressor";
@@ -278,12 +281,31 @@ import {
   JabatanTab,
   PangkatTab,
 } from "./tabs";
-
 const { t, locale } = useI18n();
 const toast = useToast();
 
-// === Tab Configuration (DRY) ===
-const tabConfig = [
+// === Constants ===
+const MAX_FILE_SIZE_MB = 10;
+
+const PROFILE_FIELDS = [
+  "nama",
+  "gelardepan",
+  "gelarbelakang",
+  "nik",
+  "nip",
+  "no_karpeg",
+  "email",
+  "telp",
+  "alamat",
+  "kodekabupaten",
+  "tempatlahir",
+  "tanggallahir",
+  "minat",
+  "idjeniskelamin",
+  "idjenispegawai",
+];
+
+const TAB_CONFIG = [
   { key: "basic", icon: "fa-user", labelKey: "Basic Info", asnOnly: false },
   { key: "security", icon: "fa-shield", labelKey: "Security", asnOnly: false },
   {
@@ -329,11 +351,16 @@ const isSaving = ref(false);
 
 // Tab state
 const activeTab = ref("basic");
+const visitedTabs = ref(new Set(["basic"])); // Track visited tabs for lazy loading
+
+// Watch activeTab to track visited tabs
+watch(activeTab, (newTab) => {
+  visitedTabs.value.add(newTab);
+});
 
 // Photo upload state
 const photoInputRef = ref(null);
 const isUploadingPhoto = ref(false);
-const MAX_FILE_SIZE_MB = 10;
 
 // Lightbox state
 const lightboxVisible = ref(false);
@@ -421,7 +448,7 @@ const isASN = computed(() => {
 
 // Visible tabs based on user type
 const visibleTabs = computed(() => {
-  return tabConfig.filter((tab) => !tab.asnOnly || isASN.value);
+  return TAB_CONFIG.filter((tab) => !tab.asnOnly || isASN.value);
 });
 
 const currentUserId = computed(() => {
@@ -463,49 +490,47 @@ const formattedBirthDate = computed(() => {
 });
 
 // Methods
+// Helper: Parse user data from response
+const parseUserData = (response) => {
+  if (!response?.data) return null;
+
+  if (Array.isArray(response.data)) {
+    return response.data[0]?.data?.[0] || response.data[0];
+  }
+
+  if (response.data.data) {
+    return Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+  }
+
+  return response.data;
+};
+
+// Start of Methods
 const fetchUserProfile = async () => {
   isLoading.value = true;
   error.value = null;
 
-  const userDataStr = localStorage.getItem("userData");
-  if (!userDataStr) {
-    error.value = t("User data not found");
-    isLoading.value = false;
-    return;
-  }
-
   try {
+    const userDataStr = localStorage.getItem("userData");
+    if (!userDataStr) throw new Error(t("User data not found"));
+
     const parsed = JSON.parse(userDataStr);
     const userId =
       parsed.data?.[0]?.id_pengguna || parsed.data?.[0]?.idpengguna;
 
-    if (!userId) {
-      error.value = t("User ID not found");
-      isLoading.value = false;
-      return;
-    }
+    if (!userId) throw new Error(t("User ID not found"));
 
     const response = await getDetailUser(userId);
+    const userData = parseUserData(response);
 
-    if (response?.data) {
-      let userData = null;
-      if (Array.isArray(response.data)) {
-        userData = response.data[0]?.data?.[0] || response.data[0];
-      } else if (response.data.data) {
-        userData = Array.isArray(response.data.data)
-          ? response.data.data[0]
-          : response.data.data;
-      } else {
-        userData = response.data;
-      }
-
-      if (userData) {
-        user.value = userData;
-      }
+    if (userData) {
+      user.value = userData;
     }
   } catch (err) {
     console.error("Error fetching user profile:", err);
-    error.value = t("Failed to load profile data");
+    error.value = err.message || t("Failed to load profile data");
   } finally {
     isLoading.value = false;
   }
@@ -521,7 +546,7 @@ const startEditing = () => {
   editForm.email = user.value.email || "";
   editForm.telp = user.value.telp || "";
   editForm.alamat = user.value.alamat || "";
-  // Extract kodepropinsi from kodekabupaten
+
   const kodeKab = user.value.kodekabupaten || "";
   editForm.kodekabupaten = kodeKab;
   editForm.kodepropinsi = kodeKab.includes(".")
@@ -559,41 +584,23 @@ const updateProfile = async () => {
   try {
     const userId = user.value.id_pengguna || user.value.idpengguna;
 
-    // Fields to update
-    const profileFields = [
-      "nama",
-      "gelardepan",
-      "gelarbelakang",
-      "nik",
-      "nip",
-      "no_karpeg",
-      "email",
-      "telp",
-      "alamat",
-      "kodekabupaten",
-      "tempatlahir",
-      "tanggallahir",
-      "minat",
-      "idjeniskelamin",
-      "idjenispegawai",
-    ];
-
-    // Build FormData
     const formData = new FormData();
-    profileFields.forEach((field) => {
+    PROFILE_FIELDS.forEach((field) => {
       formData.append(`record[${field}]`, editForm[field] || "");
     });
     formData.append("_method", "PUT");
 
     await updateUser(userId, formData);
 
-    // Update local user data using Object.assign
-    profileFields.forEach((field) => {
+    PROFILE_FIELDS.forEach((field) => {
       user.value[field] = editForm[field];
     });
 
-    // Update localStorage
-    updateLocalStorage();
+    updateLocalStorage({
+      nama: editForm.nama,
+      email: editForm.email,
+      telp: editForm.telp,
+    });
 
     toast.success(t("Profile updated successfully"));
     isEditing.value = false;
@@ -605,20 +612,19 @@ const updateProfile = async () => {
   }
 };
 
-// Helper: Update localStorage with current user data
-const updateLocalStorage = () => {
+const updateLocalStorage = (updates = {}) => {
   const userDataStr = localStorage.getItem("userData");
-  if (userDataStr) {
+  if (!userDataStr) return;
+
+  try {
     const parsed = JSON.parse(userDataStr);
     if (parsed.data?.[0]) {
-      Object.assign(parsed.data[0], {
-        nama: editForm.nama,
-        email: editForm.email,
-        telp: editForm.telp,
-      });
+      Object.assign(parsed.data[0], updates);
       localStorage.setItem("userData", JSON.stringify(parsed));
       window.dispatchEvent(new CustomEvent("userDataUpdated"));
     }
+  } catch (e) {
+    console.error("Error updating local storage:", e);
   }
 };
 
@@ -626,7 +632,6 @@ const handleImageError = () => {
   user.value.foto = null;
 };
 
-// === Photo Upload Functions ===
 const triggerPhotoUpload = () => {
   if (photoInputRef.value) {
     photoInputRef.value.click();
@@ -637,13 +642,11 @@ const handlePhotoUpload = async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
 
-  // Validate file type
   if (!file.type.startsWith("image/")) {
     toast.error(t("Please select an image file"));
     return;
   }
 
-  // Validate file size (max 10MB)
   const fileSizeMB = file.size / (1024 * 1024);
   if (fileSizeMB > MAX_FILE_SIZE_MB) {
     toast.error(t("File size exceeds 10MB limit"));
@@ -653,34 +656,20 @@ const handlePhotoUpload = async (event) => {
   isUploadingPhoto.value = true;
 
   try {
-    // Compress image
     const compressedFile = await compressImage(file, {
       maxSizeMB: 1,
       maxWidthOrHeight: 800,
       initialQuality: 0.8,
     });
 
-    // Create FormData for upload
     const userId = user.value.id_pengguna || user.value.idpengguna;
     const formData = new FormData();
     formData.append("upload_foto", compressedFile, file.name);
     formData.append("_method", "PUT");
 
     await updateUser(userId, formData);
-
-    // Refresh user data to get new photo URL
     await fetchUserProfile();
-
-    // Update localStorage with new photo
-    const userDataStr = localStorage.getItem("userData");
-    if (userDataStr) {
-      const parsed = JSON.parse(userDataStr);
-      if (parsed.data?.[0]) {
-        parsed.data[0].foto = user.value.foto;
-        localStorage.setItem("userData", JSON.stringify(parsed));
-        window.dispatchEvent(new CustomEvent("userDataUpdated"));
-      }
-    }
+    updateLocalStorage({ foto: user.value.foto });
 
     toast.success(t("Profile photo updated successfully"));
   } catch (err) {
@@ -688,14 +677,12 @@ const handlePhotoUpload = async (event) => {
     toast.error(t("Failed to upload photo"));
   } finally {
     isUploadingPhoto.value = false;
-    // Reset file input
     if (photoInputRef.value) {
       photoInputRef.value.value = "";
     }
   }
 };
 
-// Change Password
 const changePassword = async () => {
   if (!canChangePassword.value) return;
 
@@ -716,7 +703,6 @@ const changePassword = async () => {
   isChangingPassword.value = true;
 
   try {
-    // First verify current password by attempting login
     try {
       await login(user.value.email, passwordForm.currentPassword);
     } catch (loginError) {
@@ -725,7 +711,6 @@ const changePassword = async () => {
       return;
     }
 
-    // If login successful, update password
     const userId = user.value.id_pengguna || user.value.idpengguna;
     const formData = new FormData();
     formData.append("record[password]", passwordForm.newPassword);
@@ -845,7 +830,14 @@ onMounted(() => {
   padding-bottom: 2rem;
 }
 
-/* Modern Tab Navigation */
+.account-page {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  overflow: visible;
+}
+
+/* Sticky styles moved to @media query */
+
 .nav-tabs {
   border-bottom: none;
   gap: 10px;
@@ -876,14 +868,6 @@ onMounted(() => {
   color: white;
 }
 
-/* Sticky Left Column - maintains position and size naturally */
-.sticky-column {
-  position: sticky;
-  top: 100px;
-  height: fit-content;
-}
-
-/* Left Sidebar Card */
 .profile-sidebar {
   border: none;
   border-radius: 12px;
@@ -909,7 +893,6 @@ onMounted(() => {
   background-color: white;
 }
 
-/* Photo Upload Button */
 .profile-img-wrapper {
   position: relative;
   display: inline-block;
@@ -944,7 +927,6 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-/* Clickable Photo for Lightbox */
 .clickable-photo {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -955,7 +937,6 @@ onMounted(() => {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Quick Info Items */
 .quick-info {
   text-align: left;
 }
@@ -1012,7 +993,6 @@ onMounted(() => {
   word-break: break-word;
 }
 
-/* Right Column Cards */
 .card {
   border: none;
   border-radius: 12px;
@@ -1044,7 +1024,6 @@ onMounted(() => {
   padding: 20px;
 }
 
-/* Info List */
 .info-list {
   display: flex;
   flex-direction: column;
@@ -1084,7 +1063,6 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* Responsive */
 @media (max-width: 991px) {
   .profile-sidebar {
     margin-bottom: 20px;
@@ -1112,6 +1090,78 @@ onMounted(() => {
 
   .info-label {
     flex: none;
+  }
+}
+
+/* Sticky Sidebar CSS */
+@media (min-width: 992px) {
+  .sticky-column {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 100px;
+    z-index: 5;
+    height: fit-content;
+    align-self: flex-start;
+  }
+}
+
+.chip-tabs-container {
+  margin-bottom: 20px;
+}
+
+.chip-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.chip-tab:hover {
+  border-color: #15406a;
+  color: #15406a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 64, 106, 0.15);
+}
+
+.chip-tab.active {
+  background: linear-gradient(135deg, #15406a 0%, #0f2d4a 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(21, 64, 106, 0.35);
+}
+
+.chip-tab.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(21, 64, 106, 0.4);
+}
+
+.chip-tab i {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .chip-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .chip-tab span {
+    display: none;
   }
 }
 </style>

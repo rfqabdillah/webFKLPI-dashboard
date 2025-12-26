@@ -75,6 +75,89 @@
       </div>
     </template>
 
+    <!-- Form Card Skeleton (for Account Tabs) -->
+    <template v-else-if="type === 'form-card'">
+      <div class="form-card-skeleton">
+        <!-- Header -->
+        <div
+          class="form-header-skeleton d-flex justify-content-between align-items-center mb-3"
+        >
+          <div>
+            <BaseSkeleton variant="text" width="180px" height="20px" />
+            <BaseSkeleton
+              variant="text"
+              width="250px"
+              height="14px"
+              class="mt-1"
+            />
+          </div>
+          <BaseSkeleton variant="button" width="120px" />
+        </div>
+
+        <!-- Cards -->
+        <div v-for="n in count" :key="n" class="card-item-skeleton mb-3">
+          <div
+            class="card-header-skeleton d-flex justify-content-between align-items-center"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <BaseSkeleton variant="badge" width="30px" height="24px" />
+              <BaseSkeleton variant="text" width="120px" />
+            </div>
+            <BaseSkeleton
+              variant="custom"
+              width="32px"
+              height="32px"
+              rounded="4px"
+            />
+          </div>
+          <div class="card-body-skeleton">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <BaseSkeleton variant="text" width="80px" height="14px" />
+                <BaseSkeleton
+                  variant="custom"
+                  width="100%"
+                  height="38px"
+                  rounded="6px"
+                  class="mt-1"
+                />
+              </div>
+              <div class="col-md-6">
+                <BaseSkeleton variant="text" width="100px" height="14px" />
+                <BaseSkeleton
+                  variant="custom"
+                  width="100%"
+                  height="38px"
+                  rounded="6px"
+                  class="mt-1"
+                />
+              </div>
+              <div class="col-md-6">
+                <BaseSkeleton variant="text" width="90px" height="14px" />
+                <BaseSkeleton
+                  variant="custom"
+                  width="100%"
+                  height="38px"
+                  rounded="6px"
+                  class="mt-1"
+                />
+              </div>
+              <div class="col-md-6">
+                <BaseSkeleton variant="text" width="70px" height="14px" />
+                <BaseSkeleton
+                  variant="custom"
+                  width="100%"
+                  height="38px"
+                  rounded="6px"
+                  class="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- Default -->
     <template v-else>
       <BaseSkeleton
@@ -100,6 +183,7 @@ defineProps({
         "tab-content",
         "list",
         "testimonial",
+        "form-card",
         "generic",
       ].includes(v),
   },
@@ -174,5 +258,26 @@ defineProps({
 }
 .user-text {
   flex: 1;
+}
+
+/* Form Card Skeleton Styles */
+.form-card-skeleton {
+  padding: 10px 0;
+}
+
+.card-item-skeleton {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header-skeleton {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-body-skeleton {
+  padding: 20px;
 }
 </style>

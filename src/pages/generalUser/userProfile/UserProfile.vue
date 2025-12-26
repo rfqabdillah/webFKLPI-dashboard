@@ -21,309 +21,238 @@
         </div>
 
         <div class="card profile-card overflow-hidden shadow-sm">
-          <!-- Background Banner -->
-          <div class="card-header-banner bg-primary"></div>
+          <!-- Loading Skeleton State -->
+          <template v-if="isLoading">
+            <SkeletonGroup type="profile-card" />
+            <div class="p-4">
+              <SkeletonGroup type="tab-content" :tabCount="6" />
+            </div>
+          </template>
 
-          <div class="card-body pt-0 relative">
-            <!-- Profile Info Header -->
-            <div class="text-center profile-header">
-              <div class="profile-img-container mx-auto">
-                <!-- Loading Spinner -->
+          <!-- Loaded Content -->
+          <template v-else>
+            <!-- Background Banner -->
+            <div class="card-header-banner bg-primary"></div>
+
+            <div class="card-body pt-0 relative">
+              <!-- Profile Info Header -->
+              <div class="text-center profile-header">
+                <div class="profile-img-container mx-auto">
+                  <!-- Initial Avatar (Random Color) -->
+                  <div
+                    v-if="!user.foto"
+                    class="profile-img rounded-circle border-white d-flex align-items-center justify-content-center text-white fw-bold display-4 shadow"
+                    :style="{ backgroundColor: getRandomColor(fullName) }"
+                  >
+                    {{ getInitials(fullName) }}
+                  </div>
+
+                  <!-- Actual Photo -->
+                  <img
+                    v-else
+                    :src="user.foto"
+                    alt="Profile"
+                    class="profile-img rounded-circle border-white"
+                    @error="handleImageError"
+                  />
+                </div>
+                <h3 class="mt-3 mb-1 fw-bold text-dark">{{ fullName }}</h3>
                 <div
-                  v-if="isLoading"
-                  class="profile-img rounded-circle border-white d-flex align-items-center justify-content-center bg-white shadow"
+                  class="d-flex justify-content-center flex-wrap gap-3 text-muted mb-3"
                 >
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                  <div class="d-flex align-items-center">
+                    <vue-feather
+                      type="mail"
+                      size="16"
+                      class="me-2"
+                    ></vue-feather>
+                    <span>{{ user.email || "-" }}</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <vue-feather
+                      type="map-pin"
+                      size="16"
+                      class="me-2"
+                    ></vue-feather>
+                    <span>{{ user.alamat || "-" }}</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <vue-feather
+                      type="phone"
+                      size="16"
+                      class="me-2"
+                    ></vue-feather>
+                    <span>{{ user.telp || "-" }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 position-relative">
+                <div class="position-absolute end-0 me-4" style="top: -150px">
+                  <button
+                    class="btn btn-warning btn-sm px-3 fw-medium"
+                    @click="handleEditData"
+                  >
+                    <i class="fa fa-edit me-2"></i>{{ $t("Edit Data") }}
+                  </button>
+                </div>
+                <!-- Modern Chip Tabs -->
+                <div class="chip-tabs-container">
+                  <div class="chip-tabs">
+                    <button
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'pribadi' }"
+                      @click="activeTab = 'pribadi'"
+                    >
+                      <vue-feather type="user" size="14"></vue-feather>
+                      <span>{{ $t("Biodata") }}</span>
+                    </button>
+                    <button
+                      v-if="!isNonAsn"
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'unit_kerja' }"
+                      @click="activeTab = 'unit_kerja'"
+                    >
+                      <vue-feather type="briefcase" size="14"></vue-feather>
+                      <span>{{ $t("Work Unit") }}</span>
+                    </button>
+                    <button
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'pengalaman_kerja' }"
+                      @click="activeTab = 'pengalaman_kerja'"
+                    >
+                      <vue-feather type="folder" size="14"></vue-feather>
+                      <span>{{ $t("Work Experience") }}</span>
+                    </button>
+                    <button
+                      v-if="!isNonAsn"
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'jabatan' }"
+                      @click="activeTab = 'jabatan'"
+                    >
+                      <vue-feather type="layers" size="14"></vue-feather>
+                      <span>{{ $t("Position") }}</span>
+                    </button>
+                    <button
+                      v-if="!isNonAsn"
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'pangkat' }"
+                      @click="activeTab = 'pangkat'"
+                    >
+                      <vue-feather type="chevrons-up" size="14"></vue-feather>
+                      <span>{{ $t("Rank") }}</span>
+                    </button>
+                    <button
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'pendidikan' }"
+                      @click="activeTab = 'pendidikan'"
+                    >
+                      <vue-feather type="book" size="14"></vue-feather>
+                      <span>{{ $t("Education") }}</span>
+                    </button>
+                    <button
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'pelatihan' }"
+                      @click="activeTab = 'pelatihan'"
+                    >
+                      <vue-feather type="clipboard" size="14"></vue-feather>
+                      <span>{{ $t("Training") }}</span>
+                    </button>
+                    <button
+                      class="chip-tab"
+                      :class="{ active: activeTab === 'prestasi' }"
+                      @click="activeTab = 'prestasi'"
+                    >
+                      <vue-feather type="award" size="14"></vue-feather>
+                      <span>{{ $t("Achievements") }}</span>
+                    </button>
                   </div>
                 </div>
 
-                <!-- Initial Avatar (Random Color) -->
-                <div
-                  v-else-if="!user.foto"
-                  class="profile-img rounded-circle border-white d-flex align-items-center justify-content-center text-white fw-bold display-4 shadow"
-                  :style="{ backgroundColor: getRandomColor(fullName) }"
-                >
-                  {{ getInitials(fullName) }}
-                </div>
+                <div class="tab-content p-4" id="profileTabsContent">
+                  <!-- Tab Detail Pribadi -->
+                  <div
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'pribadi' }"
+                    role="tabpanel"
+                  >
+                    <PersonalDetailsTab :user="user" :isNonAsn="isNonAsn" />
+                  </div>
 
-                <!-- Actual Photo -->
-                <img
-                  v-else
-                  :src="user.foto"
-                  alt="Profile"
-                  class="profile-img rounded-circle border-white"
-                  @error="handleImageError"
-                />
+                  <!-- Tab Unit Kerja (ASN) -->
+                  <div
+                    v-if="!isNonAsn"
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'unit_kerja' }"
+                    role="tabpanel"
+                  >
+                    <WorkUnitTab :items="userWorkUnits" :user="user" />
+                  </div>
+
+                  <!-- Tab Pengalaman Kerja -->
+                  <div
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'pengalaman_kerja' }"
+                    role="tabpanel"
+                  >
+                    <WorkExperienceTab
+                      :items="userWorkExperience"
+                      :user="user"
+                    />
+                  </div>
+
+                  <!-- Tab Jabatan -->
+                  <div
+                    v-if="!isNonAsn"
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'jabatan' }"
+                    role="tabpanel"
+                  >
+                    <PositionTab :items="userLevels" :user="user" />
+                  </div>
+
+                  <!-- Tab Pangkat -->
+                  <div
+                    v-if="!isNonAsn"
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'pangkat' }"
+                    role="tabpanel"
+                  >
+                    <RankTab :items="userRanks" :user="user" />
+                  </div>
+
+                  <!-- Tab Pendidikan -->
+                  <div
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'pendidikan' }"
+                    role="tabpanel"
+                  >
+                    <EducationTab :items="userEducations" :user="user" />
+                  </div>
+
+                  <!-- Tab Pelatihan -->
+                  <div
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'pelatihan' }"
+                    role="tabpanel"
+                  >
+                    <TrainingTab :items="userTrainings" />
+                  </div>
+
+                  <!-- Tab Prestasi -->
+                  <div
+                    class="tab-pane fade"
+                    :class="{ 'show active': activeTab === 'prestasi' }"
+                    role="tabpanel"
+                  >
+                    <AchievementTab :items="userAchievements" :user="user" />
+                  </div>
+                </div>
               </div>
-              <h3 class="mt-3 mb-1 fw-bold text-dark">{{ fullName }}</h3>
-              <div
-                class="d-flex justify-content-center flex-wrap gap-3 text-muted mb-3"
-              >
-                <div class="d-flex align-items-center">
-                  <vue-feather type="mail" size="16" class="me-2"></vue-feather>
-                  <span>{{ user.email || "-" }}</span>
-                </div>
-                <div class="d-flex align-items-center">
-                  <vue-feather
-                    type="map-pin"
-                    size="16"
-                    class="me-2"
-                  ></vue-feather>
-                  <span>{{ user.alamat || "-" }}</span>
-                </div>
-                <div class="d-flex align-items-center">
-                  <vue-feather
-                    type="phone"
-                    size="16"
-                    class="me-2"
-                  ></vue-feather>
-                  <span>{{ user.telp || "-" }}</span>
-                </div>
-              </div>
+
+              <hr class="my-4" />
             </div>
-
-            <div class="mt-4 position-relative">
-              <div class="position-absolute end-0 me-4" style="top: -150px">
-                <button
-                  class="btn btn-warning btn-sm px-3 fw-medium"
-                  @click="handleEditData"
-                >
-                  <i class="fa fa-edit me-2"></i>{{ $t("Edit Data") }}
-                </button>
-              </div>
-              <ul
-                class="nav nav-tabs justify-content-center"
-                id="profileTabs"
-                role="tablist"
-              >
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'pribadi' }"
-                    @click="activeTab = 'pribadi'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="user"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Biodata") }}
-                  </button>
-                </li>
-                <li v-if="!isNonAsn" class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'unit_kerja' }"
-                    @click="activeTab = 'unit_kerja'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="briefcase"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Work Unit") }}
-                  </button>
-                </li>
-                <li v-if="isNonAsn" class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'perusahaan' }"
-                    @click="activeTab = 'perusahaan'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="briefcase"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Company") }}
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'pengalaman_kerja' }"
-                    @click="activeTab = 'pengalaman_kerja'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="folder"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Work Experience") }}
-                  </button>
-                </li>
-                <li v-if="!isNonAsn" class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'jabatan' }"
-                    @click="activeTab = 'jabatan'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="layers"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Position") }}
-                  </button>
-                </li>
-                <li v-if="!isNonAsn" class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'pangkat' }"
-                    @click="activeTab = 'pangkat'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="chevrons-up"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Rank") }}
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'pendidikan' }"
-                    @click="activeTab = 'pendidikan'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="book"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Education") }}
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'pelatihan' }"
-                    @click="activeTab = 'pelatihan'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="clipboard"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Training") }}
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    :class="{ active: activeTab === 'prestasi' }"
-                    @click="activeTab = 'prestasi'"
-                    type="button"
-                  >
-                    <vue-feather
-                      type="award"
-                      size="14"
-                      class="me-2"
-                    ></vue-feather>
-                    {{ $t("Achievements") }}
-                  </button>
-                </li>
-              </ul>
-
-              <div class="tab-content p-4" id="profileTabsContent">
-                <!-- Tab Detail Pribadi -->
-                <div
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'pribadi' }"
-                  role="tabpanel"
-                >
-                  <PersonalDetailsTab :user="user" :isNonAsn="isNonAsn" />
-                </div>
-
-                <!-- Tab Unit Kerja (ASN) -->
-                <div
-                  v-if="!isNonAsn"
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'unit_kerja' }"
-                  role="tabpanel"
-                >
-                  <WorkUnitTab :items="userWorkUnits" :user="user" />
-                </div>
-
-                <!-- Tab Perusahaan (Non-ASN) -->
-                <div
-                  v-if="isNonAsn"
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'perusahaan' }"
-                  role="tabpanel"
-                >
-                  <CompanyTab :items="userCompanies" :user="user" />
-                </div>
-
-                <!-- Tab Pengalaman Kerja -->
-                <div
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'pengalaman_kerja' }"
-                  role="tabpanel"
-                >
-                  <WorkExperienceTab :items="userWorkExperience" :user="user" />
-                </div>
-
-                <!-- Tab Jabatan -->
-                <div
-                  v-if="!isNonAsn"
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'jabatan' }"
-                  role="tabpanel"
-                >
-                  <PositionTab :items="userLevels" :user="user" />
-                </div>
-
-                <!-- Tab Pangkat -->
-                <div
-                  v-if="!isNonAsn"
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'pangkat' }"
-                  role="tabpanel"
-                >
-                  <RankTab :items="userRanks" :user="user" />
-                </div>
-
-                <!-- Tab Pendidikan -->
-                <div
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'pendidikan' }"
-                  role="tabpanel"
-                >
-                  <EducationTab :items="userEducations" :user="user" />
-                </div>
-
-                <!-- Tab Pelatihan -->
-                <div
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'pelatihan' }"
-                  role="tabpanel"
-                >
-                  <TrainingTab :items="userTrainings" />
-                </div>
-
-                <!-- Tab Prestasi -->
-                <div
-                  class="tab-pane fade"
-                  :class="{ 'show active': activeTab === 'prestasi' }"
-                  role="tabpanel"
-                >
-                  <AchievementTab :items="userAchievements" :user="user" />
-                </div>
-              </div>
-            </div>
-
-            <hr class="my-4" />
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -335,11 +264,11 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { getDetailUser } from "@/services/referensi/users";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
 
 // Tab Components
 import PersonalDetailsTab from "./tabs/PersonalDetailsTab.vue";
 import WorkUnitTab from "./tabs/WorkUnitTab.vue";
-import CompanyTab from "./tabs/CompanyTab.vue";
 import WorkExperienceTab from "./tabs/WorkExperienceTab.vue";
 import PositionTab from "./tabs/PositionTab.vue";
 import RankTab from "./tabs/RankTab.vue";
@@ -349,7 +278,6 @@ import AchievementTab from "./tabs/AchievementTab.vue";
 
 const user = ref({});
 const userWorkUnits = ref([]);
-const userCompanies = ref([]);
 const userWorkExperience = ref([]);
 const userLevels = ref([]);
 const userRanks = ref([]);
@@ -440,9 +368,6 @@ async function fetchUserProfile() {
 
                 // Work Units
                 userWorkUnits.value = fetchedUser["user-work-units"] || [];
-
-                // Companies (for Non-ASN)
-                userCompanies.value = fetchedUser["user-companies"] || [];
 
                 // Work Experience
                 userWorkExperience.value =
@@ -579,28 +504,71 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* Tabs Styling */
-.nav-tabs {
-  border-bottom: 2px solid #e9ecef;
+/* Modern Chip Tabs */
+.chip-tabs-container {
+  padding: 0 10px;
+  margin-bottom: 20px;
 }
 
-.nav-link {
-  color: #6c757d;
+.chip-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 15px 0;
+}
+
+.chip-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  color: #666;
+  font-size: 14px;
   font-weight: 500;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 10px 20px;
-  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-.nav-link:hover {
-  color: #0d6efd;
+.chip-tab:hover {
+  border-color: #15406a;
+  color: #15406a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 64, 106, 0.15);
+}
+
+.chip-tab.active {
+  background: linear-gradient(135deg, #15406a 0%, #0f2d4a 100%);
+  color: #fff;
   border-color: transparent;
+  box-shadow: 0 4px 15px rgba(21, 64, 106, 0.35);
 }
 
-.nav-link.active {
-  color: #0d6efd;
-  border-bottom: 2px solid #0d6efd;
-  background: transparent;
+.chip-tab.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(21, 64, 106, 0.4);
+}
+
+.chip-tab svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .chip-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .chip-tab span {
+    display: none;
+  }
+
+  .chip-tab svg {
+    margin: 0;
+  }
 }
 </style>

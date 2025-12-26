@@ -172,12 +172,15 @@
                 <button class="btn btn-success px-4" disabled>
                   <i class="fa fa-check-circle me-2"></i> {{ $t("Registered") }}
                 </button>
-                <!-- Cancel Button - Only show if canCancel (status is Terdaftar) -->
+                <!-- Cancel Button - Always show but disabled for non-Terdaftar status -->
                 <button
-                  v-if="canCancel"
                   @click="cancelRegistration"
-                  class="btn btn-outline-danger px-4"
-                  :disabled="isCancelling"
+                  class="btn px-4"
+                  :class="
+                    canCancel ? 'btn-outline-danger' : 'btn-outline-secondary'
+                  "
+                  :disabled="!canCancel || isCancelling"
+                  :title="!canCancel ? getCancelDisabledReason() : ''"
                 >
                   <span v-if="isCancelling">
                     <span class="spinner-border spinner-border-sm me-2"></span>
@@ -185,7 +188,7 @@
                   </span>
                   <span v-else>
                     <i class="fa fa-times-circle me-2"></i>
-                    {{ $t("Cancel Registration") }}
+                    {{ $t("Batalkan") }}
                   </span>
                 </button>
               </template>
@@ -393,6 +396,21 @@ const fetchStatusOptions = async () => {
 
 const handleImageError = (event) => {
   event.target.src = defaultPosterUrl;
+};
+
+// Get reason why cancel is disabled
+const getCancelDisabledReason = () => {
+  const statusId = registrationStatusId.value;
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return t("Cannot cancel - Event completed");
+    case STATUS_DITOLAK_ID:
+      return t("Cannot cancel - Registration rejected");
+    case STATUS_DITERIMA_ID:
+      return t("Cannot cancel - Already accepted");
+    default:
+      return t("Cannot cancel registration");
+  }
 };
 
 const downloadPoster = async () => {

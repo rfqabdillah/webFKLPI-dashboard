@@ -489,6 +489,7 @@ const handleCancelRegistration = async ({ registrationId, title }) => {
       "Are you sure you want to cancel registration for event"
     )}:<br><br><strong>${title}</strong>?`,
     showCancelButton: true,
+    reverseButtons: true,
     confirmButtonText: t("Yes Cancel"),
     cancelButtonText: t("No"),
     confirmButtonColor: "#dc3545",

@@ -95,6 +95,16 @@
 }
 .page-wrapper {
   position: relative;
+  overflow: visible; // Enable sticky support globally
+  
+  .page-body-wrapper {
+    overflow: visible;
+    
+    .page-body {
+      overflow: visible;
+    }
+  }
+  
   .page-header {
     max-width: 100vw;
     position: $main-header-position;
@@ -1040,8 +1050,20 @@
                 transition: all 0.3s ease;
 
                 &.active {
-                  //background-image: linear-gradient(90deg, var(--theme-deafult) 0%, #a26cf8 100%);
-                  background-color: lighten($primary-color, 22%);
+                  // Removed background on active state
+                  background-color: transparent;
+                  transition: all 0.3s ease;
+
+                  svg,
+                  span {
+                    color: var(--theme-deafult);
+                    stroke: $primary-color;
+                    transition: all 0.3s ease;
+                  }
+                }
+
+                &:hover {
+                  background-color: rgba($primary-color, 0.1);
                   transition: all 0.3s ease;
 
                   svg,
@@ -2869,51 +2891,52 @@
   // material css
   &.material-type {
     position: relative;
+    background: none;
+    padding-top: 50px;
 
     &::before {
+      display: block;
       position: absolute;
       content: "";
       left: 0;
+      top: 0;
       width: 100%;
       height: 300px;
       background-color: $primary-color;
+      z-index: 0;
     }
 
     .card {
       box-shadow: 0 0 20px rgba($black, 0.05);
+      background-color: $white;
     }
 
     .page-header {
       position: relative;
       max-width: 1560px;
-      margin: 50px auto 0;
+      margin: 0 auto;
       border-radius: 15px 15px 0 0;
+      
+      &.row {
+        width: 100%;
+      }
+      
       .header-wrapper {
         .left-header {
           width: 31%;
-          @media (max-width: 1600px) {
-            width: 33%;
-          }
-          @media (max-width: 1366px) {
-            width: 38%;
-          }
-          @media (max-width: 1199px) {
-            width: 30%;
-          }
+          @media (max-width: 1600px) { width: 33%; }
+          @media (max-width: 1366px) { width: 38%; }
+          @media (max-width: 1199px) { width: 30%; }
         }
         .nav-right {
-          @media (max-width: 1600px) {
-            width: 40%;
-          }
-          @media (max-width: 1199px) {
-            width: 45%;
-          }
+          @media (max-width: 1600px) { width: 40%; }
+          @media (max-width: 1199px) { width: 45%; }
         }
       }
     }
 
     .page-body-wrapper {
-      background-color: rgba($white, 0.5);
+      background-color: transparent !important;
 
       .sidebar-wrapper {
         position: relative;
@@ -2929,12 +2952,15 @@
         background-color: $body-color;
         box-shadow: 0 0 20px 7px rgba(8, 21, 66, 0.05);
         border-radius: 0 0 15px 15px;
+        position: relative;
+        z-index: 2;
       }
     }
 
     .footer {
       margin-top: 40px;
     }
+    
     &.compact-wrapper {
       .page-header {
         .header-wrapper {
@@ -2950,6 +2976,7 @@
       }
     }
   }
+
 
   &.advance-layout {
     background-blend-mode: overlay;
@@ -3476,10 +3503,10 @@
   }
 }
 
-// Custom active sidebar link with light background
+// Custom active sidebar link - no background, only color change
 .sidebar-link.active,
 .router-link-active.router-link-exact-active.sidebar-link.active {
-  background-color: rgba($primary-color, 0.12) !important;
+  background-color: transparent !important;
   
   span {
     color: $primary-color !important;
@@ -3499,6 +3526,25 @@
   
   .according-menu i {
     color: $primary-color !important;
+  }
+}
+
+// Hover effect on horizontal menu - modern lift effect
+.horizontal-wrapper .sidebar-wrapper .sidebar-main .sidebar-links > li > a {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: transparent !important;
+    transform: translateY(-3px);
+    
+    span {
+      color: $primary-color !important;
+    }
+    
+    svg {
+      stroke: $primary-color !important;
+      transform: scale(1.1);
+    }
   }
 }
 

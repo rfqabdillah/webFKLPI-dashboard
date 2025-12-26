@@ -281,11 +281,11 @@
             <label class="text-muted small fw-medium mb-1">{{
               $t("Interests")
             }}</label>
-            <div class="d-flex flex-wrap gap-2 mt-1">
+            <div class="interest-chips">
               <span
                 v-for="(interest, index) in parseBubble(user.minat)"
                 :key="index"
-                class="badge bg-light text-primary border border-primary px-3 py-2"
+                class="interest-chip"
               >
                 {{ interest }}
               </span>
@@ -341,3 +341,32 @@ function unescapeHtml(safe) {
     .replace(/&#039;/g, "'");
 }
 </script>
+
+<style scoped>
+.interest-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.interest-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: transparent;
+  border: 1.5px solid #15406a;
+  color: #15406a;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.interest-chip:hover {
+  background: #15406a;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 64, 106, 0.25);
+}
+</style>

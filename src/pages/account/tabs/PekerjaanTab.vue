@@ -1,10 +1,7 @@
 <template>
   <div class="step-pekerjaan">
-    <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">{{ $t("Loading") }}...</span>
-      </div>
-      <p class="mt-2 text-muted">{{ $t("Loading") }}...</p>
+    <div v-if="isLoading" class="py-3">
+      <SkeletonGroup type="form-card" :count="2" />
     </div>
 
     <div v-else>
@@ -72,7 +69,7 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <div class="col-md-6">
+              <div class="col-12">
                 <label class="form-label fw-semibold">
                   {{ $t("ProfileSteps.Job.JobName") }}
                   <span class="text-danger">*</span>
@@ -91,7 +88,7 @@
                 </div>
               </div>
 
-              <div class="col-md-6">
+              <div class="col-12">
                 <label class="form-label fw-semibold">
                   {{ $t("ProfileSteps.Job.CompanyName") }}
                   <span class="text-danger">*</span>
@@ -110,7 +107,7 @@
                 </div>
               </div>
 
-              <div class="col-md-6">
+              <div class="col-12">
                 <label class="form-label fw-semibold">
                   Tipe Pekerjaan <span class="text-danger">*</span>
                 </label>
@@ -135,7 +132,7 @@
                 </div>
               </div>
 
-              <div class="col-md-3">
+              <div class="col-md-6">
                 <label class="form-label fw-semibold">
                   Tanggal Mulai <span class="text-danger">*</span>
                 </label>
@@ -152,7 +149,7 @@
                 </div>
               </div>
 
-              <div class="col-md-3">
+              <div class="col-md-6">
                 <label class="form-label fw-semibold">Tanggal Selesai</label>
                 <input
                   type="date"
@@ -222,6 +219,7 @@ import {
 } from "@/services/general/personnel/userWorkExperiences";
 import Swal from "sweetalert2";
 import * as yup from "yup";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
 
 const { t, locale } = useI18n();
 
@@ -233,6 +231,10 @@ const props = defineProps({
   currentUserId: {
     type: String,
     default: "",
+  },
+  shouldLoad: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -305,12 +307,12 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
-// Watch for currentUserId changes to auto-load data
+// Watch for shouldLoad to trigger data loading (lazy load)
 watch(
-  () => props.currentUserId,
-  async (newUserId) => {
-    if (newUserId && !isDataLoaded.value) {
-      await loadData(newUserId);
+  () => props.shouldLoad,
+  async (shouldLoad) => {
+    if (shouldLoad && props.currentUserId && !isDataLoaded.value) {
+      await loadData(props.currentUserId);
     }
   },
   { immediate: true }
