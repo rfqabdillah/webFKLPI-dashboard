@@ -197,34 +197,6 @@
               @update:email-form="Object.assign(emailForm, $event)"
             />
 
-            <!-- TAB: Pendidikan -->
-            <PendidikanTab
-              v-show="activeTab === 'pendidikan'"
-              :current-user-id="currentUserId"
-              :should-load="visitedTabs.has('pendidikan')"
-            />
-
-            <!-- TAB: Pekerjaan -->
-            <PekerjaanTab
-              v-show="activeTab === 'pekerjaan'"
-              :current-user-id="currentUserId"
-              :should-load="visitedTabs.has('pekerjaan')"
-            />
-
-            <!-- TAB: Pelatihan -->
-            <PelatihanTab
-              v-show="activeTab === 'pelatihan'"
-              :current-user-id="currentUserId"
-              :should-load="visitedTabs.has('pelatihan')"
-            />
-
-            <!-- TAB: Prestasi -->
-            <PrestasiTab
-              v-show="activeTab === 'prestasi'"
-              :current-user-id="currentUserId"
-              :should-load="visitedTabs.has('prestasi')"
-            />
-
             <!-- ASN-only Tabs -->
             <!-- TAB: Unit Kerja -->
             <UnitKerjaTab
@@ -248,6 +220,34 @@
               v-show="activeTab === 'pangkat'"
               :current-user-id="currentUserId"
               :should-load="visitedTabs.has('pangkat')"
+            />
+
+            <!-- TAB: Pekerjaan -->
+            <PekerjaanTab
+              v-show="activeTab === 'pekerjaan'"
+              :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pekerjaan')"
+            />
+
+            <!-- TAB: Pendidikan -->
+            <PendidikanTab
+              v-show="activeTab === 'pendidikan'"
+              :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pendidikan')"
+            />
+
+            <!-- TAB: Pelatihan -->
+            <PelatihanTab
+              v-show="activeTab === 'pelatihan'"
+              :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('pelatihan')"
+            />
+
+            <!-- TAB: Prestasi -->
+            <PrestasiTab
+              v-show="activeTab === 'prestasi'"
+              :current-user-id="currentUserId"
+              :should-load="visitedTabs.has('prestasi')"
             />
           </div>
         </div>
@@ -309,15 +309,23 @@ const TAB_CONFIG = [
   { key: "basic", icon: "fa-user", labelKey: "Basic Info", asnOnly: false },
   { key: "security", icon: "fa-shield", labelKey: "Security", asnOnly: false },
   {
-    key: "pendidikan",
-    icon: "fa-graduation-cap",
-    labelKey: "Education",
-    asnOnly: false,
+    key: "unitkerja",
+    icon: "fa-building",
+    labelKey: "Work Unit",
+    asnOnly: true,
   },
+  { key: "jabatan", icon: "fa-id-badge", labelKey: "Position", asnOnly: true },
+  { key: "pangkat", icon: "fa-star", labelKey: "Rank", asnOnly: true },
   {
     key: "pekerjaan",
     icon: "fa-briefcase",
     labelKey: "Work Experience",
+    asnOnly: false,
+  },
+  {
+    key: "pendidikan",
+    icon: "fa-graduation-cap",
+    labelKey: "Education",
     asnOnly: false,
   },
   {
@@ -332,14 +340,6 @@ const TAB_CONFIG = [
     labelKey: "Achievements",
     asnOnly: false,
   },
-  {
-    key: "unitkerja",
-    icon: "fa-building",
-    labelKey: "Work Unit",
-    asnOnly: true,
-  },
-  { key: "jabatan", icon: "fa-id-badge", labelKey: "Position", asnOnly: true },
-  { key: "pangkat", icon: "fa-star", labelKey: "Rank", asnOnly: true },
 ];
 
 // === State ===
@@ -835,8 +835,6 @@ onMounted(() => {
   padding-bottom: 2rem;
   overflow: visible;
 }
-
-/* Sticky styles moved to @media query */
 
 .nav-tabs {
   border-bottom: none;

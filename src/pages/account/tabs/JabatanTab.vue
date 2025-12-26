@@ -533,10 +533,10 @@ function removeJenjang(index) {
   const item = jenjangList.value[index];
 
   Swal.fire({
-    title: t("Swal.DeleteTitle"),
+    title: t("ProfileSteps.Position.DeleteConfirmTitle"),
     text: item.idpenggunajenjang
-      ? t("Swal.DeletePermanent")
-      : t("Swal.DeleteConfirm"),
+      ? t("ProfileSteps.Position.DeleteConfirmTextDB")
+      : t("ProfileSteps.Position.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
@@ -550,13 +550,13 @@ function removeJenjang(index) {
         if (item.idpenggunajenjang) {
           await deleteUserLevel(item.idpenggunajenjang);
         }
-        toast.success(t("Swal.DeleteSuccess"));
+        toast.success(t("ProfileSteps.Position.DeleteSuccess"));
 
         jenjangList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting user level:", error);
-        toast.error(t("Swal.DeleteError"));
+        toast.error(t("ProfileSteps.Position.DeleteError"));
       }
     }
   });

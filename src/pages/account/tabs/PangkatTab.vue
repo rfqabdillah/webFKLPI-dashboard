@@ -14,7 +14,7 @@
             {{ $t("ProfileSteps.Rank.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-info btn-sm" @click="addPangkat">
+        <button class="btn btn-success btn-sm" @click="addPangkat">
           <i class="fa fa-plus me-1"></i> {{ $t("ProfileSteps.Rank.AddData") }}
         </button>
       </div>
@@ -515,10 +515,10 @@ function removePangkat(index) {
   const item = pangkatList.value[index];
 
   Swal.fire({
-    title: t("Swal.DeleteTitle"),
+    title: t("ProfileSteps.Rank.DeleteConfirmTitle"),
     text: item.idpenggunapangkat
-      ? t("Swal.DeletePermanent")
-      : t("Swal.DeleteConfirm"),
+      ? t("ProfileSteps.Rank.DeleteConfirmTextDB")
+      : t("ProfileSteps.Rank.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
@@ -532,13 +532,13 @@ function removePangkat(index) {
         if (item.idpenggunapangkat) {
           await deleteUserRank(item.idpenggunapangkat);
         }
-        toast.success(t("Swal.DeleteSuccess"));
+        toast.success(t("ProfileSteps.Rank.DeleteSuccess"));
 
         pangkatList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pangkat:", error);
-        toast.error(t("Swal.DeleteError"));
+        toast.error(t("ProfileSteps.Rank.DeleteError"));
       }
     }
   });

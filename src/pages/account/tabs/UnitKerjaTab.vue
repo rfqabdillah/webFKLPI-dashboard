@@ -527,10 +527,10 @@ function removeUnitKerja(index) {
   const item = unitKerjaList.value[index];
 
   Swal.fire({
-    title: t("Swal.DeleteTitle"),
+    title: t("ProfileSteps.WorkUnit.DeleteConfirmTitle"),
     text: item.idpenggunaunitkerja
-      ? t("Swal.DeletePermanent")
-      : t("Swal.DeleteConfirm"),
+      ? t("ProfileSteps.WorkUnit.DeleteConfirmTextDB")
+      : t("ProfileSteps.WorkUnit.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
@@ -544,13 +544,13 @@ function removeUnitKerja(index) {
         if (item.idpenggunaunitkerja) {
           await deleteUserWorkUnit(item.idpenggunaunitkerja);
         }
-        toast.success(t("Swal.DeleteSuccess"));
+        toast.success(t("ProfileSteps.WorkUnit.DeleteSuccess"));
 
         unitKerjaList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting unit kerja:", error);
-        toast.error(t("Swal.DeleteError"));
+        toast.error(t("ProfileSteps.WorkUnit.DeleteError"));
       }
     }
   });

@@ -477,10 +477,10 @@ function removePekerjaan(index) {
   const item = pekerjaanList.value[index];
 
   Swal.fire({
-    title: t("Swal.DeleteTitle"),
+    title: t("ProfileSteps.Job.DeleteConfirmTitle"),
     text: item.idpenggunapekerjaan
-      ? t("Swal.DeletePermanent")
-      : t("Swal.DeleteConfirm"),
+      ? t("ProfileSteps.Job.DeleteConfirmTextDB")
+      : t("ProfileSteps.Job.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
@@ -494,13 +494,13 @@ function removePekerjaan(index) {
         if (item.idpenggunapekerjaan) {
           await deleteUserWorkExperience(item.idpenggunapekerjaan);
         }
-        toast.success(t("Swal.DeleteSuccess"));
+        toast.success(t("ProfileSteps.Job.DeleteSuccess"));
 
         pekerjaanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pekerjaan:", error);
-        toast.error(t("Swal.DeleteError"));
+        toast.error(t("ProfileSteps.Job.DeleteError"));
       }
     }
   });

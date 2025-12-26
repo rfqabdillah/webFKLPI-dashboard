@@ -446,10 +446,10 @@ function removePendidikan(index) {
   const item = pendidikanList.value[index];
 
   Swal.fire({
-    title: t("Swal.DeleteTitle"),
+    title: t("ProfileSteps.Education.DeleteConfirmTitle"),
     text: item.idpenggunapendidikan
-      ? t("Swal.DeletePermanent")
-      : t("Swal.DeleteConfirm"),
+      ? t("ProfileSteps.Education.DeleteConfirmTextDB")
+      : t("ProfileSteps.Education.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
@@ -463,13 +463,13 @@ function removePendidikan(index) {
         if (item.idpenggunapendidikan) {
           await deleteUserEducation(item.idpenggunapendidikan);
         }
-        toast.success(t("Swal.DeleteSuccess"));
+        toast.success(t("ProfileSteps.Education.DeleteSuccess"));
 
         pendidikanList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting pendidikan:", error);
-        toast.error(t("Swal.DeleteError"));
+        toast.error(t("ProfileSteps.Education.DeleteError"));
       }
     }
   });

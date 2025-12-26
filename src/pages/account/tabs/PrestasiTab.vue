@@ -538,10 +538,10 @@ function removePrestasi(index) {
   const item = prestasiList.value[index];
 
   Swal.fire({
-    title: t("Swal.DeleteTitle"),
+    title: t("ProfileSteps.Achievement.DeleteConfirmTitle"),
     text: item.idpenggunaprestasi
-      ? t("Swal.DeletePermanent")
-      : t("Swal.DeleteConfirm"),
+      ? t("ProfileSteps.Achievement.DeleteConfirmTextDB")
+      : t("ProfileSteps.Achievement.DeleteConfirmText"),
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
@@ -555,13 +555,13 @@ function removePrestasi(index) {
         if (item.idpenggunaprestasi) {
           await deleteUserAchievement(item.idpenggunaprestasi);
         }
-        toast.success(t("Swal.DeleteSuccess"));
+        toast.success(t("ProfileSteps.Achievement.DeleteSuccess"));
 
         prestasiList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting prestasi:", error);
-        toast.error(t("Swal.DeleteError"));
+        toast.error(t("ProfileSteps.Achievement.DeleteError"));
       }
     }
   });
