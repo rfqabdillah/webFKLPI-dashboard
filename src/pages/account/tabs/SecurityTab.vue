@@ -10,114 +10,115 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="info-list">
+        <div class="row g-3">
           <!-- Current Password -->
-          <div class="info-row">
-            <span class="info-label">{{ $t("Current Password") }}</span>
-            <div class="info-value">
-              <div class="input-group">
-                <input
-                  :value="passwordForm.currentPassword"
-                  @input="
-                    handlePasswordInput('currentPassword', $event.target.value)
-                  "
-                  @blur="validatePasswordField('currentPassword')"
-                  :type="showCurrentPassword ? 'text' : 'password'"
-                  class="form-control"
-                  :class="{ 'is-invalid': passwordErrors.currentPassword }"
-                  :placeholder="$t('Enter current password')"
-                />
-                <button
-                  class="btn btn-outline-primary"
-                  type="button"
-                  @click="showCurrentPassword = !showCurrentPassword"
-                >
-                  <i
-                    class="fa"
-                    :class="showCurrentPassword ? 'fa-eye-slash' : 'fa-eye'"
-                  ></i>
-                </button>
-              </div>
-              <small v-if="passwordErrors.currentPassword" class="text-danger">
-                {{ passwordErrors.currentPassword }}
-              </small>
+          <div class="col-12">
+            <label
+              class="form-label fw-bold text-muted small text-uppercase mb-1"
+              >{{ $t("Current Password") }}</label
+            >
+            <div class="input-group">
+              <input
+                :value="passwordForm.currentPassword"
+                @input="
+                  handlePasswordInput('currentPassword', $event.target.value)
+                "
+                @blur="validatePasswordField('currentPassword')"
+                :type="showCurrentPassword ? 'text' : 'password'"
+                class="form-control"
+                :class="{ 'is-invalid': passwordErrors.currentPassword }"
+                :placeholder="$t('Enter current password')"
+              />
+              <button
+                class="btn btn-outline-primary"
+                type="button"
+                @click="showCurrentPassword = !showCurrentPassword"
+              >
+                <i
+                  class="fa"
+                  :class="showCurrentPassword ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
             </div>
+            <small v-if="passwordErrors.currentPassword" class="text-danger">
+              {{ passwordErrors.currentPassword }}
+            </small>
           </div>
 
           <!-- New Password -->
-          <div class="info-row">
-            <span class="info-label">{{ $t("New Password") }}</span>
-            <div class="info-value">
-              <div class="input-group">
-                <input
-                  :value="passwordForm.newPassword"
-                  @input="
-                    handlePasswordInput('newPassword', $event.target.value)
-                  "
-                  @blur="validatePasswordField('newPassword')"
-                  :type="showNewPassword ? 'text' : 'password'"
-                  class="form-control"
-                  :class="{ 'is-invalid': passwordErrors.newPassword }"
-                  :placeholder="$t('Enter new password')"
-                  :disabled="!passwordForm.currentPassword"
-                />
-                <button
-                  class="btn btn-outline-primary"
-                  type="button"
-                  @click="showNewPassword = !showNewPassword"
-                  :disabled="!passwordForm.currentPassword"
-                >
-                  <i
-                    class="fa"
-                    :class="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"
-                  ></i>
-                </button>
-              </div>
-              <small v-if="passwordErrors.newPassword" class="text-danger">
-                {{ passwordErrors.newPassword }}
-              </small>
+          <div class="col-12">
+            <label
+              class="form-label fw-bold text-muted small text-uppercase mb-1"
+              >{{ $t("New Password") }}</label
+            >
+            <div class="input-group">
+              <input
+                :value="passwordForm.newPassword"
+                @input="handlePasswordInput('newPassword', $event.target.value)"
+                @blur="validatePasswordField('newPassword')"
+                :type="showNewPassword ? 'text' : 'password'"
+                class="form-control"
+                :class="{ 'is-invalid': passwordErrors.newPassword }"
+                :placeholder="$t('Enter new password')"
+                :disabled="!passwordForm.currentPassword"
+              />
+              <button
+                class="btn btn-outline-primary"
+                type="button"
+                @click="showNewPassword = !showNewPassword"
+                :disabled="!passwordForm.currentPassword"
+              >
+                <i
+                  class="fa"
+                  :class="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
             </div>
+            <small v-if="passwordErrors.newPassword" class="text-danger">
+              {{ passwordErrors.newPassword }}
+            </small>
           </div>
 
           <!-- Confirm New Password -->
-          <div class="info-row">
-            <span class="info-label">{{ $t("Confirm New Password") }}</span>
-            <div class="info-value">
-              <div class="input-group">
-                <input
-                  :value="passwordForm.confirmPassword"
-                  @input="
-                    handlePasswordInput('confirmPassword', $event.target.value)
-                  "
-                  @blur="validatePasswordField('confirmPassword')"
-                  :type="showConfirmPassword ? 'text' : 'password'"
-                  class="form-control"
-                  :class="{ 'is-invalid': passwordErrors.confirmPassword }"
-                  :placeholder="$t('Confirm new password')"
-                  :disabled="!passwordForm.newPassword"
-                />
-                <button
-                  class="btn btn-outline-primary"
-                  type="button"
-                  @click="showConfirmPassword = !showConfirmPassword"
-                  :disabled="!passwordForm.newPassword"
-                >
-                  <i
-                    class="fa"
-                    :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
-                  ></i>
-                </button>
-              </div>
-              <small v-if="passwordErrors.confirmPassword" class="text-danger">
-                {{ passwordErrors.confirmPassword }}
-              </small>
+          <div class="col-12">
+            <label
+              class="form-label fw-bold text-muted small text-uppercase mb-1"
+              >{{ $t("Confirm New Password") }}</label
+            >
+            <div class="input-group">
+              <input
+                :value="passwordForm.confirmPassword"
+                @input="
+                  handlePasswordInput('confirmPassword', $event.target.value)
+                "
+                @blur="validatePasswordField('confirmPassword')"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                class="form-control"
+                :class="{ 'is-invalid': passwordErrors.confirmPassword }"
+                :placeholder="$t('Confirm new password')"
+                :disabled="!passwordForm.newPassword"
+              />
+              <button
+                class="btn btn-outline-primary"
+                type="button"
+                @click="showConfirmPassword = !showConfirmPassword"
+                :disabled="!passwordForm.newPassword"
+              >
+                <i
+                  class="fa"
+                  :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
             </div>
+            <small v-if="passwordErrors.confirmPassword" class="text-danger">
+              {{ passwordErrors.confirmPassword }}
+            </small>
           </div>
 
           <!-- Change Password Button -->
-          <div class="mt-3 text-end">
+          <div class="col-12 text-end mt-4">
             <button
-              class="btn btn-warning"
+              class="btn btn-primary"
               @click="handleChangePassword"
               :disabled="!isPasswordFormValid || isChangingPassword"
             >
@@ -265,57 +266,7 @@ const handleChangePassword = async () => {
   font-size: 14px;
 }
 
-.info-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-row {
-  display: flex;
-  align-items: flex-start;
-  padding: 12px 0;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.info-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.info-row:first-child {
-  padding-top: 0;
-}
-
-.info-label {
-  flex: 0 0 160px;
-  font-size: 14px;
-  color: #6c757d;
-  font-weight: 500;
-}
-
-.info-value {
-  flex: 1;
-  font-size: 15px;
-  color: #333;
-  font-weight: 500;
-}
-
-.info-value .form-control {
-  font-size: 14px;
-}
-
 .is-invalid {
   border-color: #dc3545 !important;
-}
-
-@media (max-width: 576px) {
-  .info-row {
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .info-label {
-    flex: none;
-  }
 }
 </style>

@@ -14,7 +14,7 @@
             {{ $t("ProfileSteps.Rank.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-success btn-sm" @click="addPangkat">
+        <button class="btn btn-primary btn-sm" @click="addPangkat">
           <i class="fa fa-plus me-1"></i> {{ $t("ProfileSteps.Rank.AddData") }}
         </button>
       </div>
@@ -234,7 +234,7 @@
         class="d-flex justify-content-end mt-3"
       >
         <button
-          class="btn btn-success save-btn"
+          class="btn btn-primary save-btn"
           @click="saveData"
           :disabled="isSaving"
         >
@@ -656,10 +656,25 @@ defineExpose({ validate, loadData });
   display: block;
 }
 .save-btn {
+  background: #0d6efd;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
   transition: all 0.3s ease;
 }
+
 .save-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+  background: #0b5ed7;
+  transform: scale(1.02);
+}
+
+.save-btn:disabled {
+  opacity: 1;
+  background: #6c9bd1;
+  cursor: not-allowed;
+  color: white;
 }
 </style>

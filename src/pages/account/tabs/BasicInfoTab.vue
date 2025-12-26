@@ -75,6 +75,32 @@
             </div>
           </div>
 
+          <!-- Jenis Kelamin -->
+          <div class="info-row">
+            <span class="info-label">{{ $t("Gender") }}</span>
+            <div class="info-value">
+              <select
+                v-if="isEditing"
+                class="form-select"
+                :value="editForm.idjeniskelamin"
+                @change="handleInput('idjeniskelamin', $event.target.value)"
+                :disabled="gendersLoading"
+              >
+                <option value="" disabled>
+                  {{ gendersLoading ? $t("Loading") : $t("Select Gender") }}
+                </option>
+                <option
+                  v-for="gender in genderOptions"
+                  :key="gender.idjeniskelamin"
+                  :value="gender.idjeniskelamin"
+                >
+                  {{ gender.namajeniskelamin }}
+                </option>
+              </select>
+              <span v-else class="fw-medium">{{ genderName || "-" }}</span>
+            </div>
+          </div>
+
           <!-- NIK -->
           <div class="info-row">
             <span class="info-label">
@@ -132,33 +158,7 @@
             </div>
           </div>
 
-          <!-- Jenis Kelamin -->
-          <div class="info-row">
-            <span class="info-label">{{ $t("Gender") }}</span>
-            <div class="info-value">
-              <select
-                v-if="isEditing"
-                class="form-select"
-                :value="editForm.idjeniskelamin"
-                @change="handleInput('idjeniskelamin', $event.target.value)"
-                :disabled="gendersLoading"
-              >
-                <option value="" disabled>
-                  {{ gendersLoading ? $t("Loading") : $t("Select Gender") }}
-                </option>
-                <option
-                  v-for="gender in genderOptions"
-                  :key="gender.idjeniskelamin"
-                  :value="gender.idjeniskelamin"
-                >
-                  {{ gender.namajeniskelamin }}
-                </option>
-              </select>
-              <span v-else>{{ genderName || "-" }}</span>
-            </div>
-          </div>
-
-          <!-- Jenis Pegawai -->
+          <!-- Employee Type -->
           <div class="info-row">
             <span class="info-label">{{ $t("Employee Type") }}</span>
             <div class="info-value">
@@ -966,6 +966,7 @@ defineExpose({ validate });
   flex-direction: column;
 }
 
+/* Info Row Styles */
 .info-row {
   display: flex;
   align-items: flex-start;
@@ -987,6 +988,7 @@ defineExpose({ validate });
   font-size: 14px;
   color: #6c757d;
   font-weight: 500;
+  padding-top: 7px;
 }
 
 .info-value {
@@ -994,15 +996,35 @@ defineExpose({ validate });
   font-size: 15px;
   color: #333;
   font-weight: 500;
+  min-width: 0;
 }
 
 .info-value .form-control,
 .info-value .form-select {
   font-size: 14px;
+  width: 100% !important;
 }
 
 .invalid-feedback {
   display: block;
+}
+
+@media (max-width: 768px) {
+  .info-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .info-label {
+    flex: none;
+    width: 100%;
+    padding-top: 0;
+    margin-bottom: 4px;
+  }
+
+  .info-value {
+    width: 100%;
+  }
 }
 
 /* Interest Bubble Styles */
@@ -1088,17 +1110,6 @@ defineExpose({ validate });
 
 .interest-input::placeholder {
   color: #adb5bd;
-}
-
-@media (max-width: 576px) {
-  .info-row {
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .info-label {
-    flex: none;
-  }
 }
 
 /* Modern Change Email Styles */
