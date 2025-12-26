@@ -1,10 +1,7 @@
 <template>
   <div class="step-prestasi">
-    <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
+    <div v-if="isLoading" class="py-3">
+      <SkeletonGroup type="form-card" :count="2" />
     </div>
 
     <div v-else>
@@ -12,15 +9,15 @@
         <div>
           <h6 class="mb-1">
             <i class="fa fa-trophy me-2"></i
-            >{{ t("ProfileSteps.Achievement.Title") }}
+            >{{ $t("ProfileSteps.Achievement.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            {{ t("ProfileSteps.Achievement.Subtitle") }}
+            {{ $t("ProfileSteps.Achievement.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addPrestasi">
           <i class="fa fa-plus me-1"></i>
-          {{ t("ProfileSteps.Achievement.AddData") }}
+          {{ $t("ProfileSteps.Achievement.AddData") }}
         </button>
       </div>
 
@@ -28,12 +25,11 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
-        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
+        <strong>{{ $t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ $t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i>
-          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
-        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
+          ><i class="fa fa-check-circle"></i> {{ $t("Active") }}</strong
+        >{{ $t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -42,11 +38,11 @@
       >
         <i class="fa fa-trophy text-muted fa-2x mb-2"></i>
         <p class="text-muted mb-2 small">
-          {{ t("ProfileSteps.Achievement.EmptyState") }}
+          {{ $t("ProfileSteps.Achievement.EmptyState") }}
         </p>
         <button class="btn btn-outline-primary btn-sm" @click="addPrestasi">
           <i class="fa fa-plus me-1"></i>
-          {{ t("ProfileSteps.Achievement.AddAchievement") }}
+          {{ $t("ProfileSteps.Achievement.AddAchievement") }}
         </button>
       </div>
 
@@ -63,12 +59,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              {{ t("ProfileSteps.Achievement.DataHeader") }}
+              {{ $t("ProfileSteps.Achievement.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removePrestasi(index)"
-              :title="t('ProfileSteps.WorkUnit.RemoveData')"
+              :title="$t('Delete')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -77,7 +73,7 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Achievement.AchievementName") }}
+                  {{ $t("ProfileSteps.Achievement.AchievementName") }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -87,7 +83,7 @@
                   :class="{ 'is-invalid': getError(index, 'namaprestasi') }"
                   required
                   :placeholder="
-                    t('ProfileSteps.Achievement.AchievementNamePlaceholder')
+                    $t('ProfileSteps.Achievement.AchievementNamePlaceholder')
                   "
                   @blur="validateField(index, 'namaprestasi')"
                 />
@@ -98,7 +94,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Achievement.AchievementScale") }}
+                  {{ $t("ProfileSteps.Achievement.AchievementScale") }}
                   <span class="text-danger">*</span>
                 </label>
                 <select
@@ -109,7 +105,7 @@
                   @blur="validateField(index, 'idskala')"
                 >
                   <option value="" disabled>
-                    {{ t("ProfileSteps.Achievement.SelectScale") }}
+                    {{ $t("ProfileSteps.Achievement.SelectScale") }}
                   </option>
                   <option
                     v-for="skala in scaleOptions"
@@ -126,8 +122,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.Achievement.Organizer") }}
-                  <span class="text-danger">*</span>
+                  Nama Penyelenggara <span class="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -137,9 +132,7 @@
                     'is-invalid': getError(index, 'namapenyelenggara'),
                   }"
                   required
-                  :placeholder="
-                    t('ProfileSteps.Achievement.OrganizerPlaceholder')
-                  "
+                  placeholder="Contoh: Kementerian PANRB"
                   @blur="validateField(index, 'namapenyelenggara')"
                 />
                 <div class="invalid-feedback">
@@ -148,9 +141,7 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">{{
-                  t("ProfileSteps.Training.CertificateFile")
-                }}</label>
+                <label class="form-label fw-semibold">File Sertifikat</label>
 
                 <input
                   type="file"
@@ -171,7 +162,7 @@
                       <small
                         class="text-muted d-block"
                         style="font-size: 0.75rem"
-                        >{{ t("ProfileSteps.WorkUnit.SavedFile") }}</small
+                        >File Tersimpan:</small
                       >
                       <span
                         class="fw-bold text-dark text-truncate d-block"
@@ -187,33 +178,50 @@
                     target="_blank"
                     class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
                   >
-                    <i class="fa fa-external-link me-1"></i>
-                    {{ t("ProfileSteps.WorkUnit.Open") }}
+                    <i class="fa fa-external-link me-1"></i> {{ $t("Open") }}
                   </a>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-2"
+                    @click="removeFile(index)"
+                    :title="$t('RemoveFile')"
+                  >
+                    <i class="fa fa-times"></i>
+                  </button>
                 </div>
 
                 <div
                   v-else-if="item.filesertifikat_preview"
                   class="mt-2 p-2 border border-success rounded bg-white text-success"
                 >
-                  <div class="d-flex align-items-center">
-                    <i class="fa fa-check-circle fa-lg me-2"></i>
-                    <div class="overflow-hidden">
-                      <small class="d-block text-muted">{{
-                        t("ProfileSteps.WorkUnit.NewFileSelected")
-                      }}</small>
-                      <strong class="text-truncate d-block">{{
-                        item.filesertifikat_preview
-                      }}</strong>
+                  <div
+                    class="d-flex align-items-center justify-content-between"
+                  >
+                    <div class="d-flex align-items-center overflow-hidden">
+                      <i class="fa fa-check-circle fa-lg me-2"></i>
+                      <div class="overflow-hidden">
+                        <small class="d-block text-muted"
+                          >{{ $t("NewFileSelected") }}:</small
+                        >
+                        <strong class="text-truncate d-block">{{
+                          item.filesertifikat_preview
+                        }}</strong>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger ms-2"
+                      @click="removeFile(index)"
+                      :title="$t('RemoveFile')"
+                    >
+                      <i class="fa fa-times"></i>
+                    </button>
                   </div>
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">{{
-                  t("ProfileSteps.WorkUnit.Status")
-                }}</label>
+                <label class="form-label fw-semibold d-block">Status</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -227,7 +235,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || t("Inactive") }}
+                    {{ item.status || "Tidak Aktif" }}
                   </label>
                 </div>
               </div>
@@ -235,6 +243,26 @@
           </div>
         </div>
       </transition-group>
+
+      <!-- Save Button -->
+      <div
+        v-if="prestasiList.length > 0"
+        class="d-flex justify-content-end mt-3"
+      >
+        <button
+          class="btn btn-success save-btn"
+          @click="saveData"
+          :disabled="isSaving"
+        >
+          <span
+            v-if="isSaving"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          ></span>
+          <i v-else class="fa fa-save me-2"></i>
+          {{ isSaving ? "Menyimpan..." : "Simpan Data" }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -246,10 +274,15 @@ import { useI18n } from "vue-i18n";
 import { getScales } from "@/services/referensi/scale";
 import {
   getUserAchievements,
+  addUserAchievement,
+  updateUserAchievement,
   deleteUserAchievement,
 } from "@/services/general/personnel/userAchievments";
 import Swal from "sweetalert2";
 import * as yup from "yup";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
   modelValue: {
@@ -260,11 +293,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  shouldLoad: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
-const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
@@ -273,17 +309,39 @@ const prestasiList = ref([]);
 const formErrors = ref([]);
 
 // === Yup Validation Schema ===
-const validationSchema = yup.object().shape({
-  namaprestasi: yup
-    .string()
-    .required(t("ProfileSteps.Achievement.Validation.NameRequired")),
-  idskala: yup
-    .string()
-    .required(t("ProfileSteps.Achievement.Validation.ScaleRequired")),
-  namapenyelenggara: yup
-    .string()
-    .required(t("ProfileSteps.Achievement.Validation.OrganizerRequired")),
-});
+const getValidationSchema = () =>
+  yup.object().shape({
+    namaprestasi: yup
+      .string()
+      .required(() => t("ProfileSteps.Achievement.Validation.NameRequired")),
+    idskala: yup
+      .string()
+      .required(() => t("ProfileSteps.Achievement.Validation.ScaleRequired")),
+    namapenyelenggara: yup
+      .string()
+      .required(() =>
+        t("ProfileSteps.Achievement.Validation.OrganizerRequired")
+      ),
+  });
+
+// Re-validate when locale changes to update error messages
+watch(
+  () => locale.value,
+  () => {
+    formErrors.value.forEach((errors, index) => {
+      if (Object.keys(errors).some((key) => errors[key])) {
+        const item = prestasiList.value[index];
+        if (item) {
+          Object.keys(errors).forEach((field) => {
+            if (errors[field]) {
+              validateField(index, field);
+            }
+          });
+        }
+      }
+    });
+  }
+);
 
 // === Helper Functions ===
 const isUrl = (string) => {
@@ -295,18 +353,32 @@ const isUrl = (string) => {
 onMounted(async () => {
   await fetchScales();
 
-  if (props.modelValue && Array.isArray(props.modelValue.list)) {
-    prestasiList.value = props.modelValue.list.map((item) => ({
-      ...item,
-      _tempId: Date.now() + Math.random(),
-    }));
-    formErrors.value = prestasiList.value.map(() => ({}));
-  } else {
-    prestasiList.value = [];
-    formErrors.value = [];
+  // Only set initial values if data hasn't been loaded from API yet
+  if (!isDataLoaded.value) {
+    if (props.modelValue && Array.isArray(props.modelValue.list)) {
+      prestasiList.value = props.modelValue.list.map((item) => ({
+        ...item,
+        _tempId: Date.now() + Math.random(),
+      }));
+      formErrors.value = prestasiList.value.map(() => ({}));
+    } else {
+      prestasiList.value = [];
+      formErrors.value = [];
+    }
   }
   emit("validation-change", true);
 });
+
+// Watch for shouldLoad to trigger data loading (lazy load)
+watch(
+  () => props.shouldLoad,
+  async (shouldLoad) => {
+    if (shouldLoad && props.currentUserId && !isDataLoaded.value) {
+      await loadData(props.currentUserId);
+    }
+  },
+  { immediate: true }
+);
 
 /**
  * Remove duplicates from array based on a key
@@ -343,13 +415,13 @@ async function loadData(userId) {
       } else if (res.data && res.data.data) {
         rawData = res.data.data;
       }
-      const filteredData = rawData.filter((d) => d.idpengguna === userId);
+      const filteredData = rawData; // API already filters by idpengguna
       const apiData = filteredData.map((d) => ({
         idpenggunaprestasi: d.idpenggunaprestasi,
         namaprestasi: d.namaprestasi,
         idskala: d.idskala,
         namapenyelenggara: d.namapenyelenggara,
-        status: d.statusprestasi || d.status,
+        status: d.status,
         filesertifikat: d.filesertifikat,
         filesertifikat_preview: d.filesertifikat
           ? d.filesertifikat.split("/").pop()
@@ -389,7 +461,63 @@ async function fetchScales() {
     }
   } catch (error) {
     console.error("Error fetching scales:", error);
-    toast.error(t("ProfileSteps.Achievement.LoadError"));
+    toast.error("Gagal memuat data skala prestasi.");
+  }
+}
+
+const isSaving = ref(false);
+
+// === Save Function ===
+async function saveData() {
+  const isValid = await validate();
+  if (!isValid) {
+    toast.error("Mohon lengkapi data yang diperlukan");
+    return;
+  }
+
+  if (!props.currentUserId) {
+    toast.error("User ID tidak ditemukan");
+    return;
+  }
+
+  isSaving.value = true;
+
+  try {
+    for (const item of prestasiList.value) {
+      const formData = new FormData();
+      formData.append("record[idpengguna]", props.currentUserId);
+      formData.append("record[namaprestasi]", item.namaprestasi || "");
+      formData.append("record[idskala]", item.idskala || "");
+      formData.append(
+        "record[namapenyelenggara]",
+        item.namapenyelenggara || ""
+      );
+      formData.append("record[status]", item.status || "Tidak Aktif");
+
+      // Handle file upload
+      if (item.filesertifikat instanceof File) {
+        formData.append("upload_filesertifikat", item.filesertifikat);
+      }
+
+      if (item.idpenggunaprestasi) {
+        formData.append("_method", "PUT");
+        await updateUserAchievement(item.idpenggunaprestasi, formData);
+      } else {
+        const response = await addUserAchievement(formData);
+        if (response?.data?.idpenggunaprestasi) {
+          item.idpenggunaprestasi = response.data.idpenggunaprestasi;
+        } else if (response?.data?.data?.idpenggunaprestasi) {
+          item.idpenggunaprestasi = response.data.data.idpenggunaprestasi;
+        }
+      }
+    }
+
+    toast.success("Data prestasi berhasil disimpan");
+  } catch (error) {
+    console.error("Error saving prestasi:", error);
+    toast.error("Gagal menyimpan data prestasi");
+  } finally {
+    isSaving.value = false;
   }
 }
 
@@ -401,8 +529,7 @@ function addPrestasi() {
     namapenyelenggara: "",
     filesertifikat: null,
     filesertifikat_preview: "",
-
-    status: t("Inactive"),
+    status: "Tidak Aktif",
   });
   formErrors.value.push({});
 }
@@ -411,18 +538,14 @@ function removePrestasi(index) {
   const item = prestasiList.value[index];
 
   Swal.fire({
-    title: t("ProfileSteps.Achievement.DeleteConfirmTitle"),
+    title: t("Swal.DeleteTitle"),
     text: item.idpenggunaprestasi
-      ? t("ProfileSteps.Achievement.DeleteConfirmTextDB")
-      : t("ProfileSteps.Achievement.DeleteConfirmText"),
+      ? t("Swal.DeletePermanent")
+      : t("Swal.DeleteConfirm"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
-      "ProfileSteps.Achievement.DeleteButton"
-    )}`,
-    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
-      "ProfileSteps.Achievement.CancelButton"
-    )}`,
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t("Cancel")}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -432,16 +555,22 @@ function removePrestasi(index) {
         if (item.idpenggunaprestasi) {
           await deleteUserAchievement(item.idpenggunaprestasi);
         }
-        toast.success(t("ProfileSteps.Achievement.DeleteSuccess"));
+        toast.success(t("Swal.DeleteSuccess"));
 
         prestasiList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting prestasi:", error);
-        toast.error(t("ProfileSteps.Achievement.DeleteError"));
+        toast.error(t("Swal.DeleteError"));
       }
     }
   });
+}
+
+function removeFile(index) {
+  prestasiList.value[index].filesertifikat = null;
+  prestasiList.value[index].filesertifikat_preview = "";
+  prestasiList.value[index]._fileRemoved = true;
 }
 
 function handleFileUpload(index, event) {
@@ -458,14 +587,12 @@ function handleFileUpload(index, event) {
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked
-    ? t("ProfileSteps.WorkUnit.Active")
-    : t("Inactive");
+  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   prestasiList.value[index].status = newStatus;
-  if (newStatus === t("ProfileSteps.WorkUnit.Active")) {
+  if (newStatus === "Aktif") {
     prestasiList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = t("Inactive");
+        item.status = "Tidak Aktif";
       }
     });
   }
@@ -481,7 +608,8 @@ async function validateField(index, field) {
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
   try {
-    await validationSchema.validateAt(field, item);
+    const schema = getValidationSchema();
+    await schema.validateAt(field, item);
     formErrors.value[index][field] = "";
   } catch (error) {
     if (error instanceof yup.ValidationError) {
@@ -494,16 +622,15 @@ async function validate() {
   if (prestasiList.value.length === 0) return true;
 
   let isValid = true;
+  const schema = getValidationSchema();
 
   for (let index = 0; index < prestasiList.value.length; index++) {
     const item = prestasiList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
     try {
-      await validationSchema.validate(item, { abortEarly: false });
-      Object.keys(validationSchema.fields).forEach((field) => {
-        formErrors.value[index][field] = "";
-      });
+      await schema.validate(item, { abortEarly: false });
+      formErrors.value[index] = {};
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         isValid = false;
@@ -552,5 +679,12 @@ defineExpose({ validate, loadData });
 }
 .invalid-feedback {
   display: block;
+}
+.save-btn {
+  transition: all 0.3s ease;
+}
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
 }
 </style>

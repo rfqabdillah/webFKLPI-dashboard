@@ -34,6 +34,8 @@ export default {
   data() {
     return {
       pageBodyWidth: null,
+      resizeObserver: null,
+      debounceTimer: null,
     };
   },
   computed: {
@@ -51,13 +53,39 @@ export default {
     },
   },
   mounted() {
-    this.updateWidth();
-    window.addEventListener("resize", this.updateWidth);
+    this.initResizeObserver();
+    window.addEventListener("resize", this.debouncedUpdateWidth);
   },
   beforeUnmount() {
-    window.removeEventListener("resize", this.updateWidth);
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    window.removeEventListener("resize", this.debouncedUpdateWidth);
   },
   methods: {
+    initResizeObserver() {
+      const pageBody = document.querySelector(".page-body");
+      if (pageBody) {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.pageBodyWidth = pageBody.offsetWidth;
+        });
+        this.resizeObserver.observe(pageBody);
+        this.pageBodyWidth = pageBody.offsetWidth;
+      } else {
+        setTimeout(() => this.initResizeObserver(), 100);
+      }
+    },
+    debouncedUpdateWidth() {
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+      }
+      this.debounceTimer = setTimeout(() => {
+        this.updateWidth();
+      }, 50);
+    },
     updateWidth() {
       const pageBody = document.querySelector(".page-body");
       if (pageBody) {

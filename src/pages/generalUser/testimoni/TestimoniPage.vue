@@ -1,6 +1,13 @@
 <template>
   <div class="col-12">
-    <div class="card testimonial-card">
+    <!-- Loading State with Skeleton -->
+    <div v-if="isPageLoading" class="card testimonial-card">
+      <div class="card-body">
+        <SkeletonGroup type="testimonial" />
+      </div>
+    </div>
+
+    <div v-else class="card testimonial-card">
       <div class="card-header testimonial-header">
         <div class="header-content">
           <div class="header-icon">
@@ -178,11 +185,13 @@ import { ref, reactive, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useToast } from "vue-toastification";
 import { addTestimoni, getTestimoni } from "@/services/general/testimoni";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
 import * as yup from "yup";
 const toast = useToast();
 const { t } = useI18n();
 
 // State
+const isPageLoading = ref(true);
 const isSubmitting = ref(false);
 const isSubmitted = ref(false);
 const hoveredStar = ref(0);
@@ -378,9 +387,10 @@ const formatDate = (dateString) => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   loadUserFromStorage();
-  loadUserTestimonials();
+  await loadUserTestimonials();
+  isPageLoading.value = false;
 });
 </script>
 

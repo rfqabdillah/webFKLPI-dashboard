@@ -26,21 +26,35 @@
                   <h6 class="fw-bold text-dark mb-1">
                     {{ item.namapelatihan }}
                   </h6>
-
                   <div class="text-muted small mb-2">
                     <i class="fa fa-user-tie me-1"></i>
                     {{ item.namapenyelenggarapelatihan || "-" }}
+                  </div>
+                  <div class="text-muted small">
+                    <span class="me-3">
+                      <i class="fa fa-calendar-check me-1 text-success"></i>
+                      {{ $t("Start") }}:
+                      {{ formatDate(item.tglmulaipelatihan, locale) }}
+                    </span>
+                    <span>
+                      <i class="fa fa-calendar-times me-1 text-danger"></i>
+                      {{ $t("End") }}:
+                      {{
+                        formatDate(item.tglselesaipelatihan, locale) ||
+                        $t("Now")
+                      }}
+                    </span>
                   </div>
                 </div>
                 <span
                   class="badge rounded-pill px-3 py-1"
                   :class="
-                    item.status === 'Aktif'
+                    item.statuspelatihan === 'Aktif'
                       ? 'bg-soft-success text-success'
                       : 'bg-soft-secondary text-secondary'
                   "
                 >
-                  {{ item.status }}
+                  {{ item.statuspelatihan || "Tidak Aktif" }}
                 </span>
               </div>
             </div>
@@ -76,6 +90,16 @@ const props = defineProps({
     default: () => [],
   },
 });
+
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 </script>
 
 <style scoped>

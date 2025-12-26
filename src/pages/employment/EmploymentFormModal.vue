@@ -242,7 +242,7 @@ const allSteps = [
   },
   {
     key: "pekerjaan",
-    title: "Pengalaman Kerja",
+    title: "Pekerjaan",
     icon: "fa-solid fa-suitcase",
     asnOnly: false,
   },
@@ -601,43 +601,46 @@ function createBiodataFormData() {
   const data = new FormData();
   const biodata = wizardState.biodata.userData;
 
-  // Whitelist of allowed biodata fields - only these will be sent to the backend
-  const allowedFields = [
-    "idpengguna",
-    "idlevel",
-    "idjeniskelamin",
-    "idjenispengguna",
-    "idjenispegawai",
-    "email",
-    "nama",
-    "telp",
-    "nik",
-    "gelardepan",
-    "gelarbelakang",
-    "alamat",
-    "kodekabupaten",
-    "nip",
-    "no_karpeg",
-    "tempatlahir",
-    "tanggallahir",
-    "status",
-    "minat",
-    // Active relation IDs
-    "idpenggunajenjang",
-    "idpenggunapangkat",
-    "idpenggunapendidikan",
-    "idpenggunapelatihan",
-    "idpenggunaprestasi",
-    "idpenggunaunitkerja",
-  ];
+  // Append each field manually to avoid column name / alias issues
+  if (biodata.idpengguna) data.append("record[idpengguna]", biodata.idpengguna);
+  if (biodata.idlevel) data.append("record[idlevel]", biodata.idlevel);
+  if (biodata.idjeniskelamin)
+    data.append("record[idjeniskelamin]", biodata.idjeniskelamin);
+  if (biodata.idjenispengguna)
+    data.append("record[idjenispengguna]", biodata.idjenispengguna);
+  if (biodata.idjenispegawai)
+    data.append("record[idjenispegawai]", biodata.idjenispegawai);
 
-  allowedFields.forEach((key) => {
-    const value = biodata[key];
-    if (value !== null && value !== undefined && value !== "") {
-      data.append(`record[${key}]`, value);
-    }
-  });
+  data.append("record[email]", biodata.email || "");
+  data.append("record[nama]", biodata.nama || "");
+  data.append("record[telp]", biodata.telp || "");
+  data.append("record[nik]", biodata.nik || "");
+  data.append("record[gelardepan]", biodata.gelardepan || "");
+  data.append("record[gelarbelakang]", biodata.gelarbelakang || "");
+  data.append("record[alamat]", biodata.alamat || "");
+  data.append("record[kodekabupaten]", biodata.kodekabupaten || "");
+  data.append("record[nip]", biodata.nip || "");
+  data.append("record[no_karpeg]", biodata.no_karpeg || "");
+  data.append("record[tempatlahir]", biodata.tempatlahir || "");
+  data.append("record[tanggallahir]", biodata.tanggallahir || "");
+  data.append("record[status]", biodata.status || "");
+  data.append("record[minat]", biodata.minat || "");
 
+  // ID references for related data (optional)
+  if (biodata.idpenggunajenjang)
+    data.append("record[idpenggunajenjang]", biodata.idpenggunajenjang);
+  if (biodata.idpenggunapangkat)
+    data.append("record[idpenggunapangkat]", biodata.idpenggunapangkat);
+  if (biodata.idpenggunapendidikan)
+    data.append("record[idpenggunapendidikan]", biodata.idpenggunapendidikan);
+  if (biodata.idpenggunapelatihan)
+    data.append("record[idpenggunapelatihan]", biodata.idpenggunapelatihan);
+  if (biodata.idpenggunaprestasi)
+    data.append("record[idpenggunaprestasi]", biodata.idpenggunaprestasi);
+  if (biodata.idpenggunaunitkerja)
+    data.append("record[idpenggunaunitkerja]", biodata.idpenggunaunitkerja);
+
+  // Photo handling
   if (wizardState.biodata.photoFile) {
     data.append("upload_foto", wizardState.biodata.photoFile);
   } else if (wizardState.biodata.isPhotoRemoved) {

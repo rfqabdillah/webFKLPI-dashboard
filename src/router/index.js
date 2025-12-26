@@ -50,6 +50,7 @@ import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIn
 import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
 import IndexTestimoniPage from "@/pages/generalUser/testimoni/index.vue";
 import IndexAdminTestimoni from "@/pages/testimoni/index.vue";
+import IndexAccount from "@/pages/account/index.vue";
 
 const routes =[
     {
@@ -307,6 +308,23 @@ const routes =[
             component: IndexUserProfile,
             meta: {
               title: "Profil Saya",
+            },
+          },
+        ]
+      },
+      {
+        path: '/account',
+        component: Body,
+        meta: {
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "Account",
+            component: IndexAccount,
+            meta: {
+              title: "Akun Saya",
             },
           },
         ]

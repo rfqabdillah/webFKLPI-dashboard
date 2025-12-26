@@ -2,12 +2,29 @@
   <div class="col-12">
     <div class="card">
       <div class="card-body">
-        <!-- Loading State -->
-        <div v-if="isLoading" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <!-- Loading State with Skeleton -->
+        <div v-if="isLoading" class="row align-items-start detail-layout">
+          <div class="col-main">
+            <div class="skeleton-btn shimmer mb-3"></div>
+            <div class="skeleton-poster shimmer mb-4"></div>
+            <div class="skeleton-badge-lg shimmer mb-3"></div>
+            <div class="skeleton-heading shimmer mb-3"></div>
+            <div class="skeleton-info-list mb-4">
+              <div class="skeleton-info-item shimmer mb-2"></div>
+              <div class="skeleton-info-item shimmer mb-2"></div>
+              <div class="skeleton-info-item shimmer mb-2"></div>
+            </div>
+            <hr class="my-4" />
+            <div class="skeleton-content">
+              <div class="skeleton-text shimmer mb-2" style="width: 100%"></div>
+              <div class="skeleton-text shimmer mb-2" style="width: 90%"></div>
+              <div class="skeleton-text shimmer mb-2" style="width: 85%"></div>
+              <div class="skeleton-text shimmer" style="width: 70%"></div>
+            </div>
           </div>
-          <p class="mt-2 text-muted">{{ $t("Loading event details") }}...</p>
+          <div class="col-sidebar mt-4">
+            <div class="skeleton-sidebar shimmer"></div>
+          </div>
         </div>
 
         <!-- Error State -->
@@ -19,8 +36,8 @@
           </router-link>
         </div>
 
-        <div v-else-if="data" class="row align-items-start">
-          <div class="col-lg-8">
+        <div v-else-if="data" class="row align-items-start detail-layout">
+          <div class="col-main">
             <!-- Back Button -->
             <div class="mb-3">
               <router-link
@@ -141,15 +158,29 @@
 
             <!-- Action Buttons -->
             <div class="mt-4 d-flex gap-3 flex-wrap">
+              <!-- Deadline Passed Info -->
+              <div
+                v-if="isDeadlinePassed && !isRegistered"
+                class="alert alert-warning w-100 mb-2"
+              >
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                {{ $t("Registration deadline has passed") }}
+              </div>
+
               <!-- Already Registered - Show Cancel Button -->
               <template v-if="isRegistered">
                 <button class="btn btn-success px-4" disabled>
                   <i class="fa fa-check-circle me-2"></i> {{ $t("Registered") }}
                 </button>
+                <!-- Cancel Button - Always show but disabled for non-Terdaftar status -->
                 <button
                   @click="cancelRegistration"
-                  class="btn btn-outline-danger px-4"
-                  :disabled="isCancelling"
+                  class="btn px-4"
+                  :class="
+                    canCancel ? 'btn-outline-danger' : 'btn-outline-secondary'
+                  "
+                  :disabled="!canCancel || isCancelling"
+                  :title="!canCancel ? getCancelDisabledReason() : ''"
                 >
                   <span v-if="isCancelling">
                     <span class="spinner-border spinner-border-sm me-2"></span>
@@ -157,7 +188,7 @@
                   </span>
                   <span v-else>
                     <i class="fa fa-times-circle me-2"></i>
-                    {{ $t("Cancel Registration") }}
+                    {{ $t("Batalkan") }}
                   </span>
                 </button>
               </template>
@@ -165,12 +196,17 @@
               <button
                 v-else
                 @click="registerAgenda"
-                class="btn btn-primary px-4"
-                :disabled="isRegistering"
+                class="btn px-4"
+                :class="isDeadlinePassed ? 'btn-secondary' : 'btn-primary'"
+                :disabled="isRegistering || isDeadlinePassed"
               >
                 <span v-if="isRegistering">
                   <span class="spinner-border spinner-border-sm me-2"></span>
                   {{ $t("Registering") }}...
+                </span>
+                <span v-else-if="isDeadlinePassed">
+                  <i class="fa fa-clock-o me-2"></i>
+                  {{ $t("Registration Closed") }}
                 </span>
                 <span v-else>
                   <i class="fa fa-check-circle me-2"></i>
@@ -184,7 +220,7 @@
           </div>
 
           <!-- Sidebar -->
-          <div class="col-lg-4 mt-4 mt-lg-0 sidebar-column">
+          <div class="col-sidebar mt-4">
             <AgendaDetailPageSidebar />
           </div>
         </div>
@@ -194,7 +230,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
@@ -230,6 +266,23 @@ const statusOptions = ref([]);
 
 const defaultPosterUrl =
   "https://placehold.co/800x400/EBF4FF/7F9CF5?text=Agenda";
+
+// Computed: Check if registration deadline has passed
+const isDeadlinePassed = computed(() => {
+  if (!data.value?.registration_deadline) return false;
+
+  const deadline = new Date(data.value.registration_deadline);
+  const today = new Date();
+  // Set time to end of day for deadline
+  deadline.setHours(23, 59, 59, 999);
+
+  return today > deadline;
+});
+
+// Computed: Can cancel registration (only if status is Terdaftar/Registered)
+const canCancel = computed(() => {
+  return registrationStatusId.value === STATUS_TERDAFTAR_ID;
+});
 
 const fetchDetail = async () => {
   isLoading.value = true;
@@ -343,6 +396,21 @@ const fetchStatusOptions = async () => {
 
 const handleImageError = (event) => {
   event.target.src = defaultPosterUrl;
+};
+
+// Get reason why cancel is disabled
+const getCancelDisabledReason = () => {
+  const statusId = registrationStatusId.value;
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return t("Cannot cancel - Event completed");
+    case STATUS_DITOLAK_ID:
+      return t("Cannot cancel - Registration rejected");
+    case STATUS_DITERIMA_ID:
+      return t("Cannot cancel - Already accepted");
+    default:
+      return t("Cannot cancel registration");
+  }
 };
 
 const downloadPoster = async () => {
@@ -562,14 +630,14 @@ const getCardClass = (statusId) => {
 const getStatusMessage = (statusId) => {
   switch (statusId) {
     case STATUS_SELESAI_ID:
-      return "Terima kasih telah menghadiri agenda ini!";
+      return t("Status Message Completed");
     case STATUS_DITOLAK_ID:
-      return "Maaf, pendaftaran Anda tidak dapat diproses.";
+      return t("Status Message Rejected");
     case STATUS_DITERIMA_ID:
-      return "Pendaftaran Anda telah diterima. Silakan hadir sesuai jadwal.";
+      return t("Status Message Accepted");
     case STATUS_TERDAFTAR_ID:
     default:
-      return "Pendaftaran Anda sedang dalam proses verifikasi.";
+      return t("Status Message Registered");
   }
 };
 
@@ -771,15 +839,99 @@ onMounted(async () => {
   color: #4caf50;
 }
 
-/* Sidebar sticky behavior */
-.sidebar-column {
-  align-self: flex-start;
+/* Custom layout for detail page */
+.detail-layout {
+  display: flex;
+  flex-wrap: wrap;
 }
 
-@media (min-width: 992px) {
-  .sidebar-column {
+.col-main {
+  width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+}
+
+.col-sidebar {
+  width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+}
+
+/* On screens >= 1350px, show side by side */
+@media (min-width: 1350px) {
+  .col-main {
+    flex: 0 0 auto;
+    width: 66.666667%;
+  }
+
+  .col-sidebar {
+    flex: 0 0 auto;
+    width: 33.333333%;
+    margin-top: 0 !important;
     position: sticky;
     top: 100px;
+    align-self: flex-start;
+  }
+}
+
+/* Skeleton Loader Styles */
+.skeleton-btn {
+  width: 100px;
+  height: 38px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-poster {
+  width: 100%;
+  height: 350px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-badge-lg {
+  width: 100px;
+  height: 30px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-heading {
+  width: 60%;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-info-item {
+  width: 250px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-text {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.skeleton-sidebar {
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+}
+.shimmer {
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

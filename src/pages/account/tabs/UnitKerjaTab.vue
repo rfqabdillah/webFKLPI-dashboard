@@ -1,10 +1,7 @@
 <template>
   <div class="step-unit-kerja">
-    <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <p class="mt-2 text-muted">{{ t("Loading") }}</p>
+    <div v-if="isLoading" class="py-3">
+      <SkeletonGroup type="form-card" :count="2" />
     </div>
 
     <div v-else>
@@ -12,15 +9,15 @@
         <div>
           <h6 class="mb-1">
             <i class="fa fa-building me-2"></i
-            >{{ t("ProfileSteps.WorkUnit.Title") }}
+            >{{ $t("ProfileSteps.WorkUnit.Title") }}
           </h6>
           <p class="text-muted small mb-0">
-            {{ t("ProfileSteps.WorkUnit.Subtitle") }}
+            {{ $t("ProfileSteps.WorkUnit.Subtitle") }}
           </p>
         </div>
         <button class="btn btn-success btn-sm" @click="addUnitKerja">
           <i class="fa fa-plus me-1"></i>
-          {{ t("ProfileSteps.WorkUnit.AddData") }}
+          {{ $t("ProfileSteps.WorkUnit.AddData") }}
         </button>
       </div>
 
@@ -28,12 +25,11 @@
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
-        <strong>{{ t("ProfileSteps.WorkUnit.Note") }}</strong>
-        {{ t("ProfileSteps.WorkUnit.NoteContent") }}
+        <strong>{{ $t("ProfileSteps.WorkUnit.Note") }}</strong>
+        {{ $t("ProfileSteps.WorkUnit.NoteContent") }}
         <strong class="text-success"
-          ><i class="fa fa-check-circle"></i>
-          {{ t("ProfileSteps.WorkUnit.Active") }}</strong
-        >{{ t("ProfileSteps.WorkUnit.NoteContent2") }}
+          ><i class="fa fa-check-circle"></i> {{ $t("Active") }}</strong
+        >{{ $t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
       <div
@@ -42,11 +38,11 @@
       >
         <i class="fa fa-building-o text-muted fa-2x mb-2"></i>
         <p class="text-muted mb-2 small">
-          {{ t("ProfileSteps.WorkUnit.EmptyState") }}
+          {{ $t("ProfileSteps.WorkUnit.EmptyState") }}
         </p>
         <button class="btn btn-outline-primary btn-sm" @click="addUnitKerja">
           <i class="fa fa-plus me-1"></i>
-          {{ t("ProfileSteps.WorkUnit.AddWorkUnit") }}
+          {{ $t("ProfileSteps.WorkUnit.AddWorkUnit") }}
         </button>
       </div>
 
@@ -63,12 +59,12 @@
               <span class="badge me-2" style="background-color: #0d6efd">{{
                 index + 1
               }}</span>
-              {{ t("ProfileSteps.WorkUnit.DataHeader") }}
+              {{ $t("ProfileSteps.WorkUnit.DataHeader") }}
             </h6>
             <button
               class="btn btn-outline-danger btn-sm"
               @click="removeUnitKerja(index)"
-              :title="t('ProfileSteps.WorkUnit.RemoveData')"
+              :title="$t('Delete')"
             >
               <i class="fa fa-trash"></i>
             </button>
@@ -77,7 +73,7 @@
             <div class="row g-3">
               <div class="col-md-12">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.WorkUnit.WorkUnitLabel") }}
+                  {{ $t("ProfileSteps.WorkUnit.WorkUnitLabel") }}
                   <span class="text-danger">*</span>
                 </label>
                 <select
@@ -88,7 +84,7 @@
                   @blur="validateField(index, 'idunitkerja')"
                 >
                   <option value="" disabled>
-                    {{ t("ProfileSteps.WorkUnit.SelectWorkUnit") }}
+                    {{ $t("ProfileSteps.WorkUnit.SelectWorkUnit") }}
                   </option>
                   <option
                     v-for="unit in workUnitOptions"
@@ -105,7 +101,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-semibold">
-                  {{ t("ProfileSteps.WorkUnit.StartDate") }}
+                  {{ $t("ProfileSteps.WorkUnit.StartDate") }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -122,23 +118,19 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">{{
-                  t("ProfileSteps.WorkUnit.EndDate")
-                }}</label>
+                <label class="form-label fw-semibold">Tanggal Selesai</label>
                 <input
                   type="date"
                   class="form-control"
                   v-model="item.tglselesai"
                 />
                 <div class="form-text small">
-                  {{ t("ProfileSteps.WorkUnit.EndDateHelp") }}
+                  Kosongkan jika masih aktif menjabat.
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold">{{
-                  t("ProfileSteps.WorkUnit.SKFile")
-                }}</label>
+                <label class="form-label fw-semibold">File SK</label>
 
                 <input
                   type="file"
@@ -156,9 +148,11 @@
                       <i class="fa fa-file-pdf-o fa-2x"></i>
                     </div>
                     <div class="text-truncate">
-                      <small style="font-size: 0.75rem">{{
-                        t("ProfileSteps.WorkUnit.SavedFile")
-                      }}</small>
+                      <small
+                        class="text-muted d-block"
+                        style="font-size: 0.75rem"
+                        >File Tersimpan:</small
+                      >
                       <span
                         class="fw-bold text-dark text-truncate d-block"
                         :title="item.filesk_preview"
@@ -173,33 +167,50 @@
                     target="_blank"
                     class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
                   >
-                    <i class="fa fa-external-link me-1"></i>
-                    {{ t("ProfileSteps.WorkUnit.Open") }}
+                    <i class="fa fa-external-link me-1"></i> {{ $t("Open") }}
                   </a>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-2"
+                    @click="removeFile(index)"
+                    :title="$t('RemoveFile')"
+                  >
+                    <i class="fa fa-times"></i>
+                  </button>
                 </div>
 
                 <div
                   v-else-if="item.filesk_preview"
                   class="mt-2 p-2 border border-success rounded bg-white text-success"
                 >
-                  <div class="d-flex align-items-center">
-                    <i class="fa fa-check-circle fa-lg me-2"></i>
-                    <div class="overflow-hidden">
-                      <small class="d-block text-muted">{{
-                        t("ProfileSteps.WorkUnit.NewFileSelected")
-                      }}</small>
-                      <strong class="text-truncate d-block">{{
-                        item.filesk_preview
-                      }}</strong>
+                  <div
+                    class="d-flex align-items-center justify-content-between"
+                  >
+                    <div class="d-flex align-items-center overflow-hidden">
+                      <i class="fa fa-check-circle fa-lg me-2"></i>
+                      <div class="overflow-hidden">
+                        <small class="d-block text-muted"
+                          >{{ $t("NewFileSelected") }}:</small
+                        >
+                        <strong class="text-truncate d-block">{{
+                          item.filesk_preview
+                        }}</strong>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger ms-2"
+                      @click="removeFile(index)"
+                      :title="$t('RemoveFile')"
+                    >
+                      <i class="fa fa-times"></i>
+                    </button>
                   </div>
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">{{
-                  t("ProfileSteps.WorkUnit.Status")
-                }}</label>
+                <label class="form-label fw-semibold d-block">Status</label>
                 <div class="form-check form-switch mt-2">
                   <input
                     class="form-check-input"
@@ -213,7 +224,7 @@
                     class="form-check-label"
                     :for="'statusSwitch-' + index"
                   >
-                    {{ item.status || t("Inactive") }}
+                    {{ item.status || "Tidak Aktif" }}
                   </label>
                 </div>
               </div>
@@ -221,6 +232,26 @@
           </div>
         </div>
       </transition-group>
+
+      <!-- Save Button -->
+      <div
+        v-if="unitKerjaList.length > 0"
+        class="d-flex justify-content-end mt-3"
+      >
+        <button
+          class="btn btn-success save-btn"
+          @click="saveData"
+          :disabled="isSaving"
+        >
+          <span
+            v-if="isSaving"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          ></span>
+          <i v-else class="fa fa-save me-2"></i>
+          {{ isSaving ? "Menyimpan..." : "Simpan Data" }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -232,9 +263,15 @@ import { useI18n } from "vue-i18n";
 import { getWorkUnits } from "@/services/referensi/workUnits";
 import {
   getUserWorkUnits,
+  addUserWorkUnit,
+  updateUserWorkUnit,
   deleteUserWorkUnit,
 } from "@/services/general/personnel/userWorkUnits";
 import Swal from "sweetalert2";
+import * as yup from "yup";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
   modelValue: {
@@ -245,17 +282,50 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  shouldLoad: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "validation-change"]);
 const toast = useToast();
-const { t } = useI18n();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
 const workUnitOptions = ref([]);
 const unitKerjaList = ref([]);
 const formErrors = ref([]);
+
+// === Yup Validation Schema ===
+const getValidationSchema = () =>
+  yup.object().shape({
+    idunitkerja: yup
+      .string()
+      .required(() => t("ProfileSteps.WorkUnit.Validation.WorkUnitRequired")),
+    tglmulai: yup
+      .string()
+      .required(() => t("ProfileSteps.WorkUnit.Validation.StartDateRequired")),
+  });
+
+// Re-validate when locale changes to update error messages
+watch(
+  () => locale.value,
+  () => {
+    formErrors.value.forEach((errors, index) => {
+      if (Object.keys(errors).some((key) => errors[key])) {
+        const item = unitKerjaList.value[index];
+        if (item) {
+          Object.keys(errors).forEach((field) => {
+            if (errors[field]) {
+              validateField(index, field);
+            }
+          });
+        }
+      }
+    });
+  }
+);
 
 // === Helper Functions ===
 const isUrl = (string) => {
@@ -268,25 +338,35 @@ const isUrl = (string) => {
 onMounted(async () => {
   await fetchWorkUnits();
 
-  if (props.modelValue && Array.isArray(props.modelValue.list)) {
-    unitKerjaList.value = props.modelValue.list.map((item) => ({
-      ...item,
-      _tempId: Date.now() + Math.random(),
-    }));
-    formErrors.value = unitKerjaList.value.map(() => ({}));
-  } else {
-    unitKerjaList.value = [];
-    formErrors.value = [];
+  // Only set initial values if data hasn't been loaded from API yet
+  if (!isDataLoaded.value) {
+    if (props.modelValue && Array.isArray(props.modelValue.list)) {
+      unitKerjaList.value = props.modelValue.list.map((item) => ({
+        ...item,
+        _tempId: Date.now() + Math.random(),
+      }));
+      formErrors.value = unitKerjaList.value.map(() => ({}));
+    } else {
+      unitKerjaList.value = [];
+      formErrors.value = [];
+    }
   }
 
   emit("validation-change", true);
 });
 
-// === Methods ===
+// Watch for shouldLoad to trigger data loading (lazy load)
+watch(
+  () => props.shouldLoad,
+  async (shouldLoad) => {
+    if (shouldLoad && props.currentUserId && !isDataLoaded.value) {
+      await loadData(props.currentUserId);
+    }
+  },
+  { immediate: true }
+);
 
-/**
- * Remove duplicates from array based on a key
- */
+// === Methods ===
 function uniqueByKey(array, key) {
   const seen = new Set();
   return array.filter((item) => {
@@ -337,6 +417,8 @@ async function loadData(userId) {
             : "",
         _tempId: Date.now() + Math.random(),
       }));
+
+      // Deduplicate by ID
       const uniqueData = uniqueByKey(apiData, "idpenggunaunitkerja");
 
       unitKerjaList.value = uniqueData;
@@ -370,7 +452,60 @@ async function fetchWorkUnits() {
     }
   } catch (error) {
     console.error("Error fetching work units:", error);
-    toast.error(t("ProfileSteps.WorkUnit.LoadError"));
+    toast.error("Gagal memuat data unit kerja.");
+  }
+}
+
+const isSaving = ref(false);
+
+// === Save Function ===
+async function saveData() {
+  const isValid = validate();
+  if (!isValid) {
+    toast.error("Mohon lengkapi data yang diperlukan");
+    return;
+  }
+
+  if (!props.currentUserId) {
+    toast.error("User ID tidak ditemukan");
+    return;
+  }
+
+  isSaving.value = true;
+
+  try {
+    for (const item of unitKerjaList.value) {
+      const formData = new FormData();
+      formData.append("record[idpengguna]", props.currentUserId);
+      formData.append("record[idunitkerja]", item.idunitkerja || "");
+      formData.append("record[tglmulaiunitkerja]", item.tglmulai || "");
+      formData.append("record[tglselesaiunitkerja]", item.tglselesai || "");
+      formData.append("record[statusunitkerja]", item.status || "Tidak Aktif");
+
+      // Handle file upload
+      if (item.filesk instanceof File) {
+        formData.append("upload_fileskunitkerja", item.filesk);
+      }
+
+      if (item.idpenggunaunitkerja) {
+        formData.append("_method", "PUT");
+        await updateUserWorkUnit(item.idpenggunaunitkerja, formData);
+      } else {
+        const response = await addUserWorkUnit(formData);
+        if (response?.data?.idpenggunaunitkerja) {
+          item.idpenggunaunitkerja = response.data.idpenggunaunitkerja;
+        } else if (response?.data?.data?.idpenggunaunitkerja) {
+          item.idpenggunaunitkerja = response.data.data.idpenggunaunitkerja;
+        }
+      }
+    }
+
+    toast.success("Data unit kerja berhasil disimpan");
+  } catch (error) {
+    console.error("Error saving unit kerja:", error);
+    toast.error("Gagal menyimpan data unit kerja");
+  } finally {
+    isSaving.value = false;
   }
 }
 
@@ -382,8 +517,7 @@ function addUnitKerja() {
     tglselesai: "",
     filesk: null,
     filesk_preview: "",
-    filesk_preview: "",
-    status: t("Inactive"),
+    status: "Tidak Aktif",
   });
 
   formErrors.value.push({});
@@ -393,18 +527,14 @@ function removeUnitKerja(index) {
   const item = unitKerjaList.value[index];
 
   Swal.fire({
-    title: t("ProfileSteps.WorkUnit.DeleteConfirmTitle"),
+    title: t("Swal.DeleteTitle"),
     text: item.idpenggunaunitkerja
-      ? t("ProfileSteps.WorkUnit.DeleteConfirmTextDB")
-      : t("ProfileSteps.WorkUnit.DeleteConfirmText"),
+      ? t("Swal.DeletePermanent")
+      : t("Swal.DeleteConfirm"),
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t(
-      "ProfileSteps.WorkUnit.DeleteButton"
-    )}`,
-    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t(
-      "ProfileSteps.WorkUnit.CancelButton"
-    )}`,
+    confirmButtonText: `<i class="fa fa-check me-2"></i> ${t("Delete")}`,
+    cancelButtonText: `<i class="fa fa-times me-2"></i> ${t("Cancel")}`,
     cancelButtonColor: "#efefef",
     confirmButtonColor: "#d33",
     reverseButtons: true,
@@ -414,16 +544,22 @@ function removeUnitKerja(index) {
         if (item.idpenggunaunitkerja) {
           await deleteUserWorkUnit(item.idpenggunaunitkerja);
         }
-        toast.success(t("ProfileSteps.WorkUnit.DeleteSuccess"));
+        toast.success(t("Swal.DeleteSuccess"));
 
         unitKerjaList.value.splice(index, 1);
         formErrors.value.splice(index, 1);
       } catch (error) {
         console.error("Error deleting unit kerja:", error);
-        toast.error(t("ProfileSteps.WorkUnit.DeleteError"));
+        toast.error(t("Swal.DeleteError"));
       }
     }
   });
+}
+
+function removeFile(index) {
+  unitKerjaList.value[index].filesk = null;
+  unitKerjaList.value[index].filesk_preview = "";
+  unitKerjaList.value[index]._fileRemoved = true;
 }
 
 function handleFileUpload(index, event) {
@@ -441,15 +577,13 @@ function handleFileUpload(index, event) {
 }
 
 function handleStatusChange(index, isChecked) {
-  const newStatus = isChecked
-    ? t("ProfileSteps.WorkUnit.Active")
-    : t("Inactive");
+  const newStatus = isChecked ? "Aktif" : "Tidak Aktif";
   unitKerjaList.value[index].status = newStatus;
 
-  if (newStatus === t("ProfileSteps.WorkUnit.Active")) {
+  if (newStatus === "Aktif") {
     unitKerjaList.value.forEach((item, i) => {
       if (i !== index) {
-        item.status = t("Inactive");
+        item.status = "Tidak Aktif";
       }
     });
   }
@@ -460,59 +594,43 @@ function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
 }
 
-function validateField(index, field) {
+async function validateField(index, field) {
   const item = unitKerjaList.value[index];
   if (!formErrors.value[index]) formErrors.value[index] = {};
 
-  if (field === "idunitkerja") {
-    if (!item.idunitkerja) {
-      formErrors.value[index].idunitkerja = t(
-        "ProfileSteps.WorkUnit.Validation.WorkUnitRequired"
-      );
-    } else {
-      formErrors.value[index].idunitkerja = "";
-    }
-  }
-
-  if (field === "tglmulai") {
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = t(
-        "ProfileSteps.WorkUnit.Validation.StartDateRequired"
-      );
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
+  try {
+    const schema = getValidationSchema();
+    await schema.validateAt(field, item);
+    formErrors.value[index][field] = "";
+  } catch (error) {
+    formErrors.value[index][field] = error.message;
   }
 }
 
-function validate() {
-  let isValid = true;
-
+async function validate() {
   if (unitKerjaList.value.length === 0) {
     return true;
   }
 
-  unitKerjaList.value.forEach((item, index) => {
+  let isValid = true;
+  const schema = getValidationSchema();
+
+  for (let index = 0; index < unitKerjaList.value.length; index++) {
+    const item = unitKerjaList.value[index];
     if (!formErrors.value[index]) formErrors.value[index] = {};
 
-    if (!item.idunitkerja) {
-      formErrors.value[index].idunitkerja = t(
-        "ProfileSteps.WorkUnit.Validation.WorkUnitRequired"
-      );
+    try {
+      await schema.validate(item, { abortEarly: false });
+      formErrors.value[index] = {};
+    } catch (error) {
       isValid = false;
-    } else {
-      formErrors.value[index].idunitkerja = "";
+      if (error.inner) {
+        error.inner.forEach((err) => {
+          formErrors.value[index][err.path] = err.message;
+        });
+      }
     }
-
-    if (!item.tglmulai) {
-      formErrors.value[index].tglmulai = t(
-        "ProfileSteps.WorkUnit.Validation.StartDateRequired"
-      );
-      isValid = false;
-    } else {
-      formErrors.value[index].tglmulai = "";
-    }
-  });
+  }
 
   return isValid;
 }
@@ -552,5 +670,12 @@ defineExpose({ validate, loadData });
 
 .invalid-feedback {
   display: block;
+}
+.save-btn {
+  transition: all 0.3s ease;
+}
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
 }
 </style>

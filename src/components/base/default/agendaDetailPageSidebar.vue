@@ -188,11 +188,14 @@ onUnmounted(() => {
 </style>
 
 <style>
-.is-sticky {
-  position: fixed !important;
-  top: 80px !important;
-  width: inherit;
-  max-width: 350px;
-  z-index: 100;
+/* Only apply sticky on screens >= 1350px */
+@media (min-width: 1350px) {
+  .is-sticky {
+    position: fixed !important;
+    top: 100px !important;
+    width: inherit;
+    max-width: 350px;
+    z-index: 100;
+  }
 }
 </style>
