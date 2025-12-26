@@ -377,18 +377,7 @@ export default {
       window.addEventListener("scroll", this.handleScroll);
       this.handleScroll();
       if (window.innerWidth < 992) {
-        const newlayout = JSON.parse(
-          JSON.stringify(this.layoutobject).replace(
-            "horizontal-wrapper",
-            "compact-wrapper"
-          )
-        );
-        document.querySelector(".page-wrapper").className =
-          "page-wrapper " + newlayout;
         this.$store.state.menu.margin = 0;
-      } else {
-        document.querySelector(".page-wrapper").className =
-          "page-wrapper " + this.layoutobject;
       }
 
       if (

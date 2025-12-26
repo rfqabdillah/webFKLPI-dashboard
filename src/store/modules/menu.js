@@ -99,7 +99,7 @@ const mutations = {
     }
   },
   resizetoggle: (state) => {
-    if (window.innerWidth < 1007) {
+    if (window.innerWidth < 992) {
       state.togglesidebar = false;
     } else {
       state.togglesidebar = true;

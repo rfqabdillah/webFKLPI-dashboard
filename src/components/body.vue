@@ -158,33 +158,7 @@ export default {
       });
 
       this.ensureCorrectLayoutForUser();
-
-      this.layoutobj = layoutClasses.find(
-        (item) => Object.keys(item).pop() === this.layout.settings.layout
-      );
-
-      if (
-        (window.innerWidth < 991 &&
-          this.layout.settings.layout === "LosAngeles") ||
-        (window.innerWidth < 991 &&
-          this.layout.settings.layout === "Singapore") ||
-        (window.innerWidth < 991 && this.layout.settings.layout === "Barcelona")
-      ) {
-        const newlayout = JSON.parse(
-          JSON.stringify(this.layoutobj).replace(
-            "horizontal-wrapper",
-            "compact-wrapper"
-          )
-        );
-
-        this.layoutobj = JSON.parse(JSON.stringify(newlayout))[
-          this.layout.settings.layout
-        ];
-      } else {
-        this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
-          this.layout.settings.layout
-        ];
-      }
+      this.checkResponsiveLayout();
     },
     sidebar_toggle_var: function () {
       this.resized =
@@ -227,18 +201,48 @@ export default {
     },
     handleResize() {
       this.$store.dispatch("menu/resizetoggle");
+      this.checkResponsiveLayout();
+    },
+    checkResponsiveLayout() {
+      this.layoutobj = layoutClasses.find(
+        (item) => Object.keys(item).pop() === this.layout.settings.layout
+      );
+
+      if (
+        (window.innerWidth < 992 &&
+          this.layout.settings.layout === "LosAngeles") ||
+        (window.innerWidth < 992 &&
+          this.layout.settings.layout === "Singapore") ||
+        (window.innerWidth < 992 && this.layout.settings.layout === "Barcelona")
+      ) {
+        const newlayout = JSON.parse(
+          JSON.stringify(this.layoutobj).replace(
+            "horizontal-wrapper",
+            "compact-wrapper"
+          )
+        );
+
+        this.layoutobj = JSON.parse(JSON.stringify(newlayout))[
+          this.layout.settings.layout
+        ];
+      } else {
+        this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
+          this.layout.settings.layout
+        ];
+      }
     },
     ensureCorrectLayoutForUser() {
       const expectedLayout = getLayoutForUserLevel();
       const currentLayout = this.layout.settings.layout;
 
       if (currentLayout === expectedLayout) {
+        this.checkResponsiveLayout(); // Ensure responsive check runs
         return;
       }
 
       this.layout.settings.layout = expectedLayout;
-
       this.updateLayoutObject();
+      this.checkResponsiveLayout(); // Ensure responsive check runs
     },
     handleUserDataChange() {
       this.ensureCorrectLayoutForUser();
@@ -260,7 +264,7 @@ export default {
     },
     removeoverlay() {
       this.$store.state.menu.activeoverlay = false;
-      if (window.innerWidth < 991) {
+      if (window.innerWidth < 992) {
         this.$store.state.menu.togglesidebar = false;
       }
       this.menuItems.filter((menuItem) => {
@@ -273,7 +277,7 @@ export default {
           menuItem.active = false;
         });
       }
-      if (window.innerWidth < 991) {
+      if (window.innerWidth < 992) {
         this.$store.state.menu.togglesidebar = false;
       }
     },
