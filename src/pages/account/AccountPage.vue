@@ -269,6 +269,7 @@ import { NON_ASN_ID } from "@/constants/userTypes";
 import Swal from "sweetalert2";
 import apiClient from "@/services/users";
 import VueEasyLightbox from "vue-easy-lightbox";
+import * as yup from "yup";
 import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
 import {
   BasicInfoTab,
@@ -348,21 +349,15 @@ const isLoading = ref(true);
 const error = ref(null);
 const isEditing = ref(false);
 const isSaving = ref(false);
-
-// Tab state
 const activeTab = ref("basic");
-const visitedTabs = ref(new Set(["basic"])); // Track visited tabs for lazy loading
+const visitedTabs = ref(new Set(["basic"]));
 
-// Watch activeTab to track visited tabs
 watch(activeTab, (newTab) => {
   visitedTabs.value.add(newTab);
 });
 
-// Photo upload state
 const photoInputRef = ref(null);
 const isUploadingPhoto = ref(false);
-
-// Lightbox state
 const lightboxVisible = ref(false);
 const lightboxImages = computed(() => {
   return user.value.foto ? [user.value.foto] : [];
@@ -374,21 +369,16 @@ const openLightbox = () => {
   }
 };
 
-// Password change state
 const isChangingPassword = ref(false);
-
-// Email change state
 const isVerifyingPassword = ref(false);
 const isChangingEmail = ref(false);
 
-// Email form
 const emailForm = reactive({
   currentPassword: "",
   newEmail: "",
   isPasswordVerified: false,
 });
 
-// Edit form
 const editForm = reactive({
   nama: "",
   gelardepan: "",
@@ -408,14 +398,12 @@ const editForm = reactive({
   idjenispegawai: "",
 });
 
-// Password form
 const passwordForm = reactive({
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
 });
 
-// Password validation
 const canChangePassword = computed(() => {
   return (
     passwordForm.currentPassword &&
@@ -427,18 +415,27 @@ const canChangePassword = computed(() => {
 });
 
 // Email validation
-const isValidEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
+// Email validation schema
+const emailSchema = yup.object().shape({
+  newEmail: yup
+    .string()
+    .required()
+    .email()
+    .notOneOf([yup.ref("currentEmail")], () => t("Cannot use current email")),
+});
 
 const canChangeEmail = computed(() => {
-  return (
-    emailForm.isPasswordVerified &&
-    emailForm.newEmail &&
-    isValidEmail(emailForm.newEmail) &&
-    emailForm.newEmail !== user.value.email
-  );
+  try {
+    // Basic sync validation for the button state
+    return (
+      emailForm.isPasswordVerified &&
+      emailForm.newEmail &&
+      emailForm.newEmail !== user.value.email &&
+      yup.string().email().isValidSync(emailForm.newEmail)
+    );
+  } catch (e) {
+    return false;
+  }
 });
 
 // === Computed Properties ===
@@ -490,7 +487,6 @@ const formattedBirthDate = computed(() => {
 });
 
 // Methods
-// Helper: Parse user data from response
 const parseUserData = (response) => {
   if (!response?.data) return null;
 
@@ -507,7 +503,6 @@ const parseUserData = (response) => {
   return response.data;
 };
 
-// Start of Methods
 const fetchUserProfile = async () => {
   isLoading.value = true;
   error.value = null;
