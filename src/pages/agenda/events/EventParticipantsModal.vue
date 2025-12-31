@@ -18,7 +18,10 @@
       </div>
 
       <div class="modal-body">
-        <div v-if="isLoading" class="text-center p-5">
+        <div
+          v-if="isLoading"
+          class="text-center p-5 flex-grow-1 d-flex flex-column justify-content-center align-items-center"
+        >
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
@@ -186,10 +189,10 @@
                               getParticipantStatusId(participant)
                             )
                           "
-                          @click="toggleDropdown(getParticipantId(participant))"
                           :disabled="
                             isUpdatingStatus === getParticipantId(participant)
                           "
+                          @click="toggleDropdown($event, participant, index)"
                         >
                           <span class="status-icon">
                             <i
@@ -217,57 +220,10 @@
                           ></span>
                         </button>
 
-                        <!-- Dropdown Menu -->
-                        <div
-                          class="status-dropdown-menu"
-                          v-show="
-                            openDropdownId === getParticipantId(participant)
-                          "
-                        >
-                          <div
-                            v-for="status in statusOptions"
-                            :key="status.idstatus"
-                            class="status-dropdown-item"
-                            :class="[
-                              getStatusItemClass(status.idstatus),
-                              {
-                                'is-selected':
-                                  status.idstatus ===
-                                  getParticipantStatusId(participant),
-                              },
-                            ]"
-                            @click="selectStatus(participant, status.idstatus)"
-                          >
-                            <span class="item-icon">
-                              <i
-                                :class="getStatusIconByName(status.namastatus)"
-                              ></i>
-                            </span>
-                            <span class="item-text">{{
-                              status.namastatus
-                            }}</span>
-                            <span
-                              v-if="
-                                status.idstatus ===
-                                getParticipantStatusId(participant)
-                              "
-                              class="check-icon"
-                            >
-                              <i class="fa fa-check"></i>
-                            </span>
-                          </div>
-                        </div>
-
-                        <!-- Backdrop -->
-                        <div
-                          v-if="
-                            openDropdownId === getParticipantId(participant)
-                          "
-                          class="dropdown-backdrop"
-                          @click="closeDropdown"
-                        ></div>
+                        <!-- Backdrop handled globally now -->
                       </div>
                     </td>
+
                     <td>
                       <button
                         class="btn btn-info btn-sm"
@@ -285,7 +241,10 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="text-center text-muted p-4">
+        <div
+          v-else
+          class="text-center text-muted p-4 flex-grow-1 d-flex flex-column justify-content-center align-items-center"
+        >
           <i class="fa fa-user-times fa-3x mb-3" style="opacity: 0.5"></i>
           <h5>Belum Ada Peserta</h5>
           <p>Belum ada peserta yang mendaftar untuk kegiatan ini.</p>
@@ -298,6 +257,46 @@
         </button>
       </div>
     </div>
+
+    <!-- Global Teleported Dropdown -->
+    <Teleport to="body">
+      <div v-if="openDropdownId && activeDropdownParticipant">
+        <!-- Backdrop -->
+        <div class="dropdown-backdrop" @click="closeDropdown"></div>
+
+        <!-- Dropdown Menu -->
+        <div class="status-dropdown-menu fixed-dropdown" :style="dropdownStyle">
+          <div
+            v-for="status in statusOptions"
+            :key="status.idstatus"
+            class="status-dropdown-item"
+            :class="[
+              getStatusItemClass(status.idstatus),
+              {
+                'is-selected':
+                  status.idstatus ===
+                  getParticipantStatusId(activeDropdownParticipant),
+              },
+            ]"
+            @click="selectStatus(activeDropdownParticipant, status.idstatus)"
+          >
+            <span class="item-icon">
+              <i :class="getStatusIconByName(status.namastatus)"></i>
+            </span>
+            <span class="item-text">{{ status.namastatus }}</span>
+            <span
+              v-if="
+                status.idstatus ===
+                getParticipantStatusId(activeDropdownParticipant)
+              "
+              class="check-icon"
+            >
+              <i class="fa fa-check"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -339,6 +338,15 @@ const isBulkUpdating = ref(false);
 const isParticipantDetailVisible = ref(false);
 const selectedParticipant = ref(null);
 
+// Dropdown State
+const activeDropdownParticipant = ref(null);
+const dropdownPosition = ref({
+  top: 0,
+  left: 0,
+  bottom: 0,
+  placement: "bottom",
+});
+
 const eventTitle = computed(() => props.eventData?.judul || "Kegiatan");
 
 const isAllSelected = computed(() => {
@@ -366,6 +374,20 @@ const statsCount = computed(() => {
   });
 
   return counts;
+});
+
+const dropdownStyle = computed(() => {
+  const style = {
+    left: `${dropdownPosition.value.left}px`,
+  };
+
+  if (dropdownPosition.value.placement === "top") {
+    style.bottom = `${dropdownPosition.value.bottom}px`;
+  } else {
+    style.top = `${dropdownPosition.value.top}px`;
+  }
+
+  return style;
 });
 
 function openParticipantDetail(participant) {
@@ -457,16 +479,52 @@ async function bulkUpdateStatus() {
   }
 }
 
-function toggleDropdown(participantId) {
+function toggleDropdown(event, participant, index) {
+  const participantId = getParticipantId(participant);
+
   if (openDropdownId.value === participantId) {
-    openDropdownId.value = null;
+    closeDropdown();
   } else {
+    // Calculate position
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+
+    // Check if it's one of the last 2 rows
+    const isLastTwo =
+      participants.value.length > 2 && index >= participants.value.length - 2;
+
+    // Center horizontal
+    const left = rect.left + rect.width / 2;
+
+    if (isLastTwo) {
+      // Position ABOVE the button (using bottom = space from viewport bottom)
+      // distance from viewport bottom to button top = window.innerHeight - rect.top
+      const bottom = window.innerHeight - rect.top + 8;
+      dropdownPosition.value = {
+        top: 0,
+        left,
+        bottom,
+        placement: "top",
+      };
+    } else {
+      // Position BELOW the button
+      const top = rect.bottom + 8;
+      dropdownPosition.value = {
+        top,
+        left,
+        bottom: 0,
+        placement: "bottom",
+      };
+    }
+
+    activeDropdownParticipant.value = participant;
     openDropdownId.value = participantId;
   }
 }
 
 function closeDropdown() {
   openDropdownId.value = null;
+  activeDropdownParticipant.value = null;
 }
 
 function selectStatus(participant, statusId) {
@@ -712,6 +770,7 @@ onMounted(() => {
   border-radius: 8px;
   width: 90%;
   max-width: 1200px;
+  min-height: 90vh;
   max-height: 90vh;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -728,6 +787,8 @@ onMounted(() => {
   padding: 1.5rem 2rem;
   overflow-y: auto;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -988,13 +1049,18 @@ onMounted(() => {
   border-bottom: 8px solid white;
 }
 
-.status-dropdown.dropdown-up .status-dropdown-menu {
-  top: auto;
-  bottom: calc(100% + 8px);
+.status-dropdown-menu.fixed-dropdown {
+  position: fixed;
+  z-index: 9999;
+  /* top and left set by inline style */
+}
+
+.status-dropdown-menu.dropdown-up {
+  transform-origin: bottom center;
   animation: dropdownFadeInUp 0.2s ease-out;
 }
 
-.status-dropdown.dropdown-up .status-dropdown-menu::before {
+.status-dropdown-menu.dropdown-up::before {
   top: auto;
   bottom: -6px;
   border-bottom: none;
