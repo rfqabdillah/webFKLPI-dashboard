@@ -1,5 +1,5 @@
 <template>
-  <li class="language-nav">
+  <li class="language-nav" v-if="isAllowed">
     <div
       class="lang-btn"
       @click="toggleLanguage"
@@ -27,12 +27,14 @@
 <script>
 import { mapGetters } from "vuex";
 import { localeOptions } from "../../constants/config";
+import { userLevelUmum } from "../../constants/userLevels";
 
 export default {
   name: "languagePage",
   data() {
     return {
       localOptions: localeOptions,
+      isAllowed: false,
     };
   },
   computed: {
@@ -62,6 +64,16 @@ export default {
       this.$i18n.locale = newLang.id;
       this.$store.dispatch("setLang", newLang);
     },
+    checkUserLevel() {
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        const userLevelId =
+          userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
+        this.isAllowed = userLevelId === userLevelUmum;
+      } catch {
+        this.isAllowed = false;
+      }
+    },
   },
   mounted() {
     const savedLang = localStorage.getItem("currentLanguage") || "id";
@@ -72,6 +84,7 @@ export default {
       icon: savedIcon,
     });
     this.$i18n.locale = savedLang;
+    this.checkUserLevel();
   },
 };
 </script>

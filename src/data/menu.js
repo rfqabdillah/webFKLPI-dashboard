@@ -1,3 +1,5 @@
+import { userLevelUmum, userLevelAdministrator } from '../constants/userLevels';
+
 export var menuItems = {
   "data": [
     {
@@ -176,7 +178,7 @@ export var menuItems = {
       "type": "link",
       "path": "/my-profile",
       "active": false,
-      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
+      "allowedLevels": [userLevelUmum]
     },
     {
       "title": "Agenda Saya",
@@ -185,7 +187,7 @@ export var menuItems = {
       "type": "link",
       "path": "/my-agenda",
       "active": false,
-      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
+      "allowedLevels": [userLevelUmum]
     },
     {
       "title": "Jadwal Agenda",
@@ -194,7 +196,7 @@ export var menuItems = {
       "type": "link",
       "path": "/list-agenda",
       "active": false,
-      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
+      "allowedLevels": [userLevelUmum]
     },
     {
       "title": "Testimoni",
@@ -203,12 +205,13 @@ export var menuItems = {
       "type": "link",
       "path": "/testimoni",
       "active": false,
-      "allowedLevels": ["01729723-6880-4c3c-ab67-d7f3a4424482"]
+      "allowedLevels": [userLevelUmum]
     },
   
     {
       "headTitle1": "Referensi",
-      "type": "headtitle"
+      "type": "headtitle",
+      "allowedLevels": [userLevelAdministrator]
     },
     {
       "title": "Umum",
@@ -216,6 +219,7 @@ export var menuItems = {
       "iconf":"fill-starter-kit",
       "type": "sub",
       "active": false,
+      "allowedLevels": [userLevelAdministrator],
       "children": [
         {
           "path": "/general/users",
@@ -243,6 +247,7 @@ export var menuItems = {
       "iconf":"fill-social",
       "type": "sub",
       "active": false,
+      "allowedLevels": [userLevelAdministrator],
       "children": [
         {
           "title": "Data Kepegawaian",

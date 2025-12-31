@@ -153,6 +153,7 @@ import { Form, Field } from "vee-validate";
 import * as yup from "yup";
 import { login as loginAPI } from "@/services/auth";
 import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+import { userLevelUmum } from "@/constants/userLevels";
 
 const router = useRouter();
 const store = useStore();
@@ -189,7 +190,6 @@ async function onSubmit() {
   isLoading.value = true;
 
   // ID level untuk user "umum"
-  const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
 
   try {
     const response = await loginAPI(user.email, user.password);
@@ -214,7 +214,7 @@ async function onSubmit() {
       toast.success(`Login berhasil! Selamat datang, ${userName}`);
 
       const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
-      const redirectPath = userLevel === UMUM_LEVEL_ID ? "/my-profile" : "/";
+      const redirectPath = userLevel === userLevelUmum ? "/my-profile" : "/";
 
       store.dispatch("menu/refreshMenuByUserLevel");
 

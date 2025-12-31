@@ -52,15 +52,6 @@
             />
           </div>
 
-          <div v-if="isNonAsn" v-show="currentStepKey === 'perusahaan'">
-            <StepPerusahaan
-              ref="stepPerusahaanRef"
-              v-model="wizardState.perusahaan"
-              :currentUserId="currentUserId"
-              @validation-change="(valid) => (stepValidations[1] = valid)"
-            />
-          </div>
-
           <div v-show="currentStepKey === 'pekerjaan'">
             <StepPekerjaan
               ref="stepPekerjaanRef"
@@ -170,7 +161,7 @@ import { useToast } from "vue-toastification";
 
 import Step1Biodata from "./steps/Step1Biodata.vue";
 import Step2UnitKerja from "./steps/Step2UnitKerja.vue";
-import StepPerusahaan from "./steps/StepPerusahaan.vue";
+
 import StepPekerjaan from "./steps/StepPekerjaan.vue";
 import Step3Jabatan from "./steps/Step3Jabatan.vue";
 import Step4Pangkat from "./steps/Step4Pangkat.vue";
@@ -207,10 +198,6 @@ import {
   addUserWorkExperience,
   updateUserWorkExperience,
 } from "@/services/general/personnel/userWorkExperiences";
-import {
-  addUserCompany,
-  updateUserCompany,
-} from "@/services/general/personnel/userCompanies";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
@@ -234,12 +221,7 @@ const allSteps = [
     icon: "fa-solid fa-building-user",
     asnOnly: true,
   },
-  {
-    key: "perusahaan",
-    title: "Perusahaan",
-    icon: "fa-solid fa-briefcase",
-    nonAsnOnly: true,
-  },
+
   {
     key: "pekerjaan",
     title: "Pekerjaan",
@@ -281,7 +263,7 @@ const allSteps = [
 // === Refs ===
 const step1Ref = ref(null);
 const step2Ref = ref(null);
-const stepPerusahaanRef = ref(null);
+
 const stepPekerjaanRef = ref(null);
 const step3Ref = ref(null);
 const step4Ref = ref(null);
@@ -305,7 +287,6 @@ const stepValidations = reactive([
   true,
   true,
   true,
-  true, // Extra for perusahaan
 ]);
 
 const wizardState = reactive({
@@ -337,7 +318,7 @@ const wizardState = reactive({
     isPhotoRemoved: false,
   },
   unitKerja: { list: [] },
-  perusahaan: { list: [] },
+
   pekerjaan: { list: [] },
   jabatan: { list: [] },
   pangkat: { list: [] },
@@ -355,7 +336,6 @@ const stepLoaded = reactive([
   false,
   false,
   false,
-  false, // Extra for perusahaan
 ]);
 
 // === Computed ===
@@ -397,7 +377,7 @@ const canProceed = computed(() => {
 // === Reset Function ===
 function resetWizardState() {
   wizardState.unitKerja.list = [];
-  wizardState.perusahaan.list = [];
+
   wizardState.pekerjaan.list = [];
   wizardState.jabatan.list = [];
   wizardState.pangkat.list = [];
@@ -456,7 +436,7 @@ async function loadStepData(stepIndex) {
   const currentKey = filteredSteps.value[stepIndex]?.key;
   const stepRefMap = {
     unitKerja: step2Ref,
-    perusahaan: stepPerusahaanRef,
+
     pekerjaan: stepPekerjaanRef,
     jabatan: step3Ref,
     pangkat: step4Ref,
@@ -482,7 +462,7 @@ async function nextStep() {
   const stepRefMap = {
     biodata: step1Ref,
     unitKerja: step2Ref,
-    perusahaan: stepPerusahaanRef,
+
     pekerjaan: stepPekerjaanRef,
     jabatan: step3Ref,
     pangkat: step4Ref,
@@ -545,7 +525,7 @@ async function submitForm() {
 
     // Save based on user type
     if (isNonAsn.value) {
-      await savePerusahaan(userId);
+      // await savePerusahaan(userId); // Perusahaan step removed
     } else {
       await saveUnitKerja(userId);
     }
@@ -575,7 +555,7 @@ async function submitForm() {
 function validateSingleActiveStatus() {
   const categories = [
     { name: "Unit Kerja", data: wizardState.unitKerja.list },
-    { name: "Perusahaan", data: wizardState.perusahaan.list },
+
     { name: "Pekerjaan", data: wizardState.pekerjaan.list },
     { name: "Jabatan", data: wizardState.jabatan.list },
     { name: "Pangkat", data: wizardState.pangkat.list },
@@ -708,18 +688,6 @@ async function saveUnitKerja(userId) {
       await updateUserWorkUnit(item.idpenggunaunitkerja, formData);
     } else {
       await addUserWorkUnit(formData);
-    }
-  }
-}
-
-async function savePerusahaan(userId) {
-  for (const item of wizardState.perusahaan.list) {
-    const formData = createFormData(item, null, userId);
-    if (item.idpenggunaperusahaan) {
-      formData.append("_method", "PUT");
-      await updateUserCompany(item.idpenggunaperusahaan, formData);
-    } else {
-      await addUserCompany(formData);
     }
   }
 }
