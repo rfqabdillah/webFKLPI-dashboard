@@ -1,7 +1,8 @@
 import {menuItems} from '../../data/menu.js';
 import BonusUI from '../../data/bonusui';
+import { userLevelUmum } from '../../constants/userLevels';
 
-const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
+
 
 const getCurrentUserLevel = () => {
   try {
@@ -24,7 +25,7 @@ const getCurrentUserLevel = () => {
 const filterMenuByLevel = (items, userLevel) => {
   if (!items || !Array.isArray(items)) return [];
   
-  const isUmumUser = userLevel === UMUM_LEVEL_ID;
+  const isUmumUser = userLevel === userLevelUmum;
   
   return items.filter(item => {
     if (isUmumUser && item.type === 'headtitle') {
@@ -84,7 +85,7 @@ const state = {
 const getters = {
   isUmumUser: () => {
     const userLevel = getCurrentUserLevel();
-    return userLevel === UMUM_LEVEL_ID;
+    return userLevel === userLevelUmum;
   },
 };
 

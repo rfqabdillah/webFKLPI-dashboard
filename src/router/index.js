@@ -1,5 +1,7 @@
 import {createRouter, createWebHashHistory} from "vue-router";
 import Body from '../components/body';
+import { userLevelUmum } from '@/constants/userLevels';
+import { menuItems } from '../data/menu';
 
 import Default from '@/pages/dashboard/defaultPage.vue';
 import Login from '@/auth/login.vue';
@@ -531,9 +533,34 @@ const router=createRouter({
     routes
 })
 
+const checkMenuAccess = (items, path, userLevel) => {
+  for (const item of items) {
+    if (item.path === path) {
+      if (item.allowedLevels && Array.isArray(item.allowedLevels)) {
+        return item.allowedLevels.includes(userLevel);
+      }
+      return true;
+    }
+
+    if (item.children) {
+      const childCheck = checkMenuAccess(item.children, path, userLevel);
+      
+      if (childCheck !== null) {
+        if (item.allowedLevels && Array.isArray(item.allowedLevels)) {
+            if (!item.allowedLevels.includes(userLevel)) {
+                return false;
+            }
+        }
+        return childCheck;
+      }
+    }
+  }
+  return null;
+};
+
 router.beforeEach((to, from, next) => {
-  // ID level untuk user "umum"
-  const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
+  
+  
 
   if (to.meta.title) {
     document.title = to.meta.title;
@@ -547,8 +574,6 @@ router.beforeEach((to, from, next) => {
       return;
     }
     
-    // Check if user is "umum" level trying to access dashboard (root path)
-    // If so, redirect them to /my-profile
     if (to.path === '/' || to.name === 'defaultRoot') {
       try {
         const userDataString = localStorage.getItem('userData');
@@ -556,7 +581,7 @@ router.beforeEach((to, from, next) => {
           const userData = JSON.parse(userDataString);
           const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
           
-          if (userLevel === UMUM_LEVEL_ID) {
+          if (userLevel === userLevelUmum) {
             // User "umum" should not access dashboard, redirect to profile
             next('/my-profile');
             return;
@@ -565,6 +590,27 @@ router.beforeEach((to, from, next) => {
       } catch (error) {
         console.error('Error checking user level in router guard:', error);
       }
+    }
+
+    try {
+        const userDataString = localStorage.getItem('userData');
+        if (userDataString) {
+          const userData = JSON.parse(userDataString);
+          const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
+          
+          const accessAllowed = checkMenuAccess(menuItems.data, to.path, userLevel);
+          
+          if (accessAllowed === false) {
+            if (userLevel === userLevelUmum) {
+              next('/my-profile');
+            } else {
+              next('/'); 
+            }
+            return;
+          }
+        }
+    } catch (e) {
+        console.error("Error checking menu access:", e);
     }
     
     next();

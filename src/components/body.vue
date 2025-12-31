@@ -48,12 +48,11 @@
 import { mapState, mapGetters } from "vuex";
 
 import { layoutClasses } from "../constants/layout";
+import { userLevelUmum } from "../constants/userLevels";
 import Header from "./header";
 import Sidebar from "./sidebar";
 import Footer from "./footer.vue";
 import TapTop from "./tapTop.vue";
-
-const UMUM_LEVEL_ID = "01729723-6880-4c3c-ab67-d7f3a4424482";
 
 const getUserLevelFromStorage = () => {
   try {
@@ -77,7 +76,7 @@ const getUserLevelFromStorage = () => {
 const getLayoutForUserLevel = () => {
   const userLevel = getUserLevelFromStorage();
 
-  if (userLevel === UMUM_LEVEL_ID) {
+  if (userLevel === userLevelUmum) {
     return "LosAngeles";
   }
 
