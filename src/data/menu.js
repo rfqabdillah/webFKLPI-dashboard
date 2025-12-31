@@ -210,7 +210,8 @@ export var menuItems = {
   
     {
       "headTitle1": "Referensi",
-      "type": "headtitle"
+      "type": "headtitle",
+      "allowedLevels": [userLevelAdministrator]
     },
     {
       "title": "Umum",

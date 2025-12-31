@@ -38,7 +38,7 @@ const filterMenuByLevel = (items, userLevel) => {
       }
       return item.allowedLevels.includes(userLevel);
     } else {
-      if (item.type === 'headtitle') return true;
+      // if (item.type === 'headtitle') return true;
       
       if (item.allowedLevels && Array.isArray(item.allowedLevels)) {
         if (!userLevel || !item.allowedLevels.includes(userLevel)) {

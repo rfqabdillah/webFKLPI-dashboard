@@ -44,7 +44,7 @@
               >
             </button>
             <button
-              v-if="isAdmin"
+              v-if="canManage"
               class="btn btn-success"
               @click="openAddModal"
             >
@@ -85,14 +85,14 @@
                     :sort-direction="sortDirection"
                   />
                 </th>
-                <th v-if="isAdmin">Aksi</th>
+                <th v-if="canManage">Aksi</th>
               </tr>
             </thead>
 
             <tbody>
               <tr v-if="isLoading">
                 <td
-                  :colspan="columns.length + (isAdmin ? 2 : 1)"
+                  :colspan="columns.length + (canManage ? 2 : 1)"
                   class="text-center p-5"
                 >
                   <div class="spinner-border text-primary" role="status"></div>
@@ -114,7 +114,7 @@
                       {{ item[col.key] || "-" }}
                     </slot>
                   </td>
-                  <td v-if="isAdmin">
+                  <td v-if="canManage">
                     <div class="btn-group">
                       <!-- Slot untuk custom actions -->
                       <slot name="custom-actions" :item="item"></slot>
@@ -145,7 +145,7 @@
                 </tr>
                 <tr v-if="itemsList.length === 0">
                   <td
-                    :colspan="columns.length + (isAdmin ? 2 : 1)"
+                    :colspan="columns.length + (canManage ? 2 : 1)"
                     class="text-center text-muted"
                   >
                     Tidak ada data yang cocok atau tersedia.
@@ -218,6 +218,10 @@ import { useToast } from "vue-toastification";
 import Swal from "sweetalert2";
 import { debounce } from "lodash-es";
 import SortIcon from "./default/sortIcon.vue";
+import {
+  userLevelAdministrator,
+  userLevelOperator,
+} from "../../constants/userLevels";
 
 // === Props ===
 const props = defineProps({
@@ -249,12 +253,14 @@ const itemBeingEdited = ref(null);
 const itemBeingViewed = ref(null);
 const isFilterVisible = ref(false);
 const filters = reactive({ ...props.initialFilters });
-const userRole = ref(null);
+const userLevelId = ref(null);
 
 // === Computed ===
-const isAdmin = computed(
-  () => (userRole.value || "").toLowerCase() === "administrator"
-);
+const canManage = computed(() => {
+  return [userLevelAdministrator, userLevelOperator].includes(
+    userLevelId.value
+  );
+});
 const totalPages = computed(
   () => Math.ceil(totalItems.value / perPage.value) || 1
 );
@@ -283,9 +289,13 @@ watch(filters, () => debouncedFetch(), { deep: true });
 function loadUserRole() {
   try {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    userRole.value = userData?.data?.[0]?.nama_level || null;
+    // Prioritize id_level from root data, fallback to roles object
+    userLevelId.value =
+      userData?.data?.[0]?.id_level ||
+      userData?.data?.[0]?.roles?.id_level ||
+      null;
   } catch {
-    userRole.value = null;
+    userLevelId.value = null;
   }
 }
 
