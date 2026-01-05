@@ -18,25 +18,16 @@
                   :src="settings.logo"
                   alt="Logo"
                   class="img-fluid mb-3"
-                  style="max-height: 50px"
+                  style="max-height: 60px"
                 />
-                <!-- Fallback logo if needed, or just text -->
                 <div class="text-white">
-                  <h6 class="mb-0 fw-bold">
+                  <p class="mt-2">
                     {{
                       settings.nama_instansi || "Kementerian Ketenagakerjaan"
                     }}
-                  </h6>
-                  <h6 class="mb-0 fw-bold">Republik Indonesia</h6>
+                  </p>
                 </div>
               </div>
-
-              <p class="text-white mb-4">
-                {{
-                  settings.nama_instansi ||
-                  "Kementerian Ketenagakerjaan Republik Indonesia"
-                }}
-              </p>
 
               <!-- Contact Info -->
               <div class="d-flex mb-3 text-white">
@@ -44,7 +35,6 @@
                   class="fa fa-map-marker mt-1 me-3 text-center"
                   style="width: 20px"
                 ></i>
-                <!-- Using v-html for address as requested -->
                 <span
                   style="white-space: pre-line"
                   v-html="settings.alamat_instansi || '-'"
@@ -126,18 +116,14 @@
               </div>
             </div>
           </div>
-
-          <!-- Copyright -->
-          <div class="row mt-3">
-            <div class="col-md-12 text-center border-top border-secondary pt-3">
-              <p class="mb-0 text-white opacity-75">
-                {{
-                  settings.nama_instansi ||
-                  "Kementerian Ketenagakerjaan Republik Indonesia"
-                }}
-                © 2026
-              </p>
-            </div>
+        </div>
+        <!-- Copyright -->
+        <div class="col-md-12">
+          <div class="border-top border-secondary pt-3 pb-3">
+            <p class="mb-0 text-white opacity-75 text-start">
+              Direktorat Bina Peningkatan Produktivitas Nasional ©
+              {{ currentYear }}
+            </p>
           </div>
         </div>
       </div>
@@ -152,6 +138,7 @@ import { getApplicationPub } from "@/services/general/website/settings/applicati
 
 const store = useStore();
 const settings = ref({});
+const currentYear = new Date().getFullYear();
 
 const footer = computed(() => store.getters["layout/footer"]);
 
