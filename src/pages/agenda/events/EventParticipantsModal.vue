@@ -485,20 +485,15 @@ function toggleDropdown(event, participant, index) {
   if (openDropdownId.value === participantId) {
     closeDropdown();
   } else {
-    // Calculate position
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
 
-    // Check if it's one of the last 2 rows
     const isLastTwo =
       participants.value.length > 2 && index >= participants.value.length - 2;
 
-    // Center horizontal
     const left = rect.left + rect.width / 2;
 
     if (isLastTwo) {
-      // Position ABOVE the button (using bottom = space from viewport bottom)
-      // distance from viewport bottom to button top = window.innerHeight - rect.top
       const bottom = window.innerHeight - rect.top + 8;
       dropdownPosition.value = {
         top: 0,
@@ -507,7 +502,6 @@ function toggleDropdown(event, participant, index) {
         placement: "top",
       };
     } else {
-      // Position BELOW the button
       const top = rect.bottom + 8;
       dropdownPosition.value = {
         top,
