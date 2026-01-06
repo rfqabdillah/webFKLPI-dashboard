@@ -43,10 +43,6 @@
     </div>
 
     <ul class="profile-dropdown onhover-show-div">
-      <li @click="goToAccount" style="cursor: pointer">
-        <vue-feather type="user"></vue-feather>
-        <span>{{ $t("Account") }}</span>
-      </li>
       <li @click="logout" style="cursor: pointer">
         <vue-feather type="log-in"></vue-feather>
         <span>{{ $t("Logout") }}</span>

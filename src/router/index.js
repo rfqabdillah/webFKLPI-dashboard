@@ -46,13 +46,12 @@ import IndexEmployeeStatuses from "@/pages/personnel/employeeStatuses/index.vue"
 import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
 
 
-import IndexUserProfile from "@/pages/generalUser/userProfile/index.vue";
+import IndexUserProfile from "@/pages/account/index.vue";
 import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
 import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
 import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
 import IndexTestimoniPage from "@/pages/generalUser/testimoni/index.vue";
 import IndexAdminTestimoni from "@/pages/testimoni/index.vue";
-import IndexAccount from "@/pages/account/index.vue";
 
 const routes =[
     {
@@ -310,23 +309,6 @@ const routes =[
             component: IndexUserProfile,
             meta: {
               title: "Profil Saya",
-            },
-          },
-        ]
-      },
-      {
-        path: '/account',
-        component: Body,
-        meta: {
-          requiresAuth: true,
-        },
-        children: [
-          {
-            path: "",
-            name: "Account",
-            component: IndexAccount,
-            meta: {
-              title: "Akun Saya",
             },
           },
         ]

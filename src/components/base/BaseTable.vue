@@ -289,7 +289,6 @@ watch(filters, () => debouncedFetch(), { deep: true });
 function loadUserRole() {
   try {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    // Prioritize id_level from root data, fallback to roles object
     userLevelId.value =
       userData?.data?.[0]?.id_level ||
       userData?.data?.[0]?.roles?.id_level ||

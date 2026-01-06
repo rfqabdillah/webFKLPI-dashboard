@@ -5,32 +5,51 @@
     </div>
 
     <div v-else>
+      <!-- Header with Mode Toggle -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-briefcase me-2"></i
-            >{{ $t("ProfileSteps.Job.Title") }}
+            <i class="fa fa-briefcase me-2"></i>
+            {{ $t("ProfileSteps.Job.Title") }}
           </h6>
           <p class="text-muted small mb-0">
             {{ $t("ProfileSteps.Job.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addPekerjaan">
+        <!-- View Mode: Show Edit Button -->
+        <button
+          v-if="!isEditMode && pekerjaanList.length > 0"
+          class="btn btn-outline-primary btn-sm"
+          @click="enterEditMode"
+        >
+          <i class="fa fa-pencil me-1"></i>
+          Ubah Data
+        </button>
+        <!-- Edit Mode: Show Add Button -->
+        <button
+          v-if="isEditMode"
+          class="btn btn-primary btn-sm"
+          @click="addPekerjaan"
+        >
           <i class="fa fa-plus me-1"></i> {{ $t("ProfileSteps.Job.AddData") }}
         </button>
       </div>
 
+      <!-- Info Note (only in Edit Mode) -->
       <div
+        v-if="isEditMode"
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>{{ $t("ProfileSteps.WorkUnit.Note") }}</strong>
         {{ $t("ProfileSteps.WorkUnit.NoteContent") }}
-        <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> {{ $t("Active") }}</strong
-        >{{ $t("ProfileSteps.WorkUnit.NoteContent2") }}
+        <strong class="text-success">
+          <i class="fa fa-check-circle"></i> {{ $t("Active") }}
+        </strong>
+        {{ $t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
+      <!-- Empty State -->
       <div
         v-if="pekerjaanList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -44,170 +63,269 @@
         </button>
       </div>
 
-      <transition-group name="list" tag="div">
+      <!-- VIEW MODE -->
+      <div v-if="!isEditMode && pekerjaanList.length > 0" class="row">
         <div
-          v-for="(item, index) in pekerjaanList"
+          v-for="item in sortedPekerjaanList"
           :key="item._tempId"
-          class="card mb-3 shadow-sm border-0"
+          class="col-12 mb-2"
         >
-          <div
-            class="card-header bg-white d-flex justify-content-between align-items-center py-3"
-          >
-            <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge me-2" style="background-color: #0d6efd">{{
-                index + 1
-              }}</span>
-              {{ $t("ProfileSteps.Job.DataHeader") }}
-            </h6>
-            <button
-              class="btn btn-outline-danger btn-sm"
-              @click="removePekerjaan(index)"
-              :title="$t('Delete')"
-            >
-              <i class="fa fa-trash"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Job.JobName") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="item.namapekerjaan"
-                  :class="{ 'is-invalid': getError(index, 'namapekerjaan') }"
-                  :placeholder="$t('ProfileSteps.Job.JobNamePlaceholder')"
-                  required
-                  @blur="validateField(index, 'namapekerjaan')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "namapekerjaan") }}
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Job.CompanyName") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="item.namaperusahaan"
-                  :class="{ 'is-invalid': getError(index, 'namaperusahaan') }"
-                  :placeholder="$t('ProfileSteps.Job.CompanyNamePlaceholder')"
-                  required
-                  @blur="validateField(index, 'namaperusahaan')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "namaperusahaan") }}
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label fw-semibold">
-                  Tipe Pekerjaan <span class="text-danger">*</span>
-                </label>
-                <select
-                  class="form-select"
-                  v-model="item.idtipepekerjaan"
-                  :class="{ 'is-invalid': getError(index, 'idtipepekerjaan') }"
-                  required
-                  @blur="validateField(index, 'idtipepekerjaan')"
-                >
-                  <option value="" disabled>Pilih Tipe Pekerjaan</option>
-                  <option
-                    v-for="jt in jobTypeOptions"
-                    :key="jt.idtipepekerjaan"
-                    :value="jt.idtipepekerjaan"
+          <div class="card shadow-sm border hover-lift">
+            <div class="card-body py-3 px-4">
+              <div class="d-flex align-items-start">
+                <!-- Icon Box -->
+                <div class="flex-shrink-0 me-3">
+                  <div
+                    class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+                    style="width: 42px; height: 42px"
                   >
-                    {{ jt.namatipepekerjaan }}
-                  </option>
-                </select>
-                <div class="invalid-feedback">
-                  {{ getError(index, "idtipepekerjaan") }}
+                    <i class="fa fa-briefcase"></i>
+                  </div>
                 </div>
-              </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  Tanggal Mulai <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="date"
-                  class="form-control"
-                  v-model="item.tanggalmulai"
-                  :class="{ 'is-invalid': getError(index, 'tanggalmulai') }"
-                  required
-                  @blur="validateField(index, 'tanggalmulai')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "tanggalmulai") }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
-                <input
-                  type="date"
-                  class="form-control"
-                  v-model="item.tanggalselesai"
-                />
-                <div class="form-text small">Kosongkan jika masih bekerja.</div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
-                <div class="form-check form-switch mt-2">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    role="switch"
-                    :id="'statusSwitch-' + index"
-                    :checked="item.status === 'Aktif'"
-                    @change="(e) => handleStatusChange(index, e.target.checked)"
-                  />
-                  <label
-                    class="form-check-label"
-                    :for="'statusSwitch-' + index"
-                  >
-                    {{ item.status || "Tidak Aktif" }}
-                  </label>
+                <!-- Content -->
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="fw-bold text-dark mb-1">
+                        {{ item.namapekerjaan }}
+                      </h6>
+                      <div class="text-muted mb-2" style="font-size: 14px">
+                        <i class="fa fa-building-o me-1"></i>
+                        {{ item.namaperusahaan }}
+                      </div>
+                      <div class="text-muted mb-2" style="font-size: 14px">
+                        <i class="fa fa-tag me-1"></i>
+                        {{ getJobTypeName(item.idtipepekerjaan) }}
+                      </div>
+                      <div class="text-muted mb-2" style="font-size: 14px">
+                        <i class="fa fa-calendar me-1"></i>
+                        {{ formatDate(item.tanggalmulai, locale) }} -
+                        {{
+                          item.tanggalselesai
+                            ? formatDate(item.tanggalselesai, locale)
+                            : $t("Now")
+                        }}
+                      </div>
+                    </div>
+                    <span
+                      class="badge rounded-pill px-3 py-1"
+                      :class="
+                        item.status === 'Aktif'
+                          ? 'bg-soft-success text-success'
+                          : 'bg-soft-secondary text-secondary'
+                      "
+                    >
+                      <i
+                        :class="
+                          item.status === 'Aktif'
+                            ? 'fa fa-check-circle me-1'
+                            : 'fa fa-times-circle me-1'
+                        "
+                      ></i>
+                      {{
+                        item.status === "Aktif" ? $t("Active") : $t("Inactive")
+                      }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </transition-group>
+      </div>
 
-      <!-- Save Button -->
-      <div
-        v-if="pekerjaanList.length > 0"
-        class="d-flex justify-content-end mt-3"
-      >
-        <button
-          class="btn btn-primary save-btn"
-          @click="saveData"
-          :disabled="isSaving"
+      <!-- EDIT MODE -->
+      <div v-if="isEditMode">
+        <transition-group name="list" tag="div">
+          <div
+            v-for="(item, index) in pekerjaanList"
+            :key="item._tempId"
+            class="card mb-3 shadow-sm border-0"
+          >
+            <div
+              class="card-header bg-white d-flex justify-content-between align-items-center py-3"
+            >
+              <h6 class="mb-0 fw-bold text-primary">
+                <span class="badge me-2" style="background-color: #0d6efd">{{
+                  index + 1
+                }}</span>
+                {{ $t("ProfileSteps.Job.DataHeader") }}
+              </h6>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                @click="removePekerjaan(index)"
+                :title="$t('Delete')"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Job.JobName") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="item.namapekerjaan"
+                    :class="{ 'is-invalid': getError(index, 'namapekerjaan') }"
+                    :placeholder="$t('ProfileSteps.Job.JobNamePlaceholder')"
+                    required
+                    @blur="validateField(index, 'namapekerjaan')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "namapekerjaan") }}
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Job.CompanyName") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="item.namaperusahaan"
+                    :class="{ 'is-invalid': getError(index, 'namaperusahaan') }"
+                    :placeholder="$t('ProfileSteps.Job.CompanyNamePlaceholder')"
+                    required
+                    @blur="validateField(index, 'namaperusahaan')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "namaperusahaan") }}
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Job.JobType") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <select
+                    class="form-select"
+                    v-model="item.idtipepekerjaan"
+                    :class="{
+                      'is-invalid': getError(index, 'idtipepekerjaan'),
+                    }"
+                    required
+                    @blur="validateField(index, 'idtipepekerjaan')"
+                  >
+                    <option value="" disabled>
+                      {{ $t("ProfileSteps.Job.SelectJobType") }}
+                    </option>
+                    <option
+                      v-for="jt in jobTypeOptions"
+                      :key="jt.idtipepekerjaan"
+                      :value="jt.idtipepekerjaan"
+                    >
+                      {{ jt.namatipepekerjaan }}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback">
+                    {{ getError(index, "idtipepekerjaan") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    {{ $t("Start Date") }} <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="item.tanggalmulai"
+                    :class="{ 'is-invalid': getError(index, 'tanggalmulai') }"
+                    required
+                    @blur="validateField(index, 'tanggalmulai')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "tanggalmulai") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">{{
+                    $t("End Date")
+                  }}</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="item.tanggalselesai"
+                  />
+                  <div class="form-text small">
+                    {{ $t("ProfileSteps.Job.EndDateHelp") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-block">Status</label>
+                  <div class="form-check form-switch mt-2">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      :id="'statusSwitch-' + index"
+                      :checked="item.status === 'Aktif'"
+                      @change="
+                        (e) => handleStatusChange(index, e.target.checked)
+                      "
+                    />
+                    <label
+                      class="form-check-label"
+                      :for="'statusSwitch-' + index"
+                    >
+                      {{
+                        item.status === "Aktif" ? $t("Active") : $t("Inactive")
+                      }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition-group>
+
+        <!-- Action Buttons in Edit Mode -->
+        <div
+          v-if="pekerjaanList.length > 0"
+          class="d-flex justify-content-end gap-2 mt-3"
         >
-          <span
-            v-if="isSaving"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          ></span>
-          <i v-else class="fa fa-save me-2"></i>
-          {{ isSaving ? "Menyimpan..." : "Simpan Data" }}
-        </button>
+          <button
+            v-if="hasExistingData"
+            class="btn btn-outline-secondary"
+            @click="cancelEditMode"
+            :disabled="isSaving"
+          >
+            <i class="fa fa-arrow-left me-1"></i>
+            Kembali
+          </button>
+          <button
+            class="btn btn-primary save-btn"
+            @click="saveData"
+            :disabled="isSaving"
+          >
+            <span
+              v-if="isSaving"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+            ></span>
+            <i v-else class="fa fa-save me-2"></i>
+            {{
+              isSaving ? $t("Saving") + "..." : $t("Save") + " " + $t("Data")
+            }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useToast } from "vue-toastification";
 import { useI18n } from "vue-i18n";
 import { getJobTypes } from "@/services/referensi/jobTypes";
@@ -220,6 +338,7 @@ import {
 import Swal from "sweetalert2";
 import * as yup from "yup";
 import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
+import { formatDate } from "@/utils/formatDate";
 
 const { t, locale } = useI18n();
 
@@ -248,6 +367,20 @@ const pekerjaanList = ref([]);
 const formErrors = ref([]);
 const isSaving = ref(false);
 
+// === View/Edit Mode State ===
+const isEditMode = ref(false);
+const hasExistingData = ref(false);
+const originalData = ref([]);
+
+// === Computed: Sort list with Aktif first ===
+const sortedPekerjaanList = computed(() => {
+  return [...pekerjaanList.value].sort((a, b) => {
+    if (a.status === "Aktif" && b.status !== "Aktif") return -1;
+    if (a.status !== "Aktif" && b.status === "Aktif") return 1;
+    return 0;
+  });
+});
+
 // Yup Validation Schema
 const getValidationSchema = () =>
   yup.object().shape({
@@ -265,14 +398,11 @@ const getValidationSchema = () =>
       .required(() => t("ProfileSteps.Job.Validation.StartDateRequired")),
   });
 
-// Re-validate when locale changes to update error messages
 watch(
   () => locale.value,
   () => {
-    // Re-validate all items that have errors to update messages
     formErrors.value.forEach((errors, index) => {
       if (Object.keys(errors).some((key) => errors[key])) {
-        // Re-run validation for items with errors
         const item = pekerjaanList.value[index];
         if (item) {
           Object.keys(errors).forEach((field) => {
@@ -290,7 +420,6 @@ watch(
 onMounted(async () => {
   await fetchJobTypes();
 
-  // Only set initial values if data hasn't been loaded from API yet
   if (!isDataLoaded.value) {
     if (props.modelValue && Array.isArray(props.modelValue.list)) {
       pekerjaanList.value = props.modelValue.list.map((item) => ({
@@ -307,7 +436,6 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
-// Watch for shouldLoad to trigger data loading (lazy load)
 watch(
   () => props.shouldLoad,
   async (shouldLoad) => {
@@ -374,6 +502,10 @@ async function loadData(userId) {
       pekerjaanList.value = uniqueData;
       formErrors.value = pekerjaanList.value.map(() => ({}));
       emit("update:modelValue", { list: pekerjaanList.value });
+
+      hasExistingData.value = uniqueData.length > 0;
+      originalData.value = JSON.parse(JSON.stringify(uniqueData));
+      isEditMode.value = uniqueData.length === 0;
     }
 
     isDataLoaded.value = true;
@@ -407,15 +539,14 @@ async function fetchJobTypes() {
     }
   } catch (error) {
     console.error("Error fetching job types:", error);
-    toast.error("Gagal memuat data tipe pekerjaan.");
+    toast.error(t("ProfileSteps.Job.LoadError"));
   }
 }
 
-// === Save Function ===
 async function saveData() {
   const isValid = validate();
   if (!isValid) {
-    toast.error("Mohon lengkapi data yang diperlukan");
+    toast.error(t("ProfileSteps.Modal.Messages.CompleteRequired"));
     return;
   }
 
@@ -450,10 +581,14 @@ async function saveData() {
       }
     }
 
-    toast.success("Data pekerjaan berhasil disimpan");
+    toast.success(t("Data saved successfully"));
+
+    hasExistingData.value = pekerjaanList.value.length > 0;
+    originalData.value = JSON.parse(JSON.stringify(pekerjaanList.value));
+    isEditMode.value = false;
   } catch (error) {
     console.error("Error saving pekerjaan:", error);
-    toast.error("Gagal menyimpan data pekerjaan");
+    toast.error(t("Error saving data"));
   } finally {
     isSaving.value = false;
   }
@@ -519,6 +654,25 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
+// === View/Edit Mode Methods ===
+function enterEditMode() {
+  originalData.value = JSON.parse(JSON.stringify(pekerjaanList.value));
+  isEditMode.value = true;
+}
+
+function cancelEditMode() {
+  pekerjaanList.value = JSON.parse(JSON.stringify(originalData.value));
+  formErrors.value = pekerjaanList.value.map(() => ({}));
+  isEditMode.value = false;
+}
+
+function getJobTypeName(idtipepekerjaan) {
+  const jt = jobTypeOptions.value.find(
+    (j) => j.idtipepekerjaan === idtipepekerjaan
+  );
+  return jt ? jt.namatipepekerjaan : "-";
+}
+
 // === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
@@ -551,7 +705,6 @@ async function validate() {
 
     try {
       await schema.validate(item, { abortEarly: false });
-      // Clear all errors for this item
       formErrors.value[index] = {};
     } catch (err) {
       isValid = false;
@@ -566,7 +719,6 @@ async function validate() {
   return isValid;
 }
 
-// === Sync & Watch ===
 watch(
   pekerjaanList,
   (newList) => {
@@ -629,5 +781,40 @@ defineExpose({ validate, loadData });
   background: #6c9bd1;
   cursor: not-allowed;
   color: white;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+.bg-soft-success {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-soft-secondary {
+  background-color: rgba(108, 117, 125, 0.1);
+}
+
+.badge.rounded-pill {
+  font-size: 13px;
+  padding: 8px 14px !important;
+  font-weight: 600;
+}
+
+.step-pekerjaan .row {
+  --bs-gutter-y: 0;
+}
+
+.step-pekerjaan .row > .col-12.mb-2 {
+  margin-bottom: 8px !important;
+}
+
+.step-pekerjaan .card.hover-lift {
+  margin-bottom: 0;
 }
 </style>

@@ -5,33 +5,52 @@
     </div>
 
     <div v-else>
+      <!-- Header with Mode Toggle -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-graduation-cap me-2"></i
-            >{{ $t("ProfileSteps.Position.Title") }}
+            <i class="fa fa-graduation-cap me-2"></i>
+            {{ $t("ProfileSteps.Position.Title") }}
           </h6>
           <p class="text-muted small mb-0">
             {{ $t("ProfileSteps.Position.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addJenjang">
+        <!-- View Mode: Show Edit Button -->
+        <button
+          v-if="!isEditMode && jenjangList.length > 0"
+          class="btn btn-outline-primary btn-sm"
+          @click="enterEditMode"
+        >
+          <i class="fa fa-pencil me-1"></i>
+          Ubah Data
+        </button>
+        <!-- Edit Mode: Show Add Button -->
+        <button
+          v-if="isEditMode"
+          class="btn btn-primary btn-sm"
+          @click="addJenjang"
+        >
           <i class="fa fa-plus me-1"></i>
           {{ $t("ProfileSteps.Position.AddData") }}
         </button>
       </div>
 
+      <!-- Info Note (only in Edit Mode) -->
       <div
+        v-if="isEditMode"
         class="border-start border-4 border-primary bg-light text-dark py-2 px-3 small mb-3 rounded"
       >
         <i class="fa fa-info-circle text-primary me-1"></i>
         <strong>{{ $t("ProfileSteps.WorkUnit.Note") }}</strong>
         {{ $t("ProfileSteps.WorkUnit.NoteContent") }}
-        <strong class="text-success"
-          ><i class="fa fa-check-circle"></i> {{ $t("Active") }}</strong
-        >{{ $t("ProfileSteps.WorkUnit.NoteContent2") }}
+        <strong class="text-success">
+          <i class="fa fa-check-circle"></i> {{ $t("Active") }}
+        </strong>
+        {{ $t("ProfileSteps.WorkUnit.NoteContent2") }}
       </div>
 
+      <!-- Empty State -->
       <div
         v-if="jenjangList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -46,154 +65,207 @@
         </button>
       </div>
 
-      <transition-group name="list" tag="div">
+      <!-- VIEW MODE -->
+      <div v-if="!isEditMode && jenjangList.length > 0" class="row">
         <div
-          v-for="(item, index) in jenjangList"
+          v-for="item in sortedJenjangList"
           :key="item._tempId"
-          class="card mb-3 shadow-sm border-0"
+          class="col-12 mb-2"
         >
-          <div
-            class="card-header bg-white d-flex justify-content-between align-items-center py-3"
-          >
-            <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge me-2" style="background-color: #0d6efd">{{
-                index + 1
-              }}</span>
-              {{ $t("ProfileSteps.Position.DataHeader") }}
-            </h6>
-            <button
-              class="btn btn-outline-danger btn-sm"
-              @click="removeJenjang(index)"
-              :title="$t('Delete')"
-            >
-              <i class="fa fa-trash"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-12">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Position.PositionLabel") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <select
-                  class="form-select"
-                  v-model="item.idjenjang"
-                  :class="{ 'is-invalid': getError(index, 'idjenjang') }"
-                  required
-                  @blur="validateField(index, 'idjenjang')"
-                >
-                  <option value="" disabled>
-                    {{ $t("ProfileSteps.Position.SelectPosition") }}
-                  </option>
-                  <option
-                    v-for="opt in levelOptions"
-                    :key="opt.idjenjang"
-                    :value="opt.idjenjang"
-                  >
-                    {{ opt.namajenjang }}
-                  </option>
-                </select>
-                <div class="invalid-feedback">
-                  {{ getError(index, "idjenjang") }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  {{ $t("Start Date") }} <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="date"
-                  class="form-control"
-                  v-model="item.tglmulai"
-                  :class="{ 'is-invalid': getError(index, 'tglmulai') }"
-                  required
-                  @blur="validateField(index, 'tglmulai')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "tglmulai") }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Selesai</label>
-                <input
-                  type="date"
-                  class="form-control"
-                  v-model="item.tglselesai"
-                />
-                <div class="form-text small">Kosongkan jika masih aktif.</div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">File SK</label>
-
-                <input
-                  type="file"
-                  class="form-control"
-                  @change="(e) => handleFileUpload(index, e)"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                />
-
-                <div
-                  v-if="isUrl(item.filesk)"
-                  class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
-                >
-                  <div class="d-flex align-items-center overflow-hidden">
-                    <div class="me-3 text-danger">
-                      <i class="fa fa-file-pdf-o fa-2x"></i>
-                    </div>
-                    <div class="text-truncate">
-                      <small
-                        class="text-muted d-block"
-                        style="font-size: 0.75rem"
-                        >File Tersimpan:</small
-                      >
-                      <span
-                        class="fw-bold text-dark text-truncate d-block"
-                        :title="item.filesk_preview"
-                      >
-                        {{ item.filesk_preview }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <a
-                    :href="item.filesk"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
-                  >
-                    <i class="fa fa-external-link me-1"></i> {{ $t("Open") }}
-                  </a>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-danger ms-2"
-                    @click="removeFile(index)"
-                    :title="$t('RemoveFile')"
-                  >
-                    <i class="fa fa-times"></i>
-                  </button>
-                </div>
-
-                <div
-                  v-else-if="item.filesk_preview"
-                  class="mt-2 p-2 border border-success rounded bg-white text-success"
-                >
+          <div class="card shadow-sm border hover-lift">
+            <div class="card-body py-3 px-4">
+              <div class="d-flex align-items-start">
+                <!-- Icon Box -->
+                <div class="flex-shrink-0 me-3">
                   <div
-                    class="d-flex align-items-center justify-content-between"
+                    class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+                    style="width: 42px; height: 42px"
                   >
-                    <div class="d-flex align-items-center overflow-hidden">
-                      <i class="fa fa-check-circle fa-lg me-2"></i>
-                      <div class="overflow-hidden">
-                        <small class="d-block text-muted"
-                          >{{ $t("NewFileSelected") }}:</small
-                        >
-                        <strong class="text-truncate d-block">{{
-                          item.filesk_preview
-                        }}</strong>
+                    <i class="fa fa-graduation-cap"></i>
+                  </div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="fw-bold text-dark mb-1">
+                        {{ getJenjangName(item.idjenjang) }}
+                      </h6>
+                      <div class="text-muted mb-2" style="font-size: 14px">
+                        <i class="fa fa-calendar me-1"></i>
+                        {{ formatDate(item.tglmulai, locale) }} -
+                        {{
+                          item.tglselesai
+                            ? formatDate(item.tglselesai, locale)
+                            : $t("Now")
+                        }}
+                      </div>
+                      <div v-if="isUrl(item.filesk)" class="small">
+                        <div class="mt-2">
+                          <a
+                            :href="item.filesk"
+                            target="_blank"
+                            class="btn btn-outline-primary btn-sm rounded-pill px-3 d-inline-flex align-items-center shadow-sm transition-all"
+                          >
+                            Tampilkan SK
+                            <i class="fa fa-external-link ms-2"></i>
+                          </a>
+                        </div>
                       </div>
                     </div>
+                    <span
+                      class="badge rounded-pill px-3 py-1"
+                      :class="
+                        item.status === 'Aktif'
+                          ? 'bg-soft-success text-success'
+                          : 'bg-soft-secondary text-secondary'
+                      "
+                    >
+                      <i
+                        :class="
+                          item.status === 'Aktif'
+                            ? 'fa fa-check-circle me-1'
+                            : 'fa fa-times-circle me-1'
+                        "
+                      ></i>
+                      {{
+                        item.status === "Aktif" ? $t("Active") : $t("Inactive")
+                      }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDIT MODE -->
+      <div v-if="isEditMode">
+        <transition-group name="list" tag="div">
+          <div
+            v-for="(item, index) in jenjangList"
+            :key="item._tempId"
+            class="card mb-3 shadow-sm border-0"
+          >
+            <div
+              class="card-header bg-white d-flex justify-content-between align-items-center py-3"
+            >
+              <h6 class="mb-0 fw-bold text-primary">
+                <span class="badge me-2" style="background-color: #0d6efd">{{
+                  index + 1
+                }}</span>
+                {{ $t("ProfileSteps.Position.DataHeader") }}
+              </h6>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                @click="removeJenjang(index)"
+                :title="$t('Delete')"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Position.PositionLabel") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <select
+                    class="form-select"
+                    v-model="item.idjenjang"
+                    :class="{ 'is-invalid': getError(index, 'idjenjang') }"
+                    required
+                    @blur="validateField(index, 'idjenjang')"
+                  >
+                    <option value="" disabled>
+                      {{ $t("ProfileSteps.Position.SelectPosition") }}
+                    </option>
+                    <option
+                      v-for="opt in levelOptions"
+                      :key="opt.idjenjang"
+                      :value="opt.idjenjang"
+                    >
+                      {{ opt.namajenjang }}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback">
+                    {{ getError(index, "idjenjang") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    {{ $t("Start Date") }} <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="item.tglmulai"
+                    :class="{ 'is-invalid': getError(index, 'tglmulai') }"
+                    required
+                    @blur="validateField(index, 'tglmulai')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "tglmulai") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">{{
+                    $t("End Date")
+                  }}</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="item.tglselesai"
+                  />
+                  <div class="form-text small">
+                    {{ $t("ProfileSteps.WorkUnit.EndDateHelp") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">File SK</label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    @change="(e) => handleFileUpload(index, e)"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
+
+                  <div
+                    v-if="isUrl(item.filesk)"
+                    class="mt-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between"
+                  >
+                    <div class="d-flex align-items-center overflow-hidden">
+                      <div class="me-3 text-danger">
+                        <i class="fa fa-file-pdf-o fa-2x"></i>
+                      </div>
+                      <div class="text-truncate">
+                        <small
+                          class="text-muted d-block"
+                          style="font-size: 0.75rem"
+                        >
+                          File Tersimpan:
+                        </small>
+                        <span
+                          class="fw-bold text-dark text-truncate d-block"
+                          :title="item.filesk_preview"
+                        >
+                          {{ item.filesk_preview }}
+                        </span>
+                      </div>
+                    </div>
+                    <a
+                      :href="item.filesk"
+                      target="_blank"
+                      class="btn btn-sm btn-outline-primary ms-2 text-nowrap"
+                    >
+                      <i class="fa fa-external-link me-1"></i> {{ $t("Open") }}
+                    </a>
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-danger ms-2"
@@ -203,63 +275,108 @@
                       <i class="fa fa-times"></i>
                     </button>
                   </div>
-                </div>
-              </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold d-block">Status</label>
-                <div class="form-check form-switch mt-2">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    role="switch"
-                    :id="'statusSwitch-' + index"
-                    :checked="item.status === 'Aktif'"
-                    @change="(e) => handleStatusChange(index, e.target.checked)"
-                  />
-                  <label
-                    class="form-check-label"
-                    :for="'statusSwitch-' + index"
+                  <div
+                    v-else-if="item.filesk_preview"
+                    class="mt-2 p-2 border border-success rounded bg-white text-success"
                   >
-                    {{ item.status || "Tidak Aktif" }}
-                  </label>
+                    <div
+                      class="d-flex align-items-center justify-content-between"
+                    >
+                      <div class="d-flex align-items-center overflow-hidden">
+                        <i class="fa fa-check-circle fa-lg me-2"></i>
+                        <div class="overflow-hidden">
+                          <small class="d-block text-muted"
+                            >{{ $t("NewFileSelected") }}:</small
+                          >
+                          <strong class="text-truncate d-block">{{
+                            item.filesk_preview
+                          }}</strong>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger ms-2"
+                        @click="removeFile(index)"
+                        :title="$t('RemoveFile')"
+                      >
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-block">Status</label>
+                  <div class="form-check form-switch mt-2">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      :id="'statusSwitch-' + index"
+                      :checked="item.status === 'Aktif'"
+                      @change="
+                        (e) => handleStatusChange(index, e.target.checked)
+                      "
+                    />
+                    <label
+                      class="form-check-label"
+                      :for="'statusSwitch-' + index"
+                    >
+                      {{
+                        item.status === "Aktif" ? $t("Active") : $t("Inactive")
+                      }}
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </transition-group>
+        </transition-group>
 
-      <!-- Save Button -->
-      <div
-        v-if="jenjangList.length > 0"
-        class="d-flex justify-content-end mt-3"
-      >
-        <button
-          class="btn btn-primary save-btn"
-          @click="saveData"
-          :disabled="isSaving"
+        <!-- Action Buttons in Edit Mode -->
+        <div
+          v-if="jenjangList.length > 0"
+          class="d-flex justify-content-end gap-2 mt-3"
         >
-          <span
-            v-if="isSaving"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          ></span>
-          <i v-else class="fa fa-save me-2"></i>
-          {{ isSaving ? "Menyimpan..." : "Simpan Data" }}
-        </button>
+          <button
+            v-if="hasExistingData"
+            class="btn btn-outline-secondary"
+            @click="cancelEditMode"
+            :disabled="isSaving"
+          >
+            <i class="fa fa-arrow-left me-1"></i>
+            Kembali
+          </button>
+          <button
+            class="btn btn-primary save-btn"
+            @click="saveData"
+            :disabled="isSaving"
+          >
+            <span
+              v-if="isSaving"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+            ></span>
+            <i v-else class="fa fa-save me-2"></i>
+            {{
+              isSaving ? $t("Saving") + "..." : $t("Save") + " " + $t("Data")
+            }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useToast } from "vue-toastification";
 import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
 import * as yup from "yup";
 import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
+import { formatDate } from "@/utils/formatDate";
 
 import { getPositionLevels } from "@/services/referensi/positionLevels";
 import {
@@ -291,9 +408,23 @@ const toast = useToast();
 
 const isLoading = ref(false);
 const isDataLoaded = ref(false);
-const levelOptions = ref([]); // Menyimpan data dari positionLevels
-const jenjangList = ref([]); // Menyimpan data input user
+const levelOptions = ref([]);
+const jenjangList = ref([]);
 const formErrors = ref([]);
+
+// === View/Edit Mode State ===
+const isEditMode = ref(false);
+const hasExistingData = ref(false);
+const originalData = ref([]);
+
+// === Computed: Sort list with Aktif first ===
+const sortedJenjangList = computed(() => {
+  return [...jenjangList.value].sort((a, b) => {
+    if (a.status === "Aktif" && b.status !== "Aktif") return -1;
+    if (a.status !== "Aktif" && b.status === "Aktif") return 1;
+    return 0;
+  });
+});
 
 // === Yup Validation Schema ===
 const getValidationSchema = () =>
@@ -306,7 +437,7 @@ const getValidationSchema = () =>
       .required(() => t("ProfileSteps.Position.Validation.StartDateRequired")),
   });
 
-// Re-validate when locale changes to update error messages
+// Re-validate when locale changes
 watch(
   () => locale.value,
   () => {
@@ -334,10 +465,8 @@ const isUrl = (string) => {
 
 // === Lifecycle ===
 onMounted(async () => {
-  // Load referensi terlebih dahulu
   await fetchReferenceLevels();
 
-  // Only set initial values if data hasn't been loaded from API yet
   if (!isDataLoaded.value) {
     if (props.modelValue && Array.isArray(props.modelValue.list)) {
       jenjangList.value = props.modelValue.list.map((item) => ({
@@ -354,7 +483,6 @@ onMounted(async () => {
   emit("validation-change", true);
 });
 
-// Watch for shouldLoad to trigger data loading (lazy load)
 watch(
   () => props.shouldLoad,
   async (shouldLoad) => {
@@ -366,10 +494,6 @@ watch(
 );
 
 // === Methods ===
-
-/**
- * Remove duplicates from array based on a key
- */
 function uniqueByKey(array, key) {
   const seen = new Set();
   return array.filter((item) => {
@@ -384,7 +508,6 @@ function uniqueByKey(array, key) {
   });
 }
 
-// Fungsi mengambil data referensi positionLevels
 async function fetchReferenceLevels() {
   try {
     const params = { page: 1, limit: 999, sort: "namajenjang", dir: "asc" };
@@ -403,15 +526,13 @@ async function fetchReferenceLevels() {
     }
   } catch (error) {
     console.error("Error fetching position levels:", error);
-    toast.error("Gagal memuat data referensi jenjang jabatan.");
+    toast.error(t("ProfileSteps.Position.LoadError"));
   }
 }
 
-// Fungsi load data user-levels dari database
 async function loadData(userId) {
   isLoading.value = true;
   try {
-    // Pastikan referensi sudah termuat
     if (levelOptions.value.length === 0) {
       await fetchReferenceLevels();
     }
@@ -420,7 +541,6 @@ async function loadData(userId) {
       const res = await getUserLevels({ filter: `idpengguna=${userId}` });
 
       let rawData = [];
-      // Handle variasi respon backend
       if (Array.isArray(res.data)) {
         if (res.data[0] && res.data[0].data) {
           rawData = res.data[0].data;
@@ -431,10 +551,8 @@ async function loadData(userId) {
         rawData = res.data.data;
       }
 
-      // Filter berdasarkan idpengguna jika perlu
       const filteredData = rawData.filter((d) => d.idpengguna === userId);
 
-      // Mapping sesuai struktur JSON yang diminta
       const apiData = filteredData.map((d) => ({
         idpenggunajenjang: d.idpenggunajenjang,
         idjenjang: d.idjenjang,
@@ -442,16 +560,19 @@ async function loadData(userId) {
         tglselesai: d.tglselesai,
         status: d.status,
         filesk: d.filesk,
-        filesk_preview: d.filesk ? d.filesk.split("/").pop() : "",
+        filesk_preview: d.filesk ? "Surat Keputusan" : "",
         _tempId: Date.now() + Math.random(),
       }));
 
-      // Deduplicate by ID
       const uniqueData = uniqueByKey(apiData, "idpenggunajenjang");
 
       jenjangList.value = uniqueData;
       formErrors.value = jenjangList.value.map(() => ({}));
       emit("update:modelValue", { list: jenjangList.value });
+
+      hasExistingData.value = uniqueData.length > 0;
+      originalData.value = JSON.parse(JSON.stringify(uniqueData));
+      isEditMode.value = uniqueData.length === 0;
     }
 
     isDataLoaded.value = true;
@@ -464,11 +585,10 @@ async function loadData(userId) {
 
 const isSaving = ref(false);
 
-// === Save Function ===
 async function saveData() {
   const isValid = validate();
   if (!isValid) {
-    toast.error("Mohon lengkapi data yang diperlukan");
+    toast.error(t("ProfileSteps.Modal.Messages.CompleteRequired"));
     return;
   }
 
@@ -488,7 +608,6 @@ async function saveData() {
       formData.append("record[tglselesai]", item.tglselesai || "");
       formData.append("record[status]", item.status || "Tidak Aktif");
 
-      // Handle file upload
       if (item.filesk instanceof File) {
         formData.append("upload_filesk", item.filesk);
       }
@@ -506,10 +625,14 @@ async function saveData() {
       }
     }
 
-    toast.success("Data jenjang berhasil disimpan");
+    toast.success(t("Data saved successfully"));
+
+    hasExistingData.value = jenjangList.value.length > 0;
+    originalData.value = JSON.parse(JSON.stringify(jenjangList.value));
+    isEditMode.value = false;
   } catch (error) {
     console.error("Error saving jenjang:", error);
-    toast.error("Gagal menyimpan data jenjang");
+    toast.error(t("Error saving data"));
   } finally {
     isSaving.value = false;
   }
@@ -595,6 +718,23 @@ function handleStatusChange(index, isChecked) {
   }
 }
 
+// === View/Edit Mode Methods ===
+function enterEditMode() {
+  originalData.value = JSON.parse(JSON.stringify(jenjangList.value));
+  isEditMode.value = true;
+}
+
+function cancelEditMode() {
+  jenjangList.value = JSON.parse(JSON.stringify(originalData.value));
+  formErrors.value = jenjangList.value.map(() => ({}));
+  isEditMode.value = false;
+}
+
+function getJenjangName(idjenjang) {
+  const level = levelOptions.value.find((l) => l.idjenjang === idjenjang);
+  return level ? level.namajenjang : "-";
+}
+
 // === Validation Logic ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
@@ -641,7 +781,6 @@ async function validate() {
   return isValid;
 }
 
-// === Sync & Watch ===
 watch(
   jenjangList,
   (newList) => {
@@ -698,5 +837,40 @@ defineExpose({ validate, loadData });
   background: #6c9bd1;
   cursor: not-allowed;
   color: white;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+.bg-soft-success {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-soft-secondary {
+  background-color: rgba(108, 117, 125, 0.1);
+}
+
+.badge.rounded-pill {
+  font-size: 13px;
+  padding: 8px 14px !important;
+  font-weight: 600;
+}
+
+.step-jenjang .row {
+  --bs-gutter-y: 0;
+}
+
+.step-jenjang .row > .col-12.mb-2 {
+  margin-bottom: 8px !important;
+}
+
+.step-jenjang .card.hover-lift {
+  margin-bottom: 0;
 }
 </style>
