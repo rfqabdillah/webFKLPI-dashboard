@@ -1,7 +1,7 @@
 <template>
   <div class="step-pendidikan">
     <div v-if="isLoading" class="py-3">
-      <SkeletonGroup type="form-card" :count="2" />
+      <SkeletonGroup type="list-card" :count="3" />
     </div>
 
     <div v-else>
