@@ -315,6 +315,10 @@ const fetchDetail = async () => {
       return;
     }
 
+    // Dynamic Title
+    const title = item.judul || item.judul_en || "Detail Agenda";
+    document.title = `${title} - Direktorat Bina Peningkatan Produktivitas Nasional`;
+
     data.value = {
       id: item.id_agenda,
       image: item.poster || defaultPosterUrl,

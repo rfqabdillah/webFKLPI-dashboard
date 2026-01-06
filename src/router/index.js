@@ -46,7 +46,7 @@ import IndexEmployeeStatuses from "@/pages/personnel/employeeStatuses/index.vue"
 import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
 
 
-import IndexUserProfile from "@/pages/account/index.vue";
+import IndexUserProfile from "@/pages/generalUser/account/index.vue";
 import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
 import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
 import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
@@ -545,7 +545,7 @@ router.beforeEach((to, from, next) => {
   
 
   if (to.meta.title) {
-    document.title = to.meta.title;
+    document.title = `${to.meta.title} - Direktorat Bina Peningkatan Produktivitas Nasional`;
   }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
