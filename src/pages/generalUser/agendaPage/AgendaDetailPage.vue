@@ -236,7 +236,7 @@ import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
 import AgendaDetailPageSidebar from "@/components/base/default/agendaDetailPageSidebar.vue";
 import { formatDate } from "@/utils/formatDate";
-import { getDetailEvent } from "@/services/public/eventsPublic";
+import { getDetailEvent, getEvents } from "@/services/public/eventsPublic";
 import {
   addEventUser,
   getEventUsers,
@@ -289,14 +289,35 @@ const fetchDetail = async () => {
   error.value = null;
 
   try {
-    const response = await getDetailEvent(route.params.id);
+    const param = route.params.id;
+    // UUID basic validation regex
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        param
+      );
 
-    const item = response.data?.[0]?.data?.[0];
+    let item;
+
+    if (isUUID) {
+      const response = await getDetailEvent(param);
+      item = response.data?.[0]?.data?.[0];
+    } else {
+      // Assume slug
+      const response = await getEvents({ filter: `slug=${param}` });
+      // Depending on API response structure for getEvents
+      // Often returns array in data[0].data or data.data
+      const list = response.data?.[0]?.data || response.data?.data || [];
+      item = list.length > 0 ? list[0] : null;
+    }
 
     if (!item) {
       error.value = "Agenda tidak ditemukan.";
       return;
     }
+
+    // Dynamic Title
+    const title = item.judul || item.judul_en || "Detail Agenda";
+    document.title = `${title} - Direktorat Bina Peningkatan Produktivitas Nasional`;
 
     data.value = {
       id: item.id_agenda,

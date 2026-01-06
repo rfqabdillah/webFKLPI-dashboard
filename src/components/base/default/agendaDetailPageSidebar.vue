@@ -1,9 +1,5 @@
 <template>
-  <div
-    ref="sidebarRef"
-    class="card shadow-sm border-0"
-    :class="{ 'is-sticky': isSticky }"
-  >
+  <div class="card shadow-sm border-0">
     <div class="card-body">
       <!-- Search -->
       <div class="mb-4">
@@ -25,12 +21,22 @@
       <div class="mb-4">
         <h6 class="fw-semibold mb-3">{{ $t("Recent Events") }}</h6>
 
-        <div v-if="isLoading" class="text-center py-3">
-          <div
-            class="spinner-border spinner-border-sm text-primary"
-            role="status"
-          >
-            <span class="visually-hidden">Loading...</span>
+        <div v-if="isLoading">
+          <div v-for="n in 3" :key="n" class="d-flex align-items-center mb-3">
+            <div
+              class="skeleton-img shimmer rounded flex-shrink-0"
+              style="width: 60px; height: 60px"
+            ></div>
+            <div class="ms-3 w-100">
+              <div
+                class="skeleton-text shimmer mb-2"
+                style="width: 90%; height: 14px"
+              ></div>
+              <div
+                class="skeleton-text shimmer"
+                style="width: 50%; height: 12px"
+              ></div>
+            </div>
           </div>
         </div>
 
@@ -53,7 +59,7 @@
             />
             <div class="ms-3">
               <router-link
-                :to="`/agenda-detail/${item.id}`"
+                :to="`/agenda-detail/${item.slug || item.id}`"
                 class="fw-medium text-dark text-decoration-none hover-primary d-block"
                 style="font-size: 14px"
               >
@@ -76,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { getEvents } from "@/services/public/eventsPublic";
 import { formatDate } from "@/utils/formatDate";
@@ -89,14 +95,6 @@ const currentAgendaId = computed(() => route.params.id);
 const eventsRecentPost = ref([]);
 const isLoading = ref(false);
 const searchQuery = ref("");
-
-const socialData = ref([
-  "facebook",
-  "instagram",
-  "twitter",
-  "linkedin",
-  "youtube",
-]);
 
 const defaultPosterUrl = "https://placehold.co/60x60/EBF4FF/7F9CF5?text=Agenda";
 
@@ -128,6 +126,7 @@ const fetchEvents = async () => {
     const allEvents =
       data?.[0]?.data?.map((item) => ({
         id: item.id_agenda,
+        slug: item.slug,
         image: item.poster || defaultPosterUrl,
         title: item.judul,
         title_en: item.judul_en || item.judul,
@@ -135,7 +134,11 @@ const fetchEvents = async () => {
       })) || [];
 
     eventsRecentPost.value = allEvents
-      .filter((event) => event.id !== currentAgendaId.value)
+      .filter(
+        (event) =>
+          event.id !== currentAgendaId.value &&
+          event.slug !== currentAgendaId.value
+      )
       .slice(0, 3);
   } catch (error) {
     console.error("Error fetching events data:", error);
@@ -147,37 +150,13 @@ const fetchEvents = async () => {
 watch(searchQuery, () => {
   fetchEvents();
 });
-const sidebarRef = ref(null);
-const isSticky = ref(false);
-const sidebarTop = ref(0);
 
-const handleScroll = () => {
-  if (!sidebarRef.value) return;
-
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const headerHeight = 80;
-
-  if (scrollTop > sidebarTop.value - headerHeight) {
-    isSticky.value = true;
-  } else {
-    isSticky.value = false;
-  }
-};
-
+watch(currentAgendaId, () => {
+  fetchEvents();
+});
 // Lifecycle
 onMounted(() => {
   fetchEvents();
-
-  if (sidebarRef.value) {
-    const rect = sidebarRef.value.getBoundingClientRect();
-    sidebarTop.value = rect.top + window.scrollY;
-  }
-
-  window.addEventListener("scroll", handleScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
@@ -185,17 +164,26 @@ onUnmounted(() => {
 .hover-primary:hover {
   color: #7366ff !important;
 }
-</style>
 
-<style>
-/* Only apply sticky on screens >= 1350px */
-@media (min-width: 1350px) {
-  .is-sticky {
-    position: fixed !important;
-    top: 100px !important;
-    width: inherit;
-    max-width: 350px;
-    z-index: 100;
+/* Skeleton Styles */
+.skeleton-img {
+  background: #f0f0f0;
+}
+.skeleton-text {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

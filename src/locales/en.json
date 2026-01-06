@@ -449,7 +449,7 @@
       "AddData": "Add Data",
       "AddPosition": "Add Level",
       "EmptyState": "No position level data yet.",
-      "DataHeader": "Level Data",
+      "DataHeader": "Position Data",
       "PositionLabel": "Level",
       "SelectPosition": "Select Level",
       "DeleteSuccess": "Level data deleted successfully",

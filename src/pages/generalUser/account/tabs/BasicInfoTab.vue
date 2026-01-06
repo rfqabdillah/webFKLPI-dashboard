@@ -19,7 +19,6 @@
       </div>
       <div class="card-body">
         <div class="info-list">
-          <!-- Nama Lengkap -->
           <div class="info-row">
             <span class="info-label">
               {{ $t("Full Name") }}
@@ -43,7 +42,6 @@
             </div>
           </div>
 
-          <!-- Gelar Depan -->
           <div class="info-row">
             <span class="info-label">{{ $t("Title Prefix") }}</span>
             <div class="info-value">
@@ -59,7 +57,6 @@
             </div>
           </div>
 
-          <!-- Gelar Belakang -->
           <div class="info-row">
             <span class="info-label">{{ $t("Title Suffix") }}</span>
             <div class="info-value">
@@ -75,7 +72,6 @@
             </div>
           </div>
 
-          <!-- Jenis Kelamin -->
           <div class="info-row">
             <span class="info-label">{{ $t("Gender") }}</span>
             <div class="info-value">
@@ -101,7 +97,6 @@
             </div>
           </div>
 
-          <!-- NIK -->
           <div class="info-row">
             <span class="info-label">
               NIK
@@ -126,7 +121,6 @@
             </div>
           </div>
 
-          <!-- NIP (ASN only) -->
           <div class="info-row" v-if="isASN || (isEditing && isASN)">
             <span class="info-label">NIP</span>
             <div class="info-value">
@@ -142,7 +136,6 @@
             </div>
           </div>
 
-          <!-- No Karpeg (ASN only) -->
           <div class="info-row" v-if="isASN || (isEditing && isASN)">
             <span class="info-label">No. Karpeg</span>
             <div class="info-value">
@@ -158,7 +151,6 @@
             </div>
           </div>
 
-          <!-- Employee Type -->
           <div class="info-row">
             <span class="info-label">{{ $t("Employee Type") }}</span>
             <div class="info-value">
@@ -193,7 +185,6 @@
             </div>
           </div>
 
-          <!-- Tempat Lahir -->
           <div class="info-row">
             <span class="info-label">{{ $t("Place of Birth") }}</span>
             <div class="info-value">
@@ -209,7 +200,6 @@
             </div>
           </div>
 
-          <!-- Tanggal Lahir -->
           <div class="info-row">
             <span class="info-label">{{ $t("Date of Birth") }}</span>
             <div class="info-value">
@@ -224,7 +214,6 @@
             </div>
           </div>
 
-          <!-- Minat -->
           <div class="info-row">
             <span class="info-label">{{ $t("Interests") }}</span>
             <div class="info-value">
@@ -288,7 +277,6 @@
       </div>
       <div class="card-body">
         <div class="info-list">
-          <!-- Email (Read-only, use Change Email button to edit) -->
           <div class="info-row">
             <span class="info-label">Email</span>
             <div class="info-value">
@@ -307,13 +295,11 @@
             </div>
           </div>
 
-          <!-- Change Email Section (Modern Design) -->
           <div
             v-if="showChangeEmail && isEditing"
             class="change-email-modern my-3"
           >
             <div class="email-change-card">
-              <!-- Header -->
               <div class="email-card-header">
                 <div class="header-content">
                   <div class="header-icon">
@@ -331,9 +317,7 @@
                 </button>
               </div>
 
-              <!-- Body -->
               <div class="email-card-body">
-                <!-- Step Indicator -->
                 <div class="step-indicator mb-3">
                   <div
                     class="step"
@@ -461,7 +445,6 @@
             </div>
           </div>
 
-          <!-- Telepon -->
           <div class="info-row">
             <span class="info-label">{{ $t("Phone") }}</span>
             <div class="info-value">
@@ -477,7 +460,6 @@
             </div>
           </div>
 
-          <!-- Alamat -->
           <div class="info-row">
             <span class="info-label">{{ $t("Address") }}</span>
             <div class="info-value">
@@ -493,7 +475,6 @@
             </div>
           </div>
 
-          <!-- Provinsi (Edit only) -->
           <div class="info-row" v-if="isEditing">
             <span class="info-label">{{ $t("Province") }}</span>
             <div class="info-value">
@@ -517,7 +498,6 @@
             </div>
           </div>
 
-          <!-- Kabupaten -->
           <div class="info-row">
             <span class="info-label">{{ $t("District") }}</span>
             <div class="info-value">
@@ -575,7 +555,7 @@
       </div>
     </div>
 
-    <!-- Action Buttons for Edit Mode -->
+    <!-- Buttons Edit Mode -->
     <div class="d-flex justify-content-end gap-2 mt-4" v-if="isEditing">
       <button class="btn btn-outline-secondary" @click="handleCancel">
         {{ $t("Cancel") }}
@@ -711,7 +691,6 @@ const interestsList = computed(() => {
     .filter(Boolean);
 });
 
-// Computed to get employee type name from options (for auto-update after save)
 const currentEmployeeTypeName = computed(() => {
   const id = props.user.idjenispegawai;
   if (!id) return null;
@@ -746,7 +725,6 @@ watch(
         interestList.value = [];
       }
 
-      // Fetch kabupaten based on kodepropinsi from editForm
       if (props.editForm.kodepropinsi) {
         fetchKabupaten(props.editForm.kodepropinsi);
       } else {
@@ -762,7 +740,6 @@ onMounted(() => {
   fetchEmployeeTypes();
   fetchProvinces();
 
-  // If user has kodekabupaten, extract kodepropinsi and fetch kabupaten
   if (props.user.kodekabupaten) {
     const kodeKab = props.user.kodekabupaten;
     const kodeProv = kodeKab.includes(".")
@@ -966,10 +943,9 @@ defineExpose({ validate });
   flex-direction: column;
 }
 
-/* Info Row Styles */
 .info-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   padding: 12px 0;
   border-bottom: 1px solid #f5f5f5;
 }
@@ -988,7 +964,7 @@ defineExpose({ validate });
   font-size: 14px;
   color: #6c757d;
   font-weight: 500;
-  padding-top: 7px;
+  padding-top: 0;
 }
 
 .info-value {
@@ -1027,7 +1003,6 @@ defineExpose({ validate });
   }
 }
 
-/* Interest Bubble Styles */
 .interest-input-container {
   border: 1px solid #ced4da;
   border-radius: 0.375rem;
@@ -1087,7 +1062,6 @@ defineExpose({ validate });
   color: white;
 }
 
-/* View mode interest chip */
 .interest-chip {
   display: inline-block;
   background-color: transparent;
@@ -1112,7 +1086,6 @@ defineExpose({ validate });
   color: #adb5bd;
 }
 
-/* Modern Change Email Styles */
 .change-email-modern {
   margin-left: -1rem;
   margin-right: -1rem;
@@ -1180,7 +1153,6 @@ defineExpose({ validate });
   padding: 20px;
 }
 
-/* Step Indicator */
 .step-indicator {
   display: flex;
   align-items: center;
@@ -1244,7 +1216,6 @@ defineExpose({ validate });
   background: #0d6efd;
 }
 
-/* Modern Input Group */
 .modern-input-group {
   display: flex;
   gap: 12px;
@@ -1296,7 +1267,6 @@ defineExpose({ validate });
   color: #333;
 }
 
-/* Primary Buttons */
 .btn-gradient {
   background: #0d6efd;
   border: none;
@@ -1349,7 +1319,6 @@ defineExpose({ validate });
   color: white;
 }
 
-/* Success Badge */
 .success-badge {
   display: inline-flex;
   align-items: center;

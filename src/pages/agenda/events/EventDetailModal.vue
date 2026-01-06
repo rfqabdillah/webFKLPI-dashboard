@@ -79,6 +79,9 @@
 
               <dt>Status Flash</dt>
               <dd>{{ item.flash == "1" ? "Ya" : "Tidak" }}</dd>
+
+              <dt>Slug</dt>
+              <dd class="text-break">{{ item.slug || "-" }}</dd>
             </dl>
           </div>
         </div>

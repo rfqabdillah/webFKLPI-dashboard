@@ -1,26 +1,42 @@
 <template>
   <div class="step-pendidikan">
     <div v-if="isLoading" class="py-3">
-      <SkeletonGroup type="form-card" :count="2" />
+      <SkeletonGroup type="list-card" :count="3" />
     </div>
 
     <div v-else>
+      <!-- Header with Mode Toggle -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h6 class="mb-1">
-            <i class="fa fa-graduation-cap me-2"></i
-            >{{ $t("ProfileSteps.Education.Title") }}
+            <i class="fa fa-graduation-cap me-2"></i>
+            {{ $t("ProfileSteps.Education.Title") }}
           </h6>
           <p class="text-muted small mb-0">
             {{ $t("ProfileSteps.Education.Subtitle") }}
           </p>
         </div>
-        <button class="btn btn-primary btn-sm" @click="addPendidikan">
+        <!-- View Mode: Show Edit Button -->
+        <button
+          v-if="!isEditMode && pendidikanList.length > 0"
+          class="btn btn-outline-primary btn-sm"
+          @click="enterEditMode"
+        >
+          <i class="fa fa-pencil me-1"></i>
+          Ubah Data
+        </button>
+        <!-- Edit Mode: Show Add Button -->
+        <button
+          v-if="isEditMode"
+          class="btn btn-primary btn-sm"
+          @click="addPendidikan"
+        >
           <i class="fa fa-plus me-1"></i>
           {{ $t("ProfileSteps.Education.AddData") }}
         </button>
       </div>
 
+      <!-- Empty State -->
       <div
         v-if="pendidikanList.length === 0"
         class="text-center py-4 border rounded bg-light mb-3"
@@ -35,152 +51,212 @@
         </button>
       </div>
 
-      <transition-group name="list" tag="div">
+      <!-- VIEW MODE -->
+      <div v-if="!isEditMode && pendidikanList.length > 0" class="row">
         <div
-          v-for="(item, index) in pendidikanList"
+          v-for="item in sortedPendidikanList"
           :key="item._tempId"
-          class="card mb-3 shadow-sm border-0"
+          class="col-12 mb-2"
         >
-          <div
-            class="card-header bg-white d-flex justify-content-between align-items-center py-3"
-          >
-            <h6 class="mb-0 fw-bold text-primary">
-              <span class="badge me-2" style="background-color: #0d6efd">{{
-                index + 1
-              }}</span>
-              {{ $t("ProfileSteps.Education.DataHeader") }}
-            </h6>
-            <button
-              class="btn btn-outline-danger btn-sm"
-              @click="removePendidikan(index)"
-              :title="$t('ProfileSteps.Education.RemoveData') || $t('Delete')"
-            >
-              <i class="fa fa-trash"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Education.EducationLevel") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <select
-                  class="form-select"
-                  v-model="item.idjenjangpendidikan"
-                  :class="{
-                    'is-invalid': getError(index, 'idjenjangpendidikan'),
-                  }"
-                  required
-                  @blur="validateField(index, 'idjenjangpendidikan')"
-                >
-                  <option value="" disabled>
-                    {{ $t("ProfileSteps.Education.SelectEducationLevel") }}
-                  </option>
-                  <option
-                    v-for="jenjang in educationLevelOptions"
-                    :key="jenjang.idjenjangpendidikan"
-                    :value="jenjang.idjenjangpendidikan"
+          <div class="card shadow-sm border hover-lift">
+            <div class="card-body py-3 px-4">
+              <div class="d-flex align-items-start">
+                <!-- Icon Box -->
+                <div class="flex-shrink-0 me-3">
+                  <div
+                    class="icon-box bg-light text-primary rounded-3 d-flex align-items-center justify-content-center"
+                    style="width: 42px; height: 42px"
                   >
-                    {{ jenjang.namajenjangpendidikan }}
-                  </option>
-                </select>
-                <div class="invalid-feedback">
-                  {{ getError(index, "idjenjangpendidikan") }}
+                    <i class="fa fa-graduation-cap"></i>
+                  </div>
                 </div>
-              </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Education.GraduationYear") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="number"
-                  class="form-control"
-                  v-model="item.tahunlulus"
-                  :class="{ 'is-invalid': getError(index, 'tahunlulus') }"
-                  required
-                  min="1900"
-                  max="2100"
-                  @blur="validateField(index, 'tahunlulus')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "tahunlulus") }}
-                </div>
-              </div>
-
-              <div class="col-md-12">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Education.Major") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="item.programstudi"
-                  :class="{ 'is-invalid': getError(index, 'programstudi') }"
-                  required
-                  :placeholder="$t('ProfileSteps.Education.MajorPlaceholder')"
-                  @blur="validateField(index, 'programstudi')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "programstudi") }}
-                </div>
-              </div>
-
-              <div class="col-md-12">
-                <label class="form-label fw-semibold">
-                  {{ $t("ProfileSteps.Education.Institution") }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="item.namaperguruantinggi"
-                  :class="{
-                    'is-invalid': getError(index, 'namaperguruantinggi'),
-                  }"
-                  required
-                  :placeholder="
-                    $t('ProfileSteps.Education.InstitutionPlaceholder')
-                  "
-                  @blur="validateField(index, 'namaperguruantinggi')"
-                />
-                <div class="invalid-feedback">
-                  {{ getError(index, "namaperguruantinggi") }}
+                <!-- Content -->
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="fw-bold text-dark mb-1">
+                        {{ getEducationLevelName(item.idjenjangpendidikan) }} -
+                        {{ item.programstudi }}
+                      </h6>
+                      <div class="text-muted mb-2" style="font-size: 14px">
+                        <i class="fa fa-university me-1"></i>
+                        {{ item.namaperguruantinggi }}
+                      </div>
+                      <div class="text-muted mb-2" style="font-size: 14px">
+                        <i class="fa fa-calendar me-1"></i>
+                        {{ $t("ProfileSteps.Education.GraduationYear") }}:
+                        {{ item.tahunlulus }}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </transition-group>
+      </div>
 
-      <!-- Save Button -->
-      <div
-        v-if="pendidikanList.length > 0"
-        class="d-flex justify-content-end mt-3"
-      >
-        <button
-          class="btn btn-primary save-btn"
-          @click="saveData"
-          :disabled="isSaving"
+      <!-- EDIT MODE -->
+      <div v-if="isEditMode">
+        <transition-group name="list" tag="div">
+          <div
+            v-for="(item, index) in pendidikanList"
+            :key="item._tempId"
+            class="card mb-3 shadow-sm border-0"
+          >
+            <div
+              class="card-header bg-white d-flex justify-content-between align-items-center py-3"
+            >
+              <h6 class="mb-0 fw-bold text-primary">
+                <span class="badge me-2" style="background-color: #0d6efd">{{
+                  index + 1
+                }}</span>
+                {{ $t("ProfileSteps.Education.DataHeader") }}
+              </h6>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                @click="removePendidikan(index)"
+                :title="$t('ProfileSteps.Education.RemoveData') || $t('Delete')"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Education.EducationLevel") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <select
+                    class="form-select"
+                    v-model="item.idjenjangpendidikan"
+                    :class="{
+                      'is-invalid': getError(index, 'idjenjangpendidikan'),
+                    }"
+                    required
+                    @blur="validateField(index, 'idjenjangpendidikan')"
+                  >
+                    <option value="" disabled>
+                      {{ $t("ProfileSteps.Education.SelectEducationLevel") }}
+                    </option>
+                    <option
+                      v-for="jenjang in educationLevelOptions"
+                      :key="jenjang.idjenjangpendidikan"
+                      :value="jenjang.idjenjangpendidikan"
+                    >
+                      {{ jenjang.namajenjangpendidikan }}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback">
+                    {{ getError(index, "idjenjangpendidikan") }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Education.GraduationYear") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    v-model="item.tahunlulus"
+                    :class="{ 'is-invalid': getError(index, 'tahunlulus') }"
+                    required
+                    min="1900"
+                    max="2100"
+                    @blur="validateField(index, 'tahunlulus')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "tahunlulus") }}
+                  </div>
+                </div>
+
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Education.Major") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="item.programstudi"
+                    :class="{ 'is-invalid': getError(index, 'programstudi') }"
+                    required
+                    :placeholder="$t('ProfileSteps.Education.MajorPlaceholder')"
+                    @blur="validateField(index, 'programstudi')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "programstudi") }}
+                  </div>
+                </div>
+
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">
+                    {{ $t("ProfileSteps.Education.Institution") }}
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="item.namaperguruantinggi"
+                    :class="{
+                      'is-invalid': getError(index, 'namaperguruantinggi'),
+                    }"
+                    required
+                    :placeholder="
+                      $t('ProfileSteps.Education.InstitutionPlaceholder')
+                    "
+                    @blur="validateField(index, 'namaperguruantinggi')"
+                  />
+                  <div class="invalid-feedback">
+                    {{ getError(index, "namaperguruantinggi") }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition-group>
+
+        <!-- Action Buttons in Edit Mode -->
+        <div
+          v-if="pendidikanList.length > 0"
+          class="d-flex justify-content-end gap-2 mt-3"
         >
-          <span
-            v-if="isSaving"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          ></span>
-          <i v-else class="fa fa-save me-2"></i>
-          {{ isSaving ? $t("Saving") + "..." : $t("Save") + " " + $t("Data") }}
-        </button>
+          <button
+            v-if="hasExistingData"
+            class="btn btn-outline-secondary"
+            @click="cancelEditMode"
+            :disabled="isSaving"
+          >
+            <i class="fa fa-arrow-left me-1"></i>
+            Kembali
+          </button>
+          <button
+            class="btn btn-primary save-btn"
+            @click="saveData"
+            :disabled="isSaving"
+          >
+            <span
+              v-if="isSaving"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+            ></span>
+            <i v-else class="fa fa-save me-2"></i>
+            {{
+              isSaving ? $t("Saving") + "..." : $t("Save") + " " + $t("Data")
+            }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useToast } from "vue-toastification";
 import { useI18n } from "vue-i18n";
 import { getEducationLevels } from "@/services/referensi/educationLevels";
@@ -219,6 +295,18 @@ const isDataLoaded = ref(false);
 const educationLevelOptions = ref([]);
 const pendidikanList = ref([]);
 const formErrors = ref([]);
+
+// === View/Edit Mode State ===
+const isEditMode = ref(false);
+const hasExistingData = ref(false);
+const originalData = ref([]);
+
+// === Computed: Sort by Graduation Year Descending ===
+const sortedPendidikanList = computed(() => {
+  return [...pendidikanList.value].sort((a, b) => {
+    return b.tahunlulus - a.tahunlulus;
+  });
+});
 
 // === Yup Validation Schema ===
 const getValidationSchema = () =>
@@ -341,6 +429,13 @@ async function loadData(userId) {
       pendidikanList.value = uniqueData;
       formErrors.value = pendidikanList.value.map(() => ({}));
       emit("update:modelValue", { list: pendidikanList.value });
+
+      // Track if we have existing data from API
+      hasExistingData.value = uniqueData.length > 0;
+      originalData.value = JSON.parse(JSON.stringify(uniqueData));
+
+      // If we have data, start in View Mode; otherwise Edit Mode
+      isEditMode.value = uniqueData.length === 0;
     }
     isDataLoaded.value = true;
   } catch (error) {
@@ -383,7 +478,7 @@ async function saveData() {
   // Validate first
   const isValid = await validate();
   if (!isValid) {
-    toast.error("Mohon lengkapi data yang diperlukan");
+    toast.error(t("ProfileSteps.Modal.Messages.CompleteRequired"));
     return;
   }
 
@@ -422,10 +517,15 @@ async function saveData() {
       }
     }
 
-    toast.success("Data pendidikan berhasil disimpan");
+    toast.success(t("Data saved successfully"));
+
+    // Update tracking and switch to View Mode
+    hasExistingData.value = pendidikanList.value.length > 0;
+    originalData.value = JSON.parse(JSON.stringify(pendidikanList.value));
+    isEditMode.value = false;
   } catch (error) {
     console.error("Error saving pendidikan:", error);
-    toast.error("Gagal menyimpan data pendidikan");
+    toast.error(t("Error saving data"));
   } finally {
     isSaving.value = false;
   }
@@ -474,6 +574,27 @@ function removePendidikan(index) {
     }
   });
 }
+
+// === View/Edit Mode Methods ===
+function enterEditMode() {
+  originalData.value = JSON.parse(JSON.stringify(pendidikanList.value));
+  isEditMode.value = true;
+}
+
+function cancelEditMode() {
+  pendidikanList.value = JSON.parse(JSON.stringify(originalData.value));
+  formErrors.value = pendidikanList.value.map(() => ({}));
+  isEditMode.value = false;
+}
+
+// === Helper Functions for View Mode ===
+function getEducationLevelName(idjenjangpendidikan) {
+  const level = educationLevelOptions.value.find(
+    (l) => l.idjenjangpendidikan === idjenjangpendidikan
+  );
+  return level ? level.namajenjangpendidikan : "-";
+}
+
 // === Validation Logic (Yup-based) ===
 function getError(index, field) {
   return formErrors.value[index] ? formErrors.value[index][field] : "";
@@ -581,5 +702,44 @@ defineExpose({ validate, loadData });
   background: #6c9bd1;
   cursor: not-allowed;
   color: white;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+.bg-soft-primary {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.bg-soft-success {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-soft-secondary {
+  background-color: rgba(108, 117, 125, 0.1);
+}
+
+.badge.rounded-pill {
+  font-size: 13px;
+  padding: 8px 14px !important;
+  font-weight: 600;
+}
+
+.step-pendidikan .row {
+  --bs-gutter-y: 0;
+}
+
+.step-pendidikan .row > .col-12.mb-2 {
+  margin-bottom: 8px !important;
+}
+
+.step-pendidikan .card.hover-lift {
+  margin-bottom: 0;
 }
 </style>

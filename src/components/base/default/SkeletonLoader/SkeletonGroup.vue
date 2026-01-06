@@ -158,6 +158,47 @@
       </div>
     </template>
 
+    <!-- List Card Skeleton (New) -->
+    <template v-else-if="type === 'list-card'">
+      <div v-for="n in count" :key="n" class="card mb-2 shadow-sm border">
+        <div class="card-body py-3 px-4">
+          <div class="d-flex align-items-start">
+            <!-- Icon Box -->
+            <div class="flex-shrink-0 me-3">
+              <BaseSkeleton
+                variant="custom"
+                width="42px"
+                height="42px"
+                rounded="8px"
+              />
+            </div>
+            <!-- Content -->
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <BaseSkeleton variant="text" width="150px" height="16px" />
+                  <BaseSkeleton
+                    variant="text"
+                    width="200px"
+                    height="14px"
+                    class="mt-2"
+                  />
+                  <BaseSkeleton
+                    variant="button"
+                    width="100px"
+                    height="28px"
+                    class="mt-2"
+                  />
+                </div>
+                <!-- Status Badge -->
+                <BaseSkeleton variant="badge" width="80px" height="24px" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- Default -->
     <template v-else>
       <BaseSkeleton
@@ -182,6 +223,7 @@ defineProps({
         "profile-card",
         "tab-content",
         "list",
+        "list-card",
         "testimonial",
         "form-card",
         "generic",
