@@ -21,12 +21,22 @@
       <div class="mb-4">
         <h6 class="fw-semibold mb-3">{{ $t("Recent Events") }}</h6>
 
-        <div v-if="isLoading" class="text-center py-3">
-          <div
-            class="spinner-border spinner-border-sm text-primary"
-            role="status"
-          >
-            <span class="visually-hidden">Loading...</span>
+        <div v-if="isLoading">
+          <div v-for="n in 3" :key="n" class="d-flex align-items-center mb-3">
+            <div
+              class="skeleton-img shimmer rounded flex-shrink-0"
+              style="width: 60px; height: 60px"
+            ></div>
+            <div class="ms-3 w-100">
+              <div
+                class="skeleton-text shimmer mb-2"
+                style="width: 90%; height: 14px"
+              ></div>
+              <div
+                class="skeleton-text shimmer"
+                style="width: 50%; height: 12px"
+              ></div>
+            </div>
           </div>
         </div>
 
@@ -49,7 +59,7 @@
             />
             <div class="ms-3">
               <router-link
-                :to="`/agenda-detail/${item.id}`"
+                :to="`/agenda-detail/${item.slug || item.id}`"
                 class="fw-medium text-dark text-decoration-none hover-primary d-block"
                 style="font-size: 14px"
               >
@@ -116,6 +126,7 @@ const fetchEvents = async () => {
     const allEvents =
       data?.[0]?.data?.map((item) => ({
         id: item.id_agenda,
+        slug: item.slug,
         image: item.poster || defaultPosterUrl,
         title: item.judul,
         title_en: item.judul_en || item.judul,
@@ -123,7 +134,11 @@ const fetchEvents = async () => {
       })) || [];
 
     eventsRecentPost.value = allEvents
-      .filter((event) => event.id !== currentAgendaId.value)
+      .filter(
+        (event) =>
+          event.id !== currentAgendaId.value &&
+          event.slug !== currentAgendaId.value
+      )
       .slice(0, 3);
   } catch (error) {
     console.error("Error fetching events data:", error);
@@ -135,6 +150,10 @@ const fetchEvents = async () => {
 watch(searchQuery, () => {
   fetchEvents();
 });
+
+watch(currentAgendaId, () => {
+  fetchEvents();
+});
 // Lifecycle
 onMounted(() => {
   fetchEvents();
@@ -144,5 +163,27 @@ onMounted(() => {
 <style scoped>
 .hover-primary:hover {
   color: #7366ff !important;
+}
+
+/* Skeleton Styles */
+.skeleton-img {
+  background: #f0f0f0;
+}
+.skeleton-text {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

@@ -266,6 +266,7 @@ const mapAgendaToCard = (agenda) => {
 
   return {
     id: agenda.id_agenda,
+    slug: agenda.slug,
     image: agenda.poster || defaultPosterUrl,
     tag1: isEnglish
       ? agenda.kategori_agenda?.nama_kategori_agenda_en ||
@@ -420,7 +421,7 @@ const goToPage = (page) => {
 };
 
 const openDetail = (agenda) => {
-  router.push(`/agenda-detail/${agenda.id_agenda}`);
+  router.push(`/agenda-detail/${agenda.slug || agenda.id_agenda}`);
 };
 
 const fetchCategories = async () => {
