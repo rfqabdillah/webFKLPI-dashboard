@@ -1,9 +1,5 @@
 <template>
-  <div
-    ref="sidebarRef"
-    class="card shadow-sm border-0"
-    :class="{ 'is-sticky': isSticky }"
-  >
+  <div class="card shadow-sm border-0">
     <div class="card-body">
       <!-- Search -->
       <div class="mb-4">
@@ -76,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { getEvents } from "@/services/public/eventsPublic";
 import { formatDate } from "@/utils/formatDate";
@@ -89,14 +85,6 @@ const currentAgendaId = computed(() => route.params.id);
 const eventsRecentPost = ref([]);
 const isLoading = ref(false);
 const searchQuery = ref("");
-
-const socialData = ref([
-  "facebook",
-  "instagram",
-  "twitter",
-  "linkedin",
-  "youtube",
-]);
 
 const defaultPosterUrl = "https://placehold.co/60x60/EBF4FF/7F9CF5?text=Agenda";
 
@@ -147,55 +135,14 @@ const fetchEvents = async () => {
 watch(searchQuery, () => {
   fetchEvents();
 });
-const sidebarRef = ref(null);
-const isSticky = ref(false);
-const sidebarTop = ref(0);
-
-const handleScroll = () => {
-  if (!sidebarRef.value) return;
-
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const headerHeight = 80;
-
-  if (scrollTop > sidebarTop.value - headerHeight) {
-    isSticky.value = true;
-  } else {
-    isSticky.value = false;
-  }
-};
-
 // Lifecycle
 onMounted(() => {
   fetchEvents();
-
-  if (sidebarRef.value) {
-    const rect = sidebarRef.value.getBoundingClientRect();
-    sidebarTop.value = rect.top + window.scrollY;
-  }
-
-  window.addEventListener("scroll", handleScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
 <style scoped>
 .hover-primary:hover {
   color: #7366ff !important;
-}
-</style>
-
-<style>
-/* Only apply sticky on screens >= 1350px */
-@media (min-width: 1350px) {
-  .is-sticky {
-    position: fixed !important;
-    top: 100px !important;
-    width: inherit;
-    max-width: 350px;
-    z-index: 100;
-  }
 }
 </style>
