@@ -17,7 +17,7 @@
           <input
             type="text"
             class="form-control bg-light"
-            v-model="formData.idpengguna"
+            v-model="authorName"
             disabled
             readonly
           />
@@ -49,6 +49,21 @@
           />
           <div class="invalid-feedback">
             {{ formErrors.judul_en }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Slug</label>
+          <input
+            type="text"
+            class="form-control bg-light"
+            v-model="formData.slug"
+            disabled
+            readonly
+            placeholder="slug"
+          />
+          <div class="form-text text-muted">
+            Slug dibuat otomatis dari judul bahasa Indonesia.
           </div>
         </div>
 
@@ -284,6 +299,7 @@ const formData = reactive({
   tglbatasdaftar: "",
   tayang: "Draft",
   flash: false,
+  slug: "",
 });
 
 const formErrors = reactive({
@@ -310,6 +326,9 @@ const categoriesLoading = ref(false);
 const posterPreviewUrl = ref(null);
 const fileInput = ref(null);
 const isPosterRemoved = ref(false);
+const authorName = ref("");
+
+// === Validation Schema ===
 
 // === Validation Schema ===
 const validationSchema = yup.object().shape({
@@ -379,6 +398,7 @@ watch(
       formData.tglbatasdaftar = newData.tglbatasdaftar;
       formData.tayang = newData.tayang;
       formData.flash = !!newData.flash;
+      formData.slug = newData.slug || "";
       posterPreviewUrl.value = newData.poster;
     } else {
       formData.idakategoriagenda = "";
@@ -392,9 +412,16 @@ watch(
       formData.tmptpelaksanaan = "";
       formData.tglbatasdaftar = "";
       formData.tayang = "Draft";
+      formData.tayang = "Draft";
       formData.flash = false;
+      formData.slug = "";
+
+      formData.slug = "";
 
       posterPreviewUrl.value = null;
+
+      // Reset author name to logged in user for new entry
+      loadUserIdFromStorage();
     }
 
     if (fileInput.value) {
@@ -402,6 +429,22 @@ watch(
     }
   },
   { immediate: true, deep: true }
+);
+
+// Watcher untuk auto-generate slug
+watch(
+  () => formData.judul,
+  (newVal) => {
+    if (newVal) {
+      formData.slug = newVal
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "") // Hapus karakter spesial kecuali spasi & dash
+        .trim()
+        .replace(/\s+/g, "-"); // Ganti spasi dengan dash
+    } else {
+      formData.slug = "";
+    }
+  }
 );
 
 async function fetchCategories() {
@@ -434,10 +477,18 @@ function loadUserIdFromStorage() {
     const userDataString = localStorage.getItem("userData");
     if (userDataString) {
       const userData = JSON.parse(userDataString);
-      const userId =
-        userData?.data?.[0]?.id_pengguna || userData?.data?.[0]?.idpengguna;
-      if (userId) {
+      const user = userData?.data?.[0];
+      const userId = user?.id_pengguna || user?.idpengguna;
+
+      if (userId && !isEditMode.value) {
         formData.idpengguna = userId;
+      }
+
+      if (user) {
+        const parts = [user.gelardepan, user.nama, user.gelarbelakang].filter(
+          Boolean
+        );
+        authorName.value = parts.join(" ") || user.username || "User";
       }
     }
   } catch (err) {
@@ -573,6 +624,7 @@ async function submitForm() {
   data.append("record[tglbatasdaftar]", formData.tglbatasdaftar);
   data.append("record[tayang]", formData.tayang);
   data.append("record[flash]", formData.flash ? "1" : "0");
+  data.append("record[slug]", formData.slug);
 
   if (formData.poster) {
     data.append("upload_poster", formData.poster);
