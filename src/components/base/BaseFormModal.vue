@@ -22,8 +22,7 @@
           </button>
           <button
             type="button"
-            class="btn text-white"
-            style="background-color: #0d6efd"
+            class="btn btn-primary"
             @click="saveForm"
             :disabled="isLoading"
           >
