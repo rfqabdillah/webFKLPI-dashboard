@@ -3,29 +3,8 @@
     <div class="card">
       <div class="card-body">
         <!-- Loading State with Skeleton -->
-        <div v-if="isLoading" class="row align-items-start detail-layout">
-          <div class="col-main">
-            <div class="skeleton-btn shimmer mb-3"></div>
-            <div class="skeleton-poster shimmer mb-4"></div>
-            <div class="skeleton-badge-lg shimmer mb-3"></div>
-            <div class="skeleton-heading shimmer mb-3"></div>
-            <div class="skeleton-info-list mb-4">
-              <div class="skeleton-info-item shimmer mb-2"></div>
-              <div class="skeleton-info-item shimmer mb-2"></div>
-              <div class="skeleton-info-item shimmer mb-2"></div>
-            </div>
-            <hr class="my-4" />
-            <div class="skeleton-content">
-              <div class="skeleton-text shimmer mb-2" style="width: 100%"></div>
-              <div class="skeleton-text shimmer mb-2" style="width: 90%"></div>
-              <div class="skeleton-text shimmer mb-2" style="width: 85%"></div>
-              <div class="skeleton-text shimmer" style="width: 70%"></div>
-            </div>
-          </div>
-          <div class="col-sidebar mt-4">
-            <div class="skeleton-sidebar shimmer"></div>
-          </div>
-        </div>
+        <!-- Loading State with Skeleton -->
+        <SkeletonGroup v-if="isLoading" type="agenda-detail" />
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-5">
@@ -234,6 +213,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
+import SkeletonGroup from "@/components/base/default/SkeletonLoader/SkeletonGroup.vue";
 import AgendaDetailPageSidebar from "@/components/base/default/agendaDetailPageSidebar.vue";
 import { formatDate } from "@/utils/formatDate";
 import { getDetailEvent, getEvents } from "@/services/public/eventsPublic";
@@ -247,10 +227,12 @@ import { getStatuses } from "@/services/referensi/status";
 const route = useRoute();
 const { t, locale } = useI18n();
 
-const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
-const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
-const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
-const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
+import {
+  STATUS_TERDAFTAR_ID,
+  STATUS_DITOLAK_ID,
+  STATUS_DITERIMA_ID,
+  STATUS_SELESAI_ID,
+} from "@/constants/agendaStatus";
 
 // State
 const data = ref(null);
@@ -880,66 +862,6 @@ onMounted(async () => {
     position: sticky;
     top: 100px;
     align-self: flex-start;
-  }
-}
-
-.skeleton-btn {
-  width: 100px;
-  height: 38px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-poster {
-  width: 100%;
-  height: 350px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-badge-lg {
-  width: 100px;
-  height: 30px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-heading {
-  width: 60%;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-info-item {
-  width: 250px;
-  height: 18px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-text {
-  height: 16px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-sidebar {
-  width: 100%;
-  height: 300px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.shimmer {
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
   }
 }
 </style>

@@ -1,13 +1,15 @@
 <template>
   <div
     class="card agenda-card h-100 shadow-sm border-0"
-    @click.self="$emit('click')"
-    style="cursor: pointer"
+    :class="{ 'cursor-pointer': !path }"
+    @click="!path && $emit('click')"
   >
     <!-- Image Section -->
-    <div
-      class="card-img-wrapper position-relative overflow-hidden"
-      @click="$emit('click')"
+    <component
+      :is="path ? 'router-link' : 'div'"
+      :to="path"
+      class="card-img-wrapper position-relative overflow-hidden d-block"
+      @click="!path && $emit('click')"
     >
       <img
         :src="props.item.image"
@@ -24,10 +26,10 @@
           {{ props.item.tag1 }}
         </span>
       </div>
-    </div>
+    </component>
 
     <!-- Card Body -->
-    <div class="card-body d-flex flex-column" @click="$emit('click')">
+    <div class="card-body d-flex flex-column">
       <!-- Date & Participants Info -->
       <div class="d-flex flex-wrap gap-3 mb-3 text-muted agenda-info">
         <span class="d-flex align-items-center">
@@ -47,11 +49,18 @@
 
       <!-- Title -->
       <h5 class="card-title fw-semibold text-dark mb-0 agenda-title">
-        {{ props.item.title }}
+        <router-link
+          v-if="path"
+          :to="path"
+          class="text-dark text-decoration-none stretched-link-custom"
+        >
+          {{ props.item.title }}
+        </router-link>
+        <span v-else>{{ props.item.title }}</span>
       </h5>
 
       <!-- Implementation Date & Location -->
-      <div class="agenda-info text-muted mb-3">
+      <div class="agenda-info text-muted mb-3 mt-2">
         <div class="d-flex align-items-start mb-1">
           <i class="fa fa-clock-o me-2 mt-1"></i>
           <span
@@ -94,6 +103,7 @@
             @click.stop="handleCancelClick"
             :disabled="!canCancel || isCancelling"
             :title="!canCancel ? getCancelDisabledReason() : ''"
+            style="position: relative; z-index: 2"
           >
             <span v-if="isCancelling">
               <span class="spinner-border spinner-border-sm me-1"></span>
@@ -107,9 +117,15 @@
         </div>
 
         <!-- Read More Button - RIGHT side -->
-        <span class="btn-selengkapnya">
+        <component
+          :is="path ? 'router-link' : 'span'"
+          :to="path"
+          class="btn-selengkapnya text-decoration-none"
+          :class="{ 'cursor-pointer': !path }"
+          @click="!path && $emit('click')"
+        >
           {{ $t("Read More") }} <i class="fa fa-arrow-right ms-1"></i>
-        </span>
+        </component>
       </div>
     </div>
   </div>
@@ -123,10 +139,12 @@ import { formatDate } from "@/utils/formatDate";
 const { t, locale } = useI18n();
 
 // Status constants
-const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
-const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
-const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
-const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
+import {
+  STATUS_TERDAFTAR_ID,
+  STATUS_DITOLAK_ID,
+  STATUS_DITERIMA_ID,
+  STATUS_SELESAI_ID,
+} from "@/constants/agendaStatus";
 
 // Emit events
 const emit = defineEmits(["click", "cancel"]);
@@ -155,6 +173,11 @@ const props = defineProps({
       statusName: "",
       statusNameEn: "",
     }),
+  },
+  // New prop for navigation path
+  path: {
+    type: String,
+    default: "",
   },
   showStatus: {
     type: Boolean,
@@ -359,5 +382,26 @@ const handleCancelClick = () => {
   background-color: rgba(111, 66, 193, 0.12);
   color: #5a32a3;
   border-left: 4px solid #6f42c1;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Custom Stretched Link to make the whole card clickable via the Title link */
+/* We use a custom class to avoid potential conflicts if standard bootstrap is not behaving as expected */
+.stretched-link-custom::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  content: "";
+}
+
+/* Ensure relative positioning for containment */
+.agenda-card {
+  position: relative;
 }
 </style>

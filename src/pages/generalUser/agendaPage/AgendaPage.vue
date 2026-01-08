@@ -107,12 +107,12 @@
           >
             <AgendaCard
               :item="mapAgendaToCard(agenda)"
+              :path="`/agenda-detail/${agenda.slug}`"
               :show-status="isUserRegistered(agenda.id_agenda)"
               :show-cancel-button="isUserRegistered(agenda.id_agenda)"
               :is-cancelling="
                 cancellingId === getRegistrationId(agenda.id_agenda)
               "
-              @click="openDetail(agenda)"
               @cancel="handleCancelRegistration"
             />
           </div>
@@ -181,15 +181,17 @@ const router = useRouter();
 const { t, locale } = useI18n();
 
 // Status constants
-const STATUS_TERDAFTAR_ID = "e194d29a-9bcc-42d6-8ed5-a35f84c6cfea";
-const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
-const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
-const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
+import {
+  STATUS_TERDAFTAR_ID,
+  STATUS_DITOLAK_ID,
+  STATUS_DITERIMA_ID,
+  STATUS_SELESAI_ID,
+} from "@/constants/agendaStatus";
 
 // State
 const agendaList = ref([]);
 const registrantCounts = ref({});
-const userRegistrations = ref({}); // Map agendaId => registration data
+const userRegistrations = ref({});
 const isLoading = ref(false);
 const error = ref(null);
 const currentPage = ref(1);
@@ -284,7 +286,7 @@ const mapAgendaToCard = (agenda) => {
       : stripHtml(agenda.konten),
     students: registrantCounts.value[agenda.id_agenda] || 0,
     locale: locale.value,
-    // Status fields from user registration (statuses from API response)
+
     registrationId:
       registration?.id_agenda_pengguna ||
       registration?.idagendapengguna ||
@@ -301,7 +303,6 @@ const mapAgendaToCard = (agenda) => {
   };
 };
 
-// Helper functions for user registration
 const isUserRegistered = (agendaId) => {
   return !!userRegistrations.value[agendaId];
 };
@@ -326,7 +327,6 @@ const getStatusNameById = (statusId) => {
   }
 };
 
-// Fetch current user's registrations
 const fetchUserRegistrations = async () => {
   const userDataString = localStorage.getItem("userData");
   if (!userDataString) return;
@@ -343,7 +343,6 @@ const fetchUserRegistrations = async () => {
 
     const registrations = response.data?.[0]?.data || response.data?.data || [];
 
-    // Map registrations by agenda ID for quick lookup
     const regMap = {};
     registrations.forEach((reg) => {
       const agendaId = reg.id_agenda || reg.idagenda;
@@ -563,7 +562,6 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* Skeleton Loader Styles */
 .skeleton-card {
   border-radius: 12px;
   overflow: hidden;

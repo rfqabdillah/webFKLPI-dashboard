@@ -199,6 +199,104 @@
       </div>
     </template>
 
+    <!-- Agenda Detail Skeleton -->
+    <template v-else-if="type === 'agenda-detail'">
+      <div class="row align-items-start detail-layout">
+        <div class="col-main">
+          <!-- Back Button -->
+          <BaseSkeleton
+            variant="button"
+            width="100px"
+            height="38px"
+            class="mb-3"
+          />
+          <!-- Poster -->
+          <BaseSkeleton
+            variant="custom"
+            width="100%"
+            height="350px"
+            rounded="12px"
+            class="mb-4"
+          />
+          <!-- Badge -->
+          <BaseSkeleton
+            variant="badge"
+            width="120px"
+            height="30px"
+            class="mb-3"
+          />
+          <!-- Title -->
+          <BaseSkeleton
+            variant="heading"
+            width="70%"
+            height="32px"
+            class="mb-4"
+          />
+          <!-- Info List -->
+          <div class="skeleton-info-list mb-4">
+            <BaseSkeleton
+              v-for="n in 4"
+              :key="n"
+              variant="text"
+              width="250px"
+              height="20px"
+              class="mb-2"
+            />
+          </div>
+          <hr class="my-4" />
+          <!-- Content -->
+          <div class="skeleton-content mb-4">
+            <BaseSkeleton variant="text" width="100%" class="mb-2" />
+            <BaseSkeleton variant="text" width="95%" class="mb-2" />
+            <BaseSkeleton variant="text" width="90%" class="mb-2" />
+            <BaseSkeleton variant="text" width="92%" class="mb-2" />
+            <BaseSkeleton variant="text" width="80%" class="mb-2" />
+            <BaseSkeleton variant="text" width="60%" />
+          </div>
+          <!-- Action Buttons -->
+          <div class="d-flex gap-3">
+            <BaseSkeleton variant="button" width="150px" height="42px" />
+            <BaseSkeleton variant="button" width="180px" height="42px" />
+          </div>
+        </div>
+        <!-- Sidebar -->
+        <div class="col-sidebar mt-4">
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <!-- Search Skeleton -->
+              <div class="mb-4">
+                <BaseSkeleton variant="text" width="100px" class="mb-2" />
+                <BaseSkeleton
+                  variant="custom"
+                  width="100%"
+                  height="38px"
+                  rounded="6px"
+                />
+              </div>
+              <!-- Recent Events List -->
+              <BaseSkeleton variant="heading" width="150px" class="mb-3" />
+              <div
+                v-for="n in 3"
+                :key="n"
+                class="d-flex align-items-center mb-3"
+              >
+                <BaseSkeleton
+                  variant="custom"
+                  width="60px"
+                  height="60px"
+                  rounded="6px"
+                />
+                <div class="ms-3 flex-grow-1">
+                  <BaseSkeleton variant="text" width="90%" class="mb-2" />
+                  <BaseSkeleton variant="text" width="50%" height="12px" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- Default -->
     <template v-else>
       <BaseSkeleton
@@ -226,6 +324,7 @@ defineProps({
         "list-card",
         "testimonial",
         "form-card",
+        "agenda-detail",
         "generic",
       ].includes(v),
   },
