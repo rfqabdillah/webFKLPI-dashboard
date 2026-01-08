@@ -267,19 +267,16 @@ const statusOptions = ref([]);
 const defaultPosterUrl =
   "https://placehold.co/800x400/EBF4FF/7F9CF5?text=Agenda";
 
-// Computed: Check if registration deadline has passed
 const isDeadlinePassed = computed(() => {
   if (!data.value?.registration_deadline) return false;
 
   const deadline = new Date(data.value.registration_deadline);
   const today = new Date();
-  // Set time to end of day for deadline
   deadline.setHours(23, 59, 59, 999);
 
   return today > deadline;
 });
 
-// Computed: Can cancel registration (only if status is Terdaftar/Registered)
 const canCancel = computed(() => {
   return registrationStatusId.value === STATUS_TERDAFTAR_ID;
 });
@@ -290,7 +287,6 @@ const fetchDetail = async () => {
 
   try {
     const param = route.params.id;
-    // UUID basic validation regex
     const isUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         param
@@ -302,10 +298,7 @@ const fetchDetail = async () => {
       const response = await getDetailEvent(param);
       item = response.data?.[0]?.data?.[0];
     } else {
-      // Assume slug
       const response = await getEvents({ filter: `slug=${param}` });
-      // Depending on API response structure for getEvents
-      // Often returns array in data[0].data or data.data
       const list = response.data?.[0]?.data || response.data?.data || [];
       item = list.length > 0 ? list[0] : null;
     }
@@ -315,7 +308,6 @@ const fetchDetail = async () => {
       return;
     }
 
-    // Dynamic Title
     const title = item.judul || item.judul_en || "Detail Agenda";
     document.title = `${title} - Direktorat Bina Peningkatan Produktivitas Nasional`;
 
@@ -355,7 +347,8 @@ const checkRegistration = async () => {
   if (!userDataString) return;
 
   const userData = JSON.parse(userDataString);
-  const userId = userData?.data?.[0]?.id_pengguna;
+  const userId =
+    userData?.data?.[0]?.id_pengguna || userData?.data?.[0]?.idpengguna;
 
   if (!userId || !data.value?.id) return;
 
@@ -371,7 +364,6 @@ const checkRegistration = async () => {
       registrationId.value = registrations[0].id_agenda_pengguna;
       registrationStatusId.value = registrations[0].id_status;
 
-      // Get status name from relation
       const statusData =
         registrations[0].status_agenda_pengguna ||
         registrations[0]["event-user-statuses"] ||
@@ -379,7 +371,6 @@ const checkRegistration = async () => {
 
       let statusName = statusData?.nama_status || statusData?.namastatus;
 
-      // Fallback: ambil dari statusOptions jika tidak ada
       if (
         !statusName &&
         registrationStatusId.value &&
@@ -479,7 +470,8 @@ const registerAgenda = async () => {
   }
 
   const userData = JSON.parse(userDataString);
-  const userId = userData?.data?.[0]?.idpengguna;
+  const userId =
+    userData?.data?.[0]?.id_pengguna || userData?.data?.[0]?.idpengguna;
 
   if (!userId) {
     Swal.fire({
@@ -623,14 +615,14 @@ const cancelRegistration = async () => {
 const getStatusClass = (statusId) => {
   switch (statusId) {
     case STATUS_SELESAI_ID:
-      return "status-completed"; // Ungu - Selesai
+      return "status-completed";
     case STATUS_DITOLAK_ID:
-      return "status-cancelled"; // Merah - Ditolak
+      return "status-cancelled";
     case STATUS_DITERIMA_ID:
-      return "status-accepted"; // Hijau - Diterima
+      return "status-accepted";
     case STATUS_TERDAFTAR_ID:
     default:
-      return "status-registered"; // Biru - Terdaftar
+      return "status-registered";
   }
 };
 
@@ -705,7 +697,6 @@ onMounted(async () => {
   color: #055160;
 }
 
-/* Registration Status Card */
 .registration-status-card {
   display: flex;
   align-items: flex-start;
@@ -715,7 +706,6 @@ onMounted(async () => {
   border-left: 4px solid;
 }
 
-/* Card Variants */
 .registration-status-card.card-registered {
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
   border-left-color: #2196f3;
@@ -860,7 +850,6 @@ onMounted(async () => {
   color: #4caf50;
 }
 
-/* Custom layout for detail page */
 .detail-layout {
   display: flex;
   flex-wrap: wrap;
@@ -878,7 +867,6 @@ onMounted(async () => {
   padding-left: calc(var(--bs-gutter-x) * 0.5);
 }
 
-/* On screens >= 1350px, show side by side */
 @media (min-width: 1350px) {
   .col-main {
     flex: 0 0 auto;
@@ -895,7 +883,6 @@ onMounted(async () => {
   }
 }
 
-/* Skeleton Loader Styles */
 .skeleton-btn {
   width: 100px;
   height: 38px;
