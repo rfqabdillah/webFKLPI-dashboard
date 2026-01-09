@@ -560,6 +560,30 @@ onMounted(() => {
 .badge {
   font-size: 12px;
 }
+/* Pagination Styles */
+.pagination .page-link {
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: #15406ae6;
+  border-color: #15406ae6;
+  color: white;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #15406ae6;
+  border-color: #15406ae6;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #adb5bd;
+  pointer-events: none;
+}
 
 /* Skeleton Loader Styles */
 .skeleton-card {

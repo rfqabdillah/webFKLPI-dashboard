@@ -9,3 +9,44 @@ export const AGENDA_STATUSES = {
   DITERIMA: STATUS_DITERIMA_ID,
   SELESAI: STATUS_SELESAI_ID,
 };
+
+export const getAgendaStatusIcon = (statusId) => {
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "fa fa-check-circle"; // Completed
+    case STATUS_DITOLAK_ID:
+      return "fa fa-times-circle"; // Rejected
+    case STATUS_DITERIMA_ID:
+      return "fa fa-check"; // Accepted
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "fa fa-clock-o"; // Registered/Pending
+  }
+};
+
+export const getAgendaStatusSemantic = (statusId) => {
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "completed";
+    case STATUS_DITOLAK_ID:
+      return "rejected";
+    case STATUS_DITERIMA_ID:
+      return "accepted";
+    case STATUS_TERDAFTAR_ID:
+    default:
+      return "registered";
+  }
+};
+
+export const getAgendaCancelReasonKey = (statusId) => {
+  switch (statusId) {
+    case STATUS_SELESAI_ID:
+      return "Cannot cancel - Event completed";
+    case STATUS_DITOLAK_ID:
+      return "Cannot cancel - Registration rejected";
+    case STATUS_DITERIMA_ID:
+      return "Cannot cancel - Already accepted";
+    default:
+      return "Cannot cancel registration";
+  }
+};

@@ -105,7 +105,7 @@
               :class="getCardClass(registrationStatusId)"
             >
               <div class="status-icon">
-                <i class="fa fa-check-circle"></i>
+                <i :class="getStatusIcon(registrationStatusId)"></i>
               </div>
               <div class="status-content">
                 <div class="status-header">
@@ -144,6 +144,15 @@
               >
                 <i class="fa fa-exclamation-triangle me-2"></i>
                 {{ $t("Registration deadline has passed") }}
+              </div>
+
+              <!-- Cannot Cancel Info -->
+              <div
+                v-if="isRegistered && !canCancel"
+                class="alert alert-info w-100 mb-2"
+              >
+                <i class="fa fa-info-circle me-2"></i>
+                {{ getCancelDisabledReason() }}
               </div>
 
               <!-- Already Registered - Show Cancel Button -->
@@ -229,9 +238,9 @@ const { t, locale } = useI18n();
 
 import {
   STATUS_TERDAFTAR_ID,
-  STATUS_DITOLAK_ID,
-  STATUS_DITERIMA_ID,
-  STATUS_SELESAI_ID,
+  getAgendaStatusIcon,
+  getAgendaStatusSemantic,
+  getAgendaCancelReasonKey,
 } from "@/constants/agendaStatus";
 
 // State
@@ -393,18 +402,10 @@ const handleImageError = (event) => {
 };
 
 // Get reason why cancel is disabled
+// Get reason why cancel is disabled
 const getCancelDisabledReason = () => {
-  const statusId = registrationStatusId.value;
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
-      return t("Cannot cancel - Event completed");
-    case STATUS_DITOLAK_ID:
-      return t("Cannot cancel - Registration rejected");
-    case STATUS_DITERIMA_ID:
-      return t("Cannot cancel - Already accepted");
-    default:
-      return t("Cannot cancel registration");
-  }
+  const key = getAgendaCancelReasonKey(registrationStatusId.value);
+  return t(key);
 };
 
 const downloadPoster = async () => {
@@ -595,45 +596,52 @@ const cancelRegistration = async () => {
 };
 
 const getStatusClass = (statusId) => {
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
+  const semantic = getAgendaStatusSemantic(statusId);
+  switch (semantic) {
+    case "completed":
       return "status-completed";
-    case STATUS_DITOLAK_ID:
+    case "rejected":
       return "status-cancelled";
-    case STATUS_DITERIMA_ID:
+    case "accepted":
       return "status-accepted";
-    case STATUS_TERDAFTAR_ID:
+    case "registered":
     default:
       return "status-registered";
   }
 };
 
 const getCardClass = (statusId) => {
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
+  const semantic = getAgendaStatusSemantic(statusId);
+  switch (semantic) {
+    case "completed":
       return "card-completed";
-    case STATUS_DITOLAK_ID:
+    case "rejected":
       return "card-cancelled";
-    case STATUS_DITERIMA_ID:
+    case "accepted":
       return "card-accepted";
-    case STATUS_TERDAFTAR_ID:
+    case "registered":
     default:
       return "card-registered";
   }
 };
 
 const getStatusMessage = (statusId) => {
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
+  const semantic = getAgendaStatusSemantic(statusId);
+  switch (semantic) {
+    case "completed":
       return t("Status Message Completed");
-    case STATUS_DITOLAK_ID:
+    case "rejected":
       return t("Status Message Rejected");
-    case STATUS_DITERIMA_ID:
+    case "accepted":
       return t("Status Message Accepted");
-    case STATUS_TERDAFTAR_ID:
+    case "registered":
     default:
       return t("Status Message Registered");
   }
+};
+
+const getStatusIcon = (statusId) => {
+  return getAgendaStatusIcon(statusId);
 };
 
 // Lifecycle

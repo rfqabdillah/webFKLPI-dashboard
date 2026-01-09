@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <!-- Status Bar (optional) - Full width bar below location -->
+      <!-- Status Bar -->
       <div
         v-if="showStatus && props.item.statusId"
         class="status-bar mb-3"
@@ -141,9 +141,9 @@ const { t, locale } = useI18n();
 // Status constants
 import {
   STATUS_TERDAFTAR_ID,
-  STATUS_DITOLAK_ID,
-  STATUS_DITERIMA_ID,
-  STATUS_SELESAI_ID,
+  getAgendaStatusIcon,
+  getAgendaStatusSemantic,
+  getAgendaCancelReasonKey,
 } from "@/constants/agendaStatus";
 
 // Emit events
@@ -167,14 +167,12 @@ const props = defineProps({
       author: "",
       students: 0,
       locale: "id",
-      // Optional status fields
       registrationId: null,
       statusId: null,
       statusName: "",
       statusNameEn: "",
     }),
   },
-  // New prop for navigation path
   path: {
     type: String,
     default: "",
@@ -197,49 +195,43 @@ const props = defineProps({
 const defaultPosterUrl =
   "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
 
-// Computed: Can cancel registration (only if Terdaftar/Registered)
+// Computed
 const canCancel = computed(() => {
   const statusId = props.item.statusId;
   return statusId === STATUS_TERDAFTAR_ID;
 });
 
-// Get status label based on locale
 const getStatusLabel = () => {
-  if (locale.value === "en" && props.item.statusNameEn) {
-    return props.item.statusNameEn;
+  const semantic = getAgendaStatusSemantic(props.item.statusId);
+  switch (semantic) {
+    case "completed":
+      return t("Completed");
+    case "rejected":
+      return t("Rejected");
+    case "accepted":
+      return t("Accepted");
+    case "registered":
+    default:
+      return t("Registered");
   }
-  return props.item.statusName || t("Registered");
 };
 
-// Get status icon based on status
 const getStatusIcon = () => {
-  const statusId = props.item.statusId;
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
-      return "fa fa-check-circle"; // Completed
-    case STATUS_DITOLAK_ID:
-      return "fa fa-times-circle"; // Rejected
-    case STATUS_DITERIMA_ID:
-      return "fa fa-check"; // Accepted
-    case STATUS_TERDAFTAR_ID:
-    default:
-      return "fa fa-clock-o"; // Registered/Pending
-  }
+  return getAgendaStatusIcon(props.item.statusId);
 };
 
-// Get status bar class based on status
 const getStatusBarClass = () => {
-  const statusId = props.item.statusId;
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
-      return "status-bar-purple"; // Completed - Purple
-    case STATUS_DITOLAK_ID:
-      return "status-bar-danger"; // Rejected - Red
-    case STATUS_DITERIMA_ID:
-      return "status-bar-success"; // Accepted - Green
-    case STATUS_TERDAFTAR_ID:
+  const semantic = getAgendaStatusSemantic(props.item.statusId);
+  switch (semantic) {
+    case "completed":
+      return "status-bar-purple";
+    case "rejected":
+      return "status-bar-danger";
+    case "accepted":
+      return "status-bar-success";
+    case "registered":
     default:
-      return "status-bar-info"; // Registered - Blue
+      return "status-bar-info";
   }
 };
 
@@ -248,22 +240,11 @@ const handleImageError = (event) => {
   event.target.src = defaultPosterUrl;
 };
 
-// Get reason why cancel is disabled
 const getCancelDisabledReason = () => {
-  const statusId = props.item.statusId;
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
-      return t("Cannot cancel - Event completed");
-    case STATUS_DITOLAK_ID:
-      return t("Cannot cancel - Registration rejected");
-    case STATUS_DITERIMA_ID:
-      return t("Cannot cancel - Already accepted");
-    default:
-      return t("Cannot cancel registration");
-  }
+  const key = getAgendaCancelReasonKey(props.item.statusId);
+  return t(key);
 };
 
-// Handle cancel click
 const handleCancelClick = () => {
   if (!canCancel.value) return;
   emit("cancel", {
@@ -325,6 +306,8 @@ const handleCancelClick = () => {
   border-radius: 6px;
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
 }
 
 .btn-selengkapnya:hover {
@@ -388,8 +371,6 @@ const handleCancelClick = () => {
   cursor: pointer;
 }
 
-/* Custom Stretched Link to make the whole card clickable via the Title link */
-/* We use a custom class to avoid potential conflicts if standard bootstrap is not behaving as expected */
 .stretched-link-custom::after {
   position: absolute;
   top: 0;
@@ -400,7 +381,6 @@ const handleCancelClick = () => {
   content: "";
 }
 
-/* Ensure relative positioning for containment */
 .agenda-card {
   position: relative;
 }
