@@ -21,6 +21,8 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import Lightbox from 'vue-easy-lightbox'
 
+import VueApexCharts from "vue3-apexcharts";
+
 const locale = (localStorage.getItem('currentLanguage') && localeOptions.filter(x => x.id === localStorage.getItem('currentLanguage')).length > 0) ? localStorage.getItem('currentLanguage') : defaultLocale;
 const i18n = createI18n({
   locale: locale,
@@ -30,4 +32,4 @@ const i18n = createI18n({
     en: en,
   }
 });
-createApp(App).use(router).use(store).use(i18n).use(VueSweetalert2).use(Vue3Toasity).use(Toast).use(Lightbox).component(VueFeather.name, VueFeather).component('Breadcrumbs', Breadcrumbs).mount('#app')
+createApp(App).use(router).use(store).use(i18n).use(VueSweetalert2).use(Vue3Toasity).use(Toast).use(Lightbox).use(VueApexCharts).component(VueFeather.name, VueFeather).component('Breadcrumbs', Breadcrumbs).mount('#app')
