@@ -97,6 +97,8 @@
   "Pending": "Pending",
   "Approved": "Approved",
   "Rejected": "Rejected",
+  "Accepted": "Accepted",
+  "Completed": "Completed",
   "Start Date": "Start Date",
   "End Date": "End Date",
   "Registration": "Registration",

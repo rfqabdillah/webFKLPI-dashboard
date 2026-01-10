@@ -3,29 +3,8 @@
     <div class="card">
       <div class="card-body">
         <!-- Loading State with Skeleton -->
-        <div v-if="isLoading" class="row align-items-start detail-layout">
-          <div class="col-main">
-            <div class="skeleton-btn shimmer mb-3"></div>
-            <div class="skeleton-poster shimmer mb-4"></div>
-            <div class="skeleton-badge-lg shimmer mb-3"></div>
-            <div class="skeleton-heading shimmer mb-3"></div>
-            <div class="skeleton-info-list mb-4">
-              <div class="skeleton-info-item shimmer mb-2"></div>
-              <div class="skeleton-info-item shimmer mb-2"></div>
-              <div class="skeleton-info-item shimmer mb-2"></div>
-            </div>
-            <hr class="my-4" />
-            <div class="skeleton-content">
-              <div class="skeleton-text shimmer mb-2" style="width: 100%"></div>
-              <div class="skeleton-text shimmer mb-2" style="width: 90%"></div>
-              <div class="skeleton-text shimmer mb-2" style="width: 85%"></div>
-              <div class="skeleton-text shimmer" style="width: 70%"></div>
-            </div>
-          </div>
-          <div class="col-sidebar mt-4">
-            <div class="skeleton-sidebar shimmer"></div>
-          </div>
-        </div>
+        <!-- Loading State with Skeleton -->
+        <SkeletonGroup v-if="isLoading" type="agenda-detail" />
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-5">
@@ -126,7 +105,7 @@
               :class="getCardClass(registrationStatusId)"
             >
               <div class="status-icon">
-                <i class="fa fa-check-circle"></i>
+                <i :class="getStatusIcon(registrationStatusId)"></i>
               </div>
               <div class="status-content">
                 <div class="status-header">
@@ -165,6 +144,15 @@
               >
                 <i class="fa fa-exclamation-triangle me-2"></i>
                 {{ $t("Registration deadline has passed") }}
+              </div>
+
+              <!-- Cannot Cancel Info -->
+              <div
+                v-if="isRegistered && !canCancel"
+                class="alert alert-info w-100 mb-2"
+              >
+                <i class="fa fa-info-circle me-2"></i>
+                {{ getCancelDisabledReason() }}
               </div>
 
               <!-- Already Registered - Show Cancel Button -->
@@ -234,6 +222,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
+import SkeletonGroup from "@/components/base/default/SkeletonLoader/SkeletonGroup.vue";
 import AgendaDetailPageSidebar from "@/components/base/default/agendaDetailPageSidebar.vue";
 import { formatDate } from "@/utils/formatDate";
 import { getDetailEvent, getEvents } from "@/services/public/eventsPublic";
@@ -247,10 +236,12 @@ import { getStatuses } from "@/services/referensi/status";
 const route = useRoute();
 const { t, locale } = useI18n();
 
-const STATUS_TERDAFTAR_ID = "3f2a882a-7ddb-4ac8-a88c-25693dc61571";
-const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
-const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
-const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
+import {
+  STATUS_TERDAFTAR_ID,
+  getAgendaStatusIcon,
+  getAgendaStatusSemantic,
+  getAgendaCancelReasonKey,
+} from "@/constants/agendaStatus";
 
 // State
 const data = ref(null);
@@ -411,18 +402,10 @@ const handleImageError = (event) => {
 };
 
 // Get reason why cancel is disabled
+// Get reason why cancel is disabled
 const getCancelDisabledReason = () => {
-  const statusId = registrationStatusId.value;
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
-      return t("Cannot cancel - Event completed");
-    case STATUS_DITOLAK_ID:
-      return t("Cannot cancel - Registration rejected");
-    case STATUS_DITERIMA_ID:
-      return t("Cannot cancel - Already accepted");
-    default:
-      return t("Cannot cancel registration");
-  }
+  const key = getAgendaCancelReasonKey(registrationStatusId.value);
+  return t(key);
 };
 
 const downloadPoster = async () => {
@@ -613,45 +596,52 @@ const cancelRegistration = async () => {
 };
 
 const getStatusClass = (statusId) => {
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
+  const semantic = getAgendaStatusSemantic(statusId);
+  switch (semantic) {
+    case "completed":
       return "status-completed";
-    case STATUS_DITOLAK_ID:
+    case "rejected":
       return "status-cancelled";
-    case STATUS_DITERIMA_ID:
+    case "accepted":
       return "status-accepted";
-    case STATUS_TERDAFTAR_ID:
+    case "registered":
     default:
       return "status-registered";
   }
 };
 
 const getCardClass = (statusId) => {
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
+  const semantic = getAgendaStatusSemantic(statusId);
+  switch (semantic) {
+    case "completed":
       return "card-completed";
-    case STATUS_DITOLAK_ID:
+    case "rejected":
       return "card-cancelled";
-    case STATUS_DITERIMA_ID:
+    case "accepted":
       return "card-accepted";
-    case STATUS_TERDAFTAR_ID:
+    case "registered":
     default:
       return "card-registered";
   }
 };
 
 const getStatusMessage = (statusId) => {
-  switch (statusId) {
-    case STATUS_SELESAI_ID:
+  const semantic = getAgendaStatusSemantic(statusId);
+  switch (semantic) {
+    case "completed":
       return t("Status Message Completed");
-    case STATUS_DITOLAK_ID:
+    case "rejected":
       return t("Status Message Rejected");
-    case STATUS_DITERIMA_ID:
+    case "accepted":
       return t("Status Message Accepted");
-    case STATUS_TERDAFTAR_ID:
+    case "registered":
     default:
       return t("Status Message Registered");
   }
+};
+
+const getStatusIcon = (statusId) => {
+  return getAgendaStatusIcon(statusId);
 };
 
 // Lifecycle
@@ -880,66 +870,6 @@ onMounted(async () => {
     position: sticky;
     top: 100px;
     align-self: flex-start;
-  }
-}
-
-.skeleton-btn {
-  width: 100px;
-  height: 38px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-poster {
-  width: 100%;
-  height: 350px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-badge-lg {
-  width: 100px;
-  height: 30px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-heading {
-  width: 60%;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-info-item {
-  width: 250px;
-  height: 18px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-text {
-  height: 16px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.skeleton-sidebar {
-  width: 100%;
-  height: 300px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
-  background-size: 200% 100%;
-}
-.shimmer {
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
   }
 }
 </style>

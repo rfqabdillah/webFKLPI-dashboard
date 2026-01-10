@@ -120,7 +120,7 @@
               :show-status="true"
               :show-cancel-button="true"
               :is-cancelling="cancellingId === item.id_agenda_pengguna"
-              @click="openDetail(item)"
+              :path="`/agenda-detail/${item.events?.slug || item.slug}`"
               @cancel="handleCancelRegistration"
             />
           </div>
@@ -187,11 +187,12 @@ import { getStatuses } from "@/services/referensi/status";
 const router = useRouter();
 const { t, locale } = useI18n();
 
-// Status constants
-const STATUS_TERDAFTAR_ID = "e194d29a-9bcc-42d6-8ed5-a35f84c6cfea";
-const STATUS_DITERIMA_ID = "787bc335-16f2-4a99-ae63-e14db3ca845c";
-const STATUS_DITOLAK_ID = "7099f0ed-7cea-49f1-9dd3-85a0a7850740";
-const STATUS_SELESAI_ID = "99dd296b-d6ba-4d6e-90c2-e526b2e19ab4";
+import {
+  STATUS_TERDAFTAR_ID,
+  STATUS_DITERIMA_ID,
+  STATUS_DITOLAK_ID,
+  STATUS_SELESAI_ID,
+} from "@/constants/agendaStatus";
 
 // State
 const agendaList = ref([]);
@@ -558,6 +559,30 @@ onMounted(() => {
 <style scoped>
 .badge {
   font-size: 12px;
+}
+/* Pagination Styles */
+.pagination .page-link {
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: #15406ae6;
+  border-color: #15406ae6;
+  color: white;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #15406ae6;
+  border-color: #15406ae6;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #adb5bd;
+  pointer-events: none;
 }
 
 /* Skeleton Loader Styles */
