@@ -23,21 +23,21 @@ export var menuItems = {
       "active": false
     },
     {
-      "title": "Agenda",
+      "title": "Program",
       "icon": "stroke-calendar",
       "iconf":"settings-hex",
       "type": "sub",
       "active": false,
       "children": [
         {
-          "path": "/agenda/events",
-          "title": "Daftar Kegiatan",
+          "path": "/programs",
+          "title": "Daftar Program",
           "type": "link",
           "active":false
         },
         {
-          "path": "/agenda/event-categories",
-          "title": "Kategori Kegiatan",
+          "path": "/program-categories",
+          "title": "Kategori Program",
           "type": "link",
           "active":false
         },

@@ -134,26 +134,26 @@ const routes =[
         ]
       },
       {
-        path: '/agenda',
+        path: '',
         component: Body,
         meta: {
           requiresAuth: true,
         },
         children: [
           {
-            path: "events",
+            path: "programs",
             name: "Agenda_events",
             component: IndexEvents,
             meta: {
-              title: "Daftar Agenda",
+              title: "Daftar Program",
             },
           },
           {
-            path: "event-categories",
+            path: "program-categories",
             name: "Agenda_eventCategories",
             component: IndexEventCategories,
             meta: {
-              title: "Kategori Agenda",
+              title: "Kategori Program",
             },
           },
         ]

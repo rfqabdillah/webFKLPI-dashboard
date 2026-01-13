@@ -8,8 +8,8 @@
     />
 
     <BaseTable
-      title="Daftar Kegiatan"
-      entityName="Agenda"
+      title="Daftar Program"
+      entityName="Program"
       :apiService="agendaApi"
       :FormModalComponent="AgendaFormModal"
       :DetailModalComponent="EventDetailModal"

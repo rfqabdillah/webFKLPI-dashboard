@@ -1,6 +1,6 @@
 <template>
   <BaseDetailModal
-    title="Detail Data Kegiatan"
+    title="Detail Data Program"
     :item-to-view="itemToView"
     :api-detail-fn="getDetailEvent"
     id-key="idagenda"
