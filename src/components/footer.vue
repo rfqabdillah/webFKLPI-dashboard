@@ -121,8 +121,7 @@
         <div class="col-md-12">
           <div class="border-top border-secondary pt-3 pb-3">
             <p class="mb-0 text-white opacity-75 text-start">
-              Direktorat Bina Peningkatan Produktivitas Nasional ©
-              {{ currentYear }}
+              {{ settings.nama_instansi }} © {{ currentYear }}
             </p>
           </div>
         </div>
