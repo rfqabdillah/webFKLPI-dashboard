@@ -314,7 +314,7 @@ const routes =[
         ]
       },
       {
-        path: '/list-agenda',
+        path: '/list-program',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -325,14 +325,14 @@ const routes =[
             name: "AgendaPage",
             component: IndexAgendaPage,
             meta: {
-              title: "Jadwal Agenda",
+              title: "Jadwal Program",
             },
           },
         ]
       },
 
       {
-        path: '/agenda-detail/:id',
+        path: '/program-detail/:id',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -343,14 +343,14 @@ const routes =[
             name: "AgendaDetailPage",
             component: IndexAgendaDetailPage,
             meta: {
-              title: "Detail Agenda",
+              title: "Detail Program",
             },
           },
         ]
       },
 
       {
-        path: '/my-agenda',
+        path: '/my-program',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -361,7 +361,7 @@ const routes =[
             name: "MyAgendaPage",
             component: IndexMyAgendaPage,
             meta: {
-              title: "Agenda Saya",
+              title: "Program Saya",
             },
           },
         ]

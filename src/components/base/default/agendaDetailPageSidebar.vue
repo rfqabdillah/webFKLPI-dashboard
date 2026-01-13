@@ -3,7 +3,9 @@
     <div class="card-body">
       <!-- Search -->
       <div class="mb-4">
-        <label class="form-label fw-semibold">{{ $t("Search Events") }}</label>
+        <label class="form-label fw-semibold">{{
+          $t("Search Programs")
+        }}</label>
         <div class="input-group">
           <span class="input-group-text bg-light border-end-0">
             <i class="fa fa-search text-muted"></i>
@@ -12,14 +14,14 @@
             v-model="searchQuery"
             type="text"
             class="form-control border-start-0 ps-0"
-            :placeholder="$t('Search Events')"
+            :placeholder="$t('Search Programs')"
           />
         </div>
       </div>
 
       <!-- Recent Posts -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3">{{ $t("Recent Events") }}</h6>
+        <h6 class="fw-semibold mb-3">{{ $t("Recent Programs") }}</h6>
 
         <div v-if="isLoading">
           <div v-for="n in 3" :key="n" class="d-flex align-items-center mb-3">
@@ -41,7 +43,7 @@
         </div>
 
         <div v-else-if="eventsRecentPost.length === 0" class="text-muted small">
-          {{ $t("No recent events") }}
+          {{ $t("No recent Programs") }}
         </div>
 
         <div v-else>
@@ -59,7 +61,7 @@
             />
             <div class="ms-3">
               <router-link
-                :to="`/agenda-detail/${item.slug || item.id}`"
+                :to="`/program-detail/${item.slug || item.id}`"
                 class="fw-medium text-dark text-decoration-none hover-primary d-block"
                 style="font-size: 14px"
               >
@@ -70,9 +72,10 @@
                   )
                 }}
               </router-link>
-              <small class="text-muted">{{
-                formatDate(item.date, $i18n.locale)
-              }}</small>
+              <small class="text-muted">
+                <i class="fa fa-calendar me-1"></i>
+                {{ formatDate(item.date, $i18n.locale) }}
+              </small>
             </div>
           </div>
         </div>

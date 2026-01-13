@@ -11,7 +11,7 @@
           <i class="fa fa-exclamation-circle text-danger fa-3x mb-3"></i>
           <p class="text-danger">{{ error }}</p>
           <router-link to="/list-agenda" class="btn btn-outline-primary">
-            {{ $t("Back to Events List") }}
+            {{ $t("Back to Programs List") }}
           </router-link>
         </div>
 
@@ -87,13 +87,6 @@
                 <span class="text-muted">{{ $t("Location") }}: </span>
                 <span class="text-dark fw-medium ms-1">{{
                   data.place || "-"
-                }}</span>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <i class="fa fa-user me-2" style="color: #15406a"></i>
-                <span class="text-muted">{{ $t("Organizer") }}: </span>
-                <span class="text-dark fw-medium ms-1">{{
-                  data.author || "Administrator"
                 }}</span>
               </div>
             </div>
@@ -320,8 +313,6 @@ const fetchDetail = async () => {
       title_en: item.judul_en,
       desc: item.konten,
       desc_en: item.konten_en,
-      author: item.pengguna?.penulis || "Administrator",
-      authorPhoto: item.pengguna?.foto || null,
     };
   } catch (err) {
     console.error("Error fetching agenda data:", err);

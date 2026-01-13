@@ -2,7 +2,7 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header pb-3">
-        <h5 class="mb-3">{{ $t("Events") }}</h5>
+        <h5 class="mb-3">{{ $t("Programs") }}</h5>
 
         <!-- Search & Filter Row -->
         <div class="row g-3">
@@ -16,7 +16,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="form-control"
-                :placeholder="$t('Search Events')"
+                :placeholder="$t('Search Programs')"
                 @input="onSearchChange"
               />
               <button
@@ -50,7 +50,7 @@
           >
             <span class="text-muted" v-if="!isLoading">
               <strong>{{ filteredAgenda.length }}</strong>
-              {{ $t("events found") }}
+              {{ $t("Programs found") }}
             </span>
           </div>
         </div>
@@ -84,10 +84,10 @@
         <div v-else-if="filteredAgenda.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
           <p class="text-muted" v-if="searchQuery || selectedCategory">
-            {{ $t("No events match your search") }}
+            {{ $t("No Programs match your search") }}
           </p>
           <p class="text-muted" v-else>
-            {{ $t("No events available at this time") }}
+            {{ $t("No Programs available at this time") }}
           </p>
           <button
             v-if="searchQuery || selectedCategory"
@@ -107,7 +107,7 @@
           >
             <AgendaCard
               :item="mapAgendaToCard(agenda)"
-              :path="`/agenda-detail/${agenda.slug}`"
+              :path="`/program-detail/${agenda.slug}`"
               :show-status="isUserRegistered(agenda.id_agenda)"
               :show-cancel-button="isUserRegistered(agenda.id_agenda)"
               :is-cancelling="

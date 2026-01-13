@@ -181,20 +181,20 @@ export var menuItems = {
       "allowedLevels": [userLevelUmum]
     },
     {
-      "title": "Agenda Saya",
+      "title": "Program Saya",
       "icon": "stroke-big-checklist",
       "iconf": "fill-big-checklist",
       "type": "link",
-      "path": "/my-agenda",
+      "path": "/my-program",
       "active": false,
       "allowedLevels": [userLevelUmum]
     },
     {
-      "title": "Jadwal Agenda",
+      "title": "Jadwal Program",
       "icon": "stroke-calendar",
       "iconf": "fill-calendar",
       "type": "link",
-      "path": "/list-agenda",
+      "path": "/list-program",
       "active": false,
       "allowedLevels": [userLevelUmum]
     },

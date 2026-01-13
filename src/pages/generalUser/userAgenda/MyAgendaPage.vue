@@ -16,7 +16,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="form-control"
-                :placeholder="$t('Search Events')"
+                :placeholder="$t('Search Programs')"
                 @input="onSearchChange"
               />
               <button
@@ -54,7 +54,7 @@
           >
             <span class="text-muted" v-if="!isLoading">
               <strong>{{ filteredAgenda.length }}</strong>
-              {{ $t("events found") }}
+              {{ $t("Programs found") }}
             </span>
           </div>
         </div>
@@ -88,10 +88,10 @@
         <div v-else-if="filteredAgenda.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
           <p class="text-muted" v-if="searchQuery || selectedStatus">
-            {{ $t("No events match your search") }}
+            {{ $t("No Programs match your search") }}
           </p>
           <p class="text-muted" v-else>
-            {{ $t("You have not registered for any events yet") }}
+            {{ $t("You have not registered for any Programs yet") }}
           </p>
           <button
             v-if="searchQuery || selectedStatus"
@@ -105,7 +105,7 @@
             to="/list-agenda"
             class="btn btn-primary"
           >
-            {{ $t("View Events List") }}
+            {{ $t("View Programs List") }}
           </router-link>
         </div>
 
