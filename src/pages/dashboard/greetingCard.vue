@@ -14,7 +14,7 @@
           </div>
           <div class="greeting-user">
             <h4 class="f-w-600 mb-0">{{ greetingText }}, {{ userName }}!</h4>
-            <p>Semoga harimu menyenangkan</p>
+            <p>Selamat beraktivitas!</p>
           </div>
         </div>
       </div>
@@ -72,7 +72,8 @@ export default {
         if (storedUserData) {
           const parsedData = JSON.parse(storedUserData);
           if (parsedData && parsedData.data && parsedData.data.length > 0) {
-            this.userName = parsedData.data[0].nama || "Administrator";
+            const fullName = parsedData.data[0].nama || "Administrator";
+            this.userName = fullName.split(" ")[0];
           }
         }
       } catch (e) {
