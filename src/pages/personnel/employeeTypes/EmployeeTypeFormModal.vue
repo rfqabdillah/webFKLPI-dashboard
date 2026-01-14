@@ -5,19 +5,23 @@
     @close="closeModal"
     @save="submitForm"
   >
-    <form @submit.prevent="submitForm" novalidate :class="{ 'was-validated': wasValidated }" id="vocationalForm">
-        
+    <form
+      @submit.prevent="submitForm"
+      novalidate
+      :class="{ 'was-validated': wasValidated }"
+      id="vocationalForm"
+    >
       <div class="mb-3">
-        <label class="form-label fw-semibold">Nama Jenis Pegawai</label>
+        <label class="form-label fw-semibold">Nama Profesi</label>
         <input
           type="text"
           class="form-control"
           v-model="formData.namajenispegawai"
           :class="{
             'is-invalid': formErrors.namajenispegawai,
-            'is-valid': !formErrors.namajenispegawai && wasValidated
+            'is-valid': !formErrors.namajenispegawai && wasValidated,
           }"
-          placeholder="Masukkan nama status pegawai"
+          placeholder="Masukkan nama profesi"
           required
         />
         <div class="invalid-feedback">
@@ -33,15 +37,18 @@
 </template>
 
 <script setup>
-import BaseFormModal from "@/components/base/BaseFormModal.vue"; 
-import { addEmployeeType, updateEmployeeType } from "@/services/referensi/employeeTypes";
+import BaseFormModal from "@/components/base/BaseFormModal.vue";
+import {
+  addEmployeeType,
+  updateEmployeeType,
+} from "@/services/referensi/employeeTypes";
 import { reactive, ref, computed, watch } from "vue";
 import { useToast } from "vue-toastification";
 import * as yup from "yup";
 
 const props = defineProps({
   fieldToEdit: { type: Object, default: null },
-  entityName: { type: String, default: 'Data' }
+  entityName: { type: String, default: "Data" },
 });
 const emit = defineEmits(["close", "save-successful"]);
 const toast = useToast();
@@ -58,9 +65,7 @@ const errorMessage = ref(null);
 const wasValidated = ref(false);
 
 const validationSchema = yup.object().shape({
-  namajenispegawai: yup
-    .string()
-    .required("Nama namajenispegawai wajib diisi."),
+  namajenispegawai: yup.string().required("Nama namajenispegawai wajib diisi."),
 });
 
 // === Computed ===

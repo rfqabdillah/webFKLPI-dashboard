@@ -1,5 +1,6 @@
 <template>
-  <div class="card">
+  <SkeletonGroup v-if="isLoading" type="dashboard-users" />
+  <div v-else class="card">
     <div class="card-header pb-0 card-no-border">
       <div class="header-top">
         <h5>Log Pengguna Online (< 1 Jam)</h5>
@@ -55,11 +56,16 @@
 <script>
 import { getUsers } from "@/services/referensi/users";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
+import SkeletonGroup from "@/components/base/default/SkeletonLoader/SkeletonGroup.vue";
 
 export default {
   name: "OnlineLogCard",
+  components: {
+    SkeletonGroup,
+  },
   data() {
     return {
+      isLoading: true,
       allUsers: [],
       onlineUsers: [],
     };
@@ -102,6 +108,7 @@ export default {
       this.onlineUsers = filtered.slice(0, 50);
     },
     async fetchUsers() {
+      this.isLoading = true;
       try {
         const response = await getUsers();
         if (response && response.data) {
@@ -126,6 +133,8 @@ export default {
         }
       } catch (error) {
         console.error("Error fetching users for online log:", error);
+      } finally {
+        this.isLoading = false;
       }
     },
     formatLastLogin(dateString) {

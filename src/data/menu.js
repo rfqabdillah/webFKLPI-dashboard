@@ -255,8 +255,8 @@ export var menuItems = {
           "active": false,
           "children": [
             {
-              "path": "/personnel/employee-types",
-              "title": "Jenis Pegawai",
+              "path": "/personnel/professions",
+              "title": "Profesi",
               "type": "link",
               "active": false
             },

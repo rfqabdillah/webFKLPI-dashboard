@@ -25,10 +25,18 @@
       </div>
     </div>
     <div class="card-body pt-0">
-      <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+      <!-- Skeleton Loading -->
+      <div v-if="loading">
+        <div class="mb-3">
+          <BaseSkeleton variant="heading" width="180px" class="mb-1" />
+          <BaseSkeleton variant="text" width="120px" height="12px" />
         </div>
+        <BaseSkeleton
+          variant="custom"
+          width="100%"
+          height="320px"
+          rounded="8px"
+        />
       </div>
 
       <div v-else-if="!series[0].data.length" class="text-center py-5">
@@ -54,9 +62,13 @@
 
 <script>
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
+import BaseSkeleton from "@/components/base/default/SkeletonLoader/BaseSkeleton.vue";
 
 export default {
   name: "AgendaStatisticsCard",
+  components: {
+    BaseSkeleton,
+  },
   data() {
     return {
       loading: false,

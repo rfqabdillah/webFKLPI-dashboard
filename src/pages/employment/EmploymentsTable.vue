@@ -11,6 +11,7 @@
     :initialFilters="initialFilters"
     initialSortColumn="nama"
     initialSortDirection="asc"
+    @reset-filters="handleResetFilters"
   >
     <template #filters="{ filters }">
       <div class="row g-3">
@@ -25,6 +26,118 @@
             v-model="filters.nama"
             placeholder="Masukkan nama pegawai"
           />
+        </div>
+        <div class="col-md-4">
+          <label for="filterNIK" class="form-label text-dark fw-semibold"
+            >NIK</label
+          >
+          <input
+            type="text"
+            id="filterNIK"
+            class="form-control"
+            v-model="filters.nik"
+            placeholder="Masukkan NIK"
+          />
+        </div>
+        <div class="col-md-4">
+          <label for="filterEmail" class="form-label text-dark fw-semibold"
+            >Email</label
+          >
+          <input
+            type="text"
+            id="filterEmail"
+            class="form-control"
+            v-model="filters.email"
+            placeholder="Masukkan email"
+          />
+        </div>
+        <div class="col-md-4">
+          <label for="filterProfesi" class="form-label text-dark fw-semibold"
+            >Profesi</label
+          >
+          <select
+            id="filterProfesi"
+            class="form-select"
+            v-model="filters.idjenispegawai"
+          >
+            <option value="">Semua Profesi</option>
+            <option
+              v-for="profesi in profesiOptions"
+              :key="profesi.id"
+              :value="profesi.id"
+            >
+              {{ profesi.nama }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label
+            for="filterJenisPengguna"
+            class="form-label text-dark fw-semibold"
+            >Jenis Pengguna</label
+          >
+          <select
+            id="filterJenisPengguna"
+            class="form-select"
+            v-model="filters.idjenispengguna"
+          >
+            <option value="">Semua Jenis Pengguna</option>
+            <option
+              v-for="jenis in jenisPenggunaOptions"
+              :key="jenis.id"
+              :value="jenis.id"
+            >
+              {{ jenis.nama }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="filterProvinsi" class="form-label text-dark fw-semibold"
+            >Provinsi</label
+          >
+          <select
+            id="filterProvinsi"
+            class="form-select"
+            v-model="selectedProvinsi"
+            @change="handleProvinceChange(filters)"
+          >
+            <option value="">Semua Provinsi</option>
+            <option
+              v-for="prov in provinsiOptions"
+              :key="prov.id"
+              :value="prov.kode"
+            >
+              {{ prov.kode }} - {{ prov.nama }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="filterKabupaten" class="form-label text-dark fw-semibold"
+            >Kabupaten</label
+          >
+          <select
+            id="filterKabupaten"
+            class="form-select"
+            v-model="filters.kodekabupaten"
+            :disabled="!selectedProvinsi || kabupatenLoading"
+          >
+            <option :value="selectedProvinsi || ''">
+              {{
+                kabupatenLoading
+                  ? "Memuat..."
+                  : selectedProvinsi
+                  ? "Semua Kabupaten"
+                  : "Pilih provinsi terlebih dahulu"
+              }}
+            </option>
+            <option
+              v-for="kab in kabupatenOptions"
+              :key="kab.id"
+              :value="kab.kode"
+            >
+              {{ kab.kode }} - {{ kab.nama }}
+            </option>
+          </select>
         </div>
       </div>
     </template>
@@ -83,11 +196,14 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, ref } from "vue";
+import { defineAsyncComponent, ref, onMounted } from "vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import { formatDate } from "@/utils/formatDate";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 import { getUsers, deleteUser } from "@/services/referensi/users";
+import { getEmployeeTypes } from "@/services/referensi/employeeTypes";
+import { getUserTypes } from "@/services/referensi/userTypes";
+import { getRegions } from "@/services/referensi/regions";
 import VueEasyLightbox from "vue-easy-lightbox";
 
 const EmploymentFormModal = defineAsyncComponent(() =>
@@ -112,7 +228,113 @@ const columns = [
 
 const initialFilters = {
   nama: "",
+  nik: "",
+  email: "",
+  idjenispegawai: "",
+  idjenispengguna: "",
+  kodekabupaten: "",
 };
+
+// Dropdown options
+const profesiOptions = ref([]);
+const jenisPenggunaOptions = ref([]);
+const provinsiOptions = ref([]);
+const kabupatenOptions = ref([]);
+const kabupatenLoading = ref(false);
+const selectedProvinsi = ref("");
+
+// Fetch dropdown data
+const fetchProfesiOptions = async () => {
+  try {
+    const response = await getEmployeeTypes({ limit: 100 });
+    const data = response.data?.[0]?.data || response.data?.data || [];
+    profesiOptions.value = data.map((item) => ({
+      id: item.idjenispegawai,
+      nama: item.namajenispegawai,
+    }));
+  } catch (error) {
+    console.error("Error fetching profesi options:", error);
+  }
+};
+
+const fetchJenisPenggunaOptions = async () => {
+  try {
+    const response = await getUserTypes({ limit: 100 });
+    const data = response.data?.[0]?.data || response.data?.data || [];
+    jenisPenggunaOptions.value = data.map((item) => ({
+      id: item.idjenispengguna,
+      nama: item.namajenispengguna,
+    }));
+  } catch (error) {
+    console.error("Error fetching jenis pengguna options:", error);
+  }
+};
+
+const fetchProvinsiOptions = async () => {
+  try {
+    const response = await getRegions({ filter: "tipewilayah=A", limit: 100 });
+    const data = response.data?.[0]?.data || response.data?.data || [];
+    provinsiOptions.value = data.map((item) => ({
+      id: item.idwilayah,
+      kode: item.kodewilayah,
+      nama: item.namawilayah,
+    }));
+  } catch (error) {
+    console.error("Error fetching provinsi options:", error);
+  }
+};
+
+const fetchKabupatenOptions = async (provCode) => {
+  kabupatenLoading.value = true;
+  kabupatenOptions.value = [];
+  try {
+    const response = await getRegions({
+      filter: `tipewilayah=B,kodewilayah=${provCode}`,
+      limit: 500,
+    });
+    const data = response.data?.[0]?.data || response.data?.data || [];
+    // Filter dengan dua format: (37.09) atau (3709)
+    const filteredData = data.filter((item) => {
+      const kode = item.kodewilayah;
+      return (
+        kode.startsWith(provCode + ".") ||
+        (kode.startsWith(provCode) &&
+          kode.length > provCode.length &&
+          !kode.includes("."))
+      );
+    });
+    kabupatenOptions.value = filteredData.map((item) => ({
+      id: item.idwilayah,
+      kode: item.kodewilayah,
+      nama: item.namawilayah,
+    }));
+  } catch (error) {
+    console.error("Error fetching kabupaten options:", error);
+  } finally {
+    kabupatenLoading.value = false;
+  }
+};
+
+const handleProvinceChange = (filters) => {
+  if (selectedProvinsi.value) {
+    filters.kodekabupaten = selectedProvinsi.value;
+    fetchKabupatenOptions(selectedProvinsi.value);
+  } else {
+    filters.kodekabupaten = "";
+    kabupatenOptions.value = [];
+  }
+};
+
+const handleResetFilters = () => {
+  selectedProvinsi.value = "";
+  kabupatenOptions.value = [];
+};
+
+onMounted(() => {
+  fetchProfesiOptions();
+  fetchJenisPenggunaOptions();
+  fetchProvinsiOptions();
+});
 
 const lightboxVisible = ref(false);
 const lightboxImgs = ref("");
@@ -138,13 +360,11 @@ function getActiveUnitKerja(item) {
     return "-";
   }
 
-  // Find the active user work unit
   const activeUserWorkUnit = userWorkUnits.find(
     (uwu) => uwu.statusunitkerja === "Aktif"
   );
 
   if (!activeUserWorkUnit) {
-    // If no active, return the first one's name
     const firstIdUnitKerja = userWorkUnits[0]?.idunitkerja;
     const firstWorkUnit = workUnits?.find(
       (wu) => wu.idunitkerja === firstIdUnitKerja
@@ -152,7 +372,6 @@ function getActiveUnitKerja(item) {
     return firstWorkUnit?.namaunitkerja || "-";
   }
 
-  // Find the matching work unit reference data
   const matchingWorkUnit = workUnits?.find(
     (wu) => wu.idunitkerja === activeUserWorkUnit.idunitkerja
   );
@@ -168,17 +387,14 @@ function getActiveJenjang(item) {
     return "-";
   }
 
-  // Find the active user level
   const activeUserLevel = userLevels.find((ul) => ul.statusjenjang === "Aktif");
 
   if (!activeUserLevel) {
-    // If no active, return the first one's name
     const firstIdJenjang = userLevels[0]?.idjenjang;
     const firstLevel = levels?.find((l) => l.idjenjang === firstIdJenjang);
     return firstLevel?.namajenjang || "-";
   }
 
-  // Find the matching level reference data
   const matchingLevel = levels?.find(
     (l) => l.idjenjang === activeUserLevel.idjenjang
   );
@@ -194,17 +410,14 @@ function getActivePangkat(item) {
     return "-";
   }
 
-  // Find the active user rank
   const activeUserRank = userRanks.find((ur) => ur.status === "Aktif");
 
   let matchingRank = null;
 
   if (!activeUserRank) {
-    // If no active, use the first one
     const firstIdPangkat = userRanks[0]?.idpangkat;
     matchingRank = ranks?.find((r) => r.idpangkat === firstIdPangkat);
   } else {
-    // Find the matching rank reference data
     matchingRank = ranks?.find((r) => r.idpangkat === activeUserRank.idpangkat);
   }
 
@@ -212,7 +425,6 @@ function getActivePangkat(item) {
     return "-";
   }
 
-  // Format: golongan/ruang-pangkat (e.g., IV/a-Pembina)
   const golongan = matchingRank.golongan || "";
   const ruang = matchingRank.ruang || "";
   const pangkat = matchingRank.pangkat || "";

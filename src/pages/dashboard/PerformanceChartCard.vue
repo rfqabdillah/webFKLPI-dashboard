@@ -62,11 +62,14 @@
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
+      <!-- Skeleton Loading -->
+      <div v-if="loading">
+        <BaseSkeleton
+          variant="custom"
+          width="100%"
+          height="280px"
+          rounded="8px"
+        />
       </div>
 
       <!-- Empty State -->
@@ -92,6 +95,7 @@
 
 <script>
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
+import BaseSkeleton from "@/components/base/default/SkeletonLoader/BaseSkeleton.vue";
 import {
   STATUS_TERDAFTAR_ID,
   STATUS_DITERIMA_ID,
@@ -100,6 +104,9 @@ import {
 
 export default {
   name: "PerformanceChartCard",
+  components: {
+    BaseSkeleton,
+  },
   data() {
     return {
       loading: false,

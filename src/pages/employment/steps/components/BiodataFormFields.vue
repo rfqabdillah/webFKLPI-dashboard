@@ -177,14 +177,14 @@
       </div>
 
       <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Jenis Pegawai</label>
+        <label class="form-label fw-semibold">Profesi</label>
         <select
           class="form-select"
           v-model="formData.idjenispegawai"
           :disabled="employeeTypesLoading || isLoading"
         >
           <option value="" disabled>
-            {{ employeeTypesLoading ? "Memuat..." : "Pilih Jenis Pegawai" }}
+            {{ employeeTypesLoading ? "Memuat..." : "Pilih Profesi" }}
           </option>
           <option
             v-for="employeeType in employeeTypesOptions"
@@ -545,7 +545,7 @@ async function fetchEmployeeTypes() {
       response.data?.[0]?.data || response.data?.data || [];
   } catch (error) {
     console.error(error);
-    toast.error("Gagal memuat daftar jenis pegawai");
+    toast.error("Gagal memuat daftar profesi");
   } finally {
     employeeTypesLoading.value = false;
   }
@@ -590,8 +590,11 @@ async function fetchKabupaten(provCode) {
       filter: `tipewilayah=B,kodewilayah=${provCode}`,
       limit: 500,
     });
-    kabupatenOptions.value =
-      response.data?.[0]?.data || response.data?.data || [];
+    const allData = response.data?.[0]?.data || response.data?.data || [];
+    // Filter to only include kabupaten that START with the province code
+    kabupatenOptions.value = allData.filter((item) =>
+      item.kodewilayah.startsWith(provCode + ".")
+    );
 
     if (formData.kodekabupaten && kabupatenOptions.value.length > 0) {
       const currentVal = String(formData.kodekabupaten);

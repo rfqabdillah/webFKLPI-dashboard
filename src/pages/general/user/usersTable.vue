@@ -78,7 +78,10 @@
     </template>
 
     <template #cell(namalevel)="{ item }">
-      <span v-if="item['roles'] && item['roles'].length > 0">
+      <span v-if="item.level && item.level.namalevel">
+        {{ item.level.namalevel }}
+      </span>
+      <span v-else-if="item['roles'] && item['roles'].length > 0">
         {{ item["roles"][0]?.namalevel }}
       </span>
       <span v-else class="text-muted">-</span>
@@ -100,7 +103,7 @@
 <script setup>
 import { defineAsyncComponent, ref, onMounted } from "vue";
 import BaseTable from "@/components/base/BaseTable.vue";
-import { deleteUser, getUsers } from "@/services/referensi/users";
+import { deleteListUser, getListUsers } from "@/services/referensi/listUsers";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 import { getRoles } from "@/services/referensi/roles";
 import vueEasyLightbox from "vue-easy-lightbox";
@@ -113,8 +116,8 @@ const UserDetailModal = defineAsyncComponent(() =>
 );
 
 const userApi = {
-  get: getUsers,
-  delete: deleteUser,
+  get: getListUsers,
+  delete: deleteListUser,
 };
 
 const columns = [

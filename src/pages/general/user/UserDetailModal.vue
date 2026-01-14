@@ -2,7 +2,7 @@
   <BaseDetailModal
     title="Detail Data Pengguna"
     :item-to-view="itemToView"
-    :api-detail-fn="getDetailUser"
+    :api-detail-fn="getDetailListUser"
     id-key="idpengguna"
     @close="$emit('close')"
   >
@@ -126,7 +126,7 @@
 
 <script setup>
 import BaseDetailModal from "@/components/base/BaseDetailModal.vue";
-import { getDetailUser } from "@/services/referensi/users";
+import { getDetailListUser } from "@/services/referensi/listUsers";
 import { formatDate } from "@/utils/formatDate";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 

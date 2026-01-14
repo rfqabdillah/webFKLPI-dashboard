@@ -1,7 +1,7 @@
 <template>
   <BaseTable
-    title="Daftar Jenis Pegawai"
-    entityName="Jenis Pegawai" 
+    title="Daftar Profesi"
+    entityName="Profesi"
     :apiService="statusApi"
     :FormModalComponent="EmployeeTypeFormModal"
     :columns="columns"
@@ -14,13 +14,15 @@
     <template #filters="{ filters }">
       <div class="row g-3">
         <div class="col-md-4">
-          <label for="filterRankName" class="form-label text-dark fw-semibold">Nama Jenis Pegawai</label>
+          <label for="filterRankName" class="form-label text-dark fw-semibold"
+            >Nama Profesi</label
+          >
           <input
             type="text"
             id="filterTypesName"
             class="form-control"
             v-model="filters.namajenispegawai"
-            placeholder="Masukkan jenis pegawai"
+            placeholder="Masukkan profesi"
           />
         </div>
       </div>
@@ -29,12 +31,15 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue';
-import BaseTable from '@/components/base/BaseTable.vue';
-import { deleteEmployeeType, getEmployeeTypes } from '@/services/referensi/employeeTypes';
+import { defineAsyncComponent } from "vue";
+import BaseTable from "@/components/base/BaseTable.vue";
+import {
+  deleteEmployeeType,
+  getEmployeeTypes,
+} from "@/services/referensi/employeeTypes";
 
-const EmployeeTypeFormModal = defineAsyncComponent(() => 
-  import('./EmployeeTypeFormModal.vue')
+const EmployeeTypeFormModal = defineAsyncComponent(() =>
+  import("./EmployeeTypeFormModal.vue")
 );
 
 const statusApi = {
@@ -42,12 +47,9 @@ const statusApi = {
   delete: deleteEmployeeType,
 };
 
-const columns = [
-  { key: 'namajenispegawai', label: 'Jenis Pegawai', sortable: true },
-];
+const columns = [{ key: "namajenispegawai", label: "Profesi", sortable: true }];
 
 const initialFilters = {
   namajenispegawai: "",
-
 };
 </script>

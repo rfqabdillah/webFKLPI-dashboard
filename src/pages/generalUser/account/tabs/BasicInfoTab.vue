@@ -811,8 +811,11 @@ async function fetchKabupaten(provCode) {
       filter: `tipewilayah=B,kodewilayah=${provCode}`,
       limit: 500,
     });
-    kabupatenOptions.value =
-      response.data?.[0]?.data || response.data?.data || [];
+    const allData = response.data?.[0]?.data || response.data?.data || [];
+    // Filter to only include kabupaten that START with the province code
+    kabupatenOptions.value = allData.filter((item) =>
+      item.kodewilayah.startsWith(provCode + ".")
+    );
   } catch (error) {
     console.error(error);
     toast.error(t("Failed to load districts"));

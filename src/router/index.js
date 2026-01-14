@@ -134,7 +134,7 @@ const routes =[
         ]
       },
       {
-        path: '',
+        path: '/',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -490,11 +490,11 @@ const routes =[
             }
           },
           {
-            path: 'employee-types',
+            path: 'professions',
             name: 'Personnel_EmployeTypes',
             component: IndexEmployeeTypes,
             meta: {
-              title: 'Jenis Pegawai',
+              title: 'Profesi',
             }
           },
           {

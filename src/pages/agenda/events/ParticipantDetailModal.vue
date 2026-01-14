@@ -81,7 +81,7 @@
               <dd>{{ item.kodekabupaten || "-" }}</dd>
               <dt>Jenis Pengguna</dt>
               <dd>{{ item["user-types"]?.[0]?.namajenispengguna || "-" }}</dd>
-              <dt>Jenis Pegawai</dt>
+              <dt>Profesi</dt>
               <dd>
                 {{ item["employee-types"]?.[0]?.namajenispegawai || "-" }}
               </dd>

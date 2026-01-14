@@ -238,6 +238,9 @@ const props = defineProps({
   initialSortDirection: { type: String, default: "asc" },
 });
 
+// === Emits ===
+const emit = defineEmits(["reset-filters"]);
+
 // === State ===
 const toast = useToast();
 const itemsList = ref([]);
@@ -347,7 +350,16 @@ async function fetchData() {
     const pagination = responseData?.meta?.pagination || {};
 
     itemsList.value = data;
-    totalItems.value = pagination.total || data.length;
+    // Handle inconsistent API: if total seems wrong, calculate from last_page
+    const apiTotal = pagination.total || 0;
+    const calculatedTotal =
+      (pagination.last_page || 1) * (pagination.per_page || perPage.value);
+    // Use calculated total if it's larger (API total seems incorrect)
+    totalItems.value = Math.max(
+      apiTotal,
+      data.length,
+      calculatedTotal > apiTotal ? calculatedTotal : apiTotal
+    );
   } catch (err) {
     console.error(err);
     toast.error(`Gagal memuat data ${props.title}`);
@@ -404,6 +416,7 @@ function resetFilters() {
   sortColumn.value = props.initialSortColumn;
   sortDirection.value = props.initialSortDirection;
   currentPage.value = 1;
+  emit("reset-filters");
 }
 
 function changePage(page) {

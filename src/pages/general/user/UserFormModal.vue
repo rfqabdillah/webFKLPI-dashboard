@@ -594,16 +594,19 @@ async function fetchKabupaten(provCode) {
     };
 
     const response = await getRegions(params);
+    let allData = [];
     if (response.data && Array.isArray(response.data)) {
       const rootData = response.data[0];
       if (rootData.data) {
-        kabupatenOptions.value = rootData.data;
+        allData = rootData.data;
       }
     } else if (response.data && response.data.data) {
-      kabupatenOptions.value = response.data.data;
+      allData = response.data.data;
     }
+    kabupatenOptions.value = allData.filter((item) =>
+      item.kodewilayah.startsWith(provCode + ".")
+    );
 
-    // Fix for mismatched data formats (e.g. "3201" vs "32.01")
     if (formData.kodekabupaten && kabupatenOptions.value.length > 0) {
       const currentVal = String(formData.kodekabupaten);
       const exists = kabupatenOptions.value.some(
@@ -611,7 +614,6 @@ async function fetchKabupaten(provCode) {
       );
 
       if (!exists) {
-        // Try to match by removing dots
         const cleanCurrent = currentVal.replace(/\./g, "");
         const match = kabupatenOptions.value.find(
           (k) => k.kodewilayah.replace(/\./g, "") === cleanCurrent
@@ -812,7 +814,7 @@ async function submitForm() {
   data.append("record[nik]", formData.nik || "");
   data.append("record[gelardepan]", formData.gelardepan || "");
   data.append("record[gelarbelakang]", formData.gelarbelakang || "");
-  data.append("record[alamat]", formData.alamat || "");
+  data.append("record[alamat]s", formData.alamat || "");
   data.append("record[kodekabupaten]", formData.kodekabupaten || "");
   data.append("record[nip]", formData.nip || "");
   data.append("record[no_karpeg]", formData.no_karpeg || "");

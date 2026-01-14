@@ -32,9 +32,11 @@
           <Sidebar @clicked="sidebar_toggle" />
         </div>
         <div class="page-body" @click="hidesecondmenu()">
-          <transition name="fadeIn" enter-active-class="animated fadeIn">
-            <router-view class="view"></router-view>
-          </transition>
+          <router-view v-slot="{ Component }">
+            <transition name="fadeIn" enter-active-class="animated fadeIn">
+              <component :is="Component" class="view" />
+            </transition>
+          </router-view>
         </div>
         <Footer />
       </div>
