@@ -3,9 +3,7 @@
     <div class="card-body">
       <!-- Search -->
       <div class="mb-4">
-        <label class="form-label fw-semibold">{{
-          $t("Search Programs")
-        }}</label>
+        <label class="form-label fw-semibold">{{ $t("Search Events") }}</label>
         <div class="input-group">
           <span class="input-group-text bg-light border-end-0">
             <i class="fa fa-search text-muted"></i>
@@ -14,14 +12,14 @@
             v-model="searchQuery"
             type="text"
             class="form-control border-start-0 ps-0"
-            :placeholder="$t('Search Programs')"
+            :placeholder="$t('Search Events')"
           />
         </div>
       </div>
 
       <!-- Recent Posts -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3">{{ $t("Recent Programs") }}</h6>
+        <h6 class="fw-semibold mb-3">{{ $t("Recent Events") }}</h6>
 
         <div v-if="isLoading">
           <div v-for="n in 3" :key="n" class="d-flex align-items-center mb-3">
@@ -43,7 +41,7 @@
         </div>
 
         <div v-else-if="eventsRecentPost.length === 0" class="text-muted small">
-          {{ $t("No recent Programs") }}
+          {{ $t("No recent Events") }}
         </div>
 
         <div v-else>
@@ -61,7 +59,7 @@
             />
             <div class="ms-3">
               <router-link
-                :to="`/program-detail/${item.slug || item.id}`"
+                :to="`/event-detail/${item.slug || item.id}`"
                 class="fw-medium text-dark text-decoration-none hover-primary d-block"
                 style="font-size: 14px"
               >

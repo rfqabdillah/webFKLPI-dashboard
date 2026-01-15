@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Breadcrumbs main="Program" :title="$route.meta.title" />
+    <Breadcrumbs main="Events" :title="$route.meta.title" />
     <div class="container-fluid">
       <div class="row">
         <AgendaDetailPage />

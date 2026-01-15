@@ -1,7 +1,7 @@
 <template>
   <BaseTable
-    title="Daftar Pegawai"
-    entityName="Pegawai"
+    title="Daftar Productivity Champions"
+    entityName="Productivity Champions"
     :apiService="employmentApi"
     :FormModalComponent="EmploymentFormModal"
     :DetailModalComponent="EmploymentDetailModal"
@@ -24,7 +24,7 @@
             id="filterNama"
             class="form-control"
             v-model="filters.nama"
-            placeholder="Masukkan nama pegawai"
+            placeholder="Masukkan nama"
           />
         </div>
         <div class="col-md-4">

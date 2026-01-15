@@ -62,18 +62,8 @@
         </div>
       </div>
 
-      <!-- Skeleton Loading -->
-      <div v-if="loading">
-        <BaseSkeleton
-          variant="custom"
-          width="100%"
-          height="280px"
-          rounded="8px"
-        />
-      </div>
-
       <!-- Empty State -->
-      <div v-else-if="!hasData" class="text-center py-5">
+      <div v-if="!hasData" class="text-center py-5">
         <div class="mb-3">
           <i class="fa fa-line-chart text-muted f-30"></i>
         </div>
@@ -95,7 +85,6 @@
 
 <script>
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
-import BaseSkeleton from "@/components/base/default/SkeletonLoader/BaseSkeleton.vue";
 import {
   STATUS_TERDAFTAR_ID,
   STATUS_DITERIMA_ID,
@@ -104,12 +93,8 @@ import {
 
 export default {
   name: "PerformanceChartCard",
-  components: {
-    BaseSkeleton,
-  },
   data() {
     return {
-      loading: false,
       period: "week",
       rawData: [],
       totalRegistrations: 0,
@@ -206,14 +191,11 @@ export default {
       }
     },
     async fetchData() {
-      this.loading = true;
       try {
         const response = await getEventUsers({ per_page: 500 });
         this.processData(response);
       } catch (error) {
         console.error("Error fetching performance data:", error);
-      } finally {
-        this.loading = false;
       }
     },
     processData(response) {

@@ -11,7 +11,7 @@
           <i class="fa fa-exclamation-circle text-danger fa-3x mb-3"></i>
           <p class="text-danger">{{ error }}</p>
           <router-link to="/list-agenda" class="btn btn-outline-primary">
-            {{ $t("Back to Programs List") }}
+            {{ $t("Back to Event List") }}
           </router-link>
         </div>
 
@@ -109,7 +109,11 @@
                     class="status-badge"
                     :class="getStatusClass(registrationStatusId)"
                   >
-                    {{ registrationStatus }}
+                    {{
+                      $i18n.locale === "en"
+                        ? registrationStatusEn
+                        : registrationStatus
+                    }}
                   </span>
                 </div>
                 <p class="status-message">
@@ -245,6 +249,7 @@ const isRegistered = ref(false);
 const registrationId = ref(null);
 const registrationStatusId = ref(null);
 const registrationStatus = ref("Terdaftar");
+const registrationStatusEn = ref("Registered");
 const error = ref(null);
 const statusOptions = ref([]);
 
@@ -366,11 +371,25 @@ const checkRegistration = async () => {
         statusName = foundStatus?.namastatus || foundStatus?.nama_status;
       }
 
-      registrationStatus.value = statusName || "Terdaftar";
+      // Fallback manual translation
+      const statusMapping = {
+        Terdaftar: "Registered",
+        Diterima: "Accepted",
+        Ditolak: "Rejected",
+        Selesai: "Completed",
+        Menunggu: "Pending",
+      };
+
+      const finalStatusName = statusName || "Terdaftar";
+      registrationStatus.value = finalStatusName;
+      registrationStatusEn.value =
+        statusMapping[finalStatusName] || "Registered";
     } else {
       isRegistered.value = false;
       registrationId.value = null;
       registrationStatusId.value = null;
+      registrationStatus.value = "";
+      registrationStatusEn.value = "";
     }
   } catch (err) {
     console.error("Error checking registration:", err);

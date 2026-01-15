@@ -25,21 +25,7 @@
       </div>
     </div>
     <div class="card-body pt-0">
-      <!-- Skeleton Loading -->
-      <div v-if="loading">
-        <div class="mb-3">
-          <BaseSkeleton variant="heading" width="180px" class="mb-1" />
-          <BaseSkeleton variant="text" width="120px" height="12px" />
-        </div>
-        <BaseSkeleton
-          variant="custom"
-          width="100%"
-          height="320px"
-          rounded="8px"
-        />
-      </div>
-
-      <div v-else-if="!series[0].data.length" class="text-center py-5">
+      <div v-if="!series[0].data.length" class="text-center py-5">
         <div class="mb-3">
           <i class="fa fa-bar-chart text-muted f-30"></i>
         </div>
@@ -62,16 +48,11 @@
 
 <script>
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
-import BaseSkeleton from "@/components/base/default/SkeletonLoader/BaseSkeleton.vue";
 
 export default {
   name: "AgendaStatisticsCard",
-  components: {
-    BaseSkeleton,
-  },
   data() {
     return {
-      loading: false,
       series: [
         {
           name: "Peserta",
@@ -162,14 +143,11 @@ export default {
   },
   methods: {
     async fetchData() {
-      this.loading = true;
       try {
         const response = await getEventUsers({ per_page: 100 });
         this.processData(response);
       } catch (error) {
         console.error("Error fetching trending agendas:", error);
-      } finally {
-        this.loading = false;
       }
     },
     processData(response) {

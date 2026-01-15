@@ -1,6 +1,5 @@
 <template>
-  <SkeletonGroup v-if="isLoading" type="dashboard-calendar" />
-  <div v-else class="card">
+  <div class="card">
     <div class="card-header pb-0">
       <h5 class="mb-3 f-w-600">Kalender Agenda</h5>
       <div class="d-flex justify-content-between align-items-center">
@@ -156,15 +155,10 @@
 <script>
 import { getEvents } from "@/services/general/events/events";
 import { formatDate } from "@/utils/formatDate";
-import SkeletonGroup from "@/components/base/default/SkeletonLoader/SkeletonGroup.vue";
 
 export default {
-  components: {
-    SkeletonGroup,
-  },
   data() {
     return {
-      isLoading: true,
       displayDate: new Date(),
       weekDays: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
       months: [
@@ -223,7 +217,6 @@ export default {
   },
   methods: {
     async fetchAgenda() {
-      this.isLoading = true;
       try {
         const response = await getEvents();
         if (
@@ -237,8 +230,6 @@ export default {
         }
       } catch (error) {
         console.error("Failed to fetch agenda:", error);
-      } finally {
-        this.isLoading = false;
       }
     },
     formatDate(date) {

@@ -9,7 +9,9 @@
           <li class="breadcrumb-item">
             <a href="/api/api"><i class="fa fa-home"></i></a>
           </li>
-          <li v-if="main" class="breadcrumb-item">{{ $t(main) }}</li>
+          <li v-if="main && main !== title" class="breadcrumb-item">
+            {{ $t(main) }}
+          </li>
           <li class="breadcrumb-item active breadcrumb-title">
             {{ $t(title) }}
           </li>

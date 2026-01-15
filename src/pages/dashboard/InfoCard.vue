@@ -1,10 +1,7 @@
 <template>
   <div>
-    <!-- Skeleton Loading -->
-    <SkeletonGroup v-if="isLoading" type="dashboard-stats" />
-
     <!-- Actual Content -->
-    <div v-else class="row">
+    <div class="row">
       <div
         v-for="(stat, index) in stats"
         :key="index"
@@ -57,7 +54,6 @@ import { getUsers } from "@/services/referensi/users";
 import { getEvents } from "@/services/general/events/events";
 import { getNews } from "@/services/general/website/news/news";
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
-import SkeletonGroup from "@/components/base/default/SkeletonLoader/SkeletonGroup.vue";
 import {
   STATUS_TERDAFTAR_ID,
   STATUS_DITERIMA_ID,
@@ -66,12 +62,8 @@ import {
 
 export default {
   name: "InfoCard",
-  components: {
-    SkeletonGroup,
-  },
   data() {
     return {
-      isLoading: true,
       stats: [
         // Row 1
         {
@@ -125,7 +117,6 @@ export default {
   },
   methods: {
     async fetchData() {
-      this.isLoading = true;
       try {
         const [
           userRes,
@@ -151,8 +142,6 @@ export default {
         this.stats[5].value = this.extractCount(rejectedRes);
       } catch (error) {
         console.error("Error fetching dashboard counts:", error);
-      } finally {
-        this.isLoading = false;
       }
     },
     extractCount(response) {

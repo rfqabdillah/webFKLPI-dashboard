@@ -15,29 +15,29 @@ export var menuItems = {
       "active": false
     },
     {
-      "title": "Kepegawaian",
+      "title": "Productivity Champions",
       "icon": "stroke-user",
       "iconf": "fill-user",
       "type": "link",
-      "path": "/employments",
+      "path": "/productivity-champions",
       "active": false
     },
     {
-      "title": "Program",
+      "title": "Agenda",
       "icon": "stroke-calendar",
       "iconf":"settings-hex",
       "type": "sub",
       "active": false,
       "children": [
         {
-          "path": "/programs",
-          "title": "Daftar Program",
+          "path": "/events",
+          "title": "Daftar Kegiatan",
           "type": "link",
           "active":false
         },
         {
-          "path": "/program-categories",
-          "title": "Kategori Program",
+          "path": "/event-categories",
+          "title": "Kategori Kegiatan",
           "type": "link",
           "active":false
         },
@@ -126,10 +126,23 @@ export var menuItems = {
         ]
       },
       {
-        "path": "/website/videos",
         "title": "Video",
-        "type": "link",
-        "active":false
+        "type": "sub",
+        "active": false,
+        "children": [
+          {
+            "path": "/website/videos",
+            "title": "Daftar Video",
+            "type": "link",
+            "active": false
+          },
+          {
+            "path": "/website/video-categories",
+            "title": "Kategori Video",
+            "type": "link",
+            "active": false
+          }
+        ]
       },
       {
         "title": "Profil",
@@ -181,20 +194,20 @@ export var menuItems = {
       "allowedLevels": [userLevelUmum]
     },
     {
-      "title": "Program Saya",
+      "title": "My Events",
       "icon": "stroke-big-checklist",
       "iconf": "fill-big-checklist",
       "type": "link",
-      "path": "/my-program",
+      "path": "/my-events",
       "active": false,
       "allowedLevels": [userLevelUmum]
     },
     {
-      "title": "Jadwal Program",
+      "title": "Events Schedule",
       "icon": "stroke-calendar",
       "iconf": "fill-calendar",
       "type": "link",
-      "path": "/list-program",
+      "path": "/list-events",
       "active": false,
       "allowedLevels": [userLevelUmum]
     },

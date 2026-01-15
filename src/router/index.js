@@ -24,7 +24,8 @@ import IndexDocumentTypes from "@/pages/documentTypes/index.vue";
 import IndexOrganizationStructure from "@/pages/profiles/organizationStructure/index.vue"
 import IndexGallery from "@/pages/gallery/gallery/index.vue";
 import IndexPhotoGallery from "@/pages/gallery/photoGallery/index.vue";
-import IndexVideos from "@/pages/videos/index.vue";
+import IndexVideos from "@/pages/videos/videos/index.vue";
+import IndexVideoCategories from "@/pages/videos/videoCategories/index.vue";
 import IndexBanners from "@/pages/settings/banners/index.vue";
 import IndexMenus from "@/pages/settings/menu/index.vue";
 import IndexContacts from "@/pages/settings/contacts/index.vue";
@@ -117,7 +118,7 @@ const routes =[
         ]
       },
       {
-        path: '/employments',
+        path: '/productivity-champions',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -125,10 +126,10 @@ const routes =[
         children: [
           {
             path: "",
-            name: "Employment",
+            name: "Productivity Champions",
             component: IndexEmployments,
             meta: {
-              title: "Kepegawaian",
+              title: "Productivity Champions",
             },
           },
         ]
@@ -141,19 +142,19 @@ const routes =[
         },
         children: [
           {
-            path: "programs",
+            path: "events",
             name: "Agenda_events",
             component: IndexEvents,
             meta: {
-              title: "Daftar Program",
+              title: "Daftar Kegiatan",
             },
           },
           {
-            path: "program-categories",
+            path: "event-categories",
             name: "Agenda_eventCategories",
             component: IndexEventCategories,
             meta: {
-              title: "Kategori Program",
+              title: "Kategori Kegiatan",
             },
           },
         ]
@@ -263,6 +264,14 @@ const routes =[
             },
           },
           {
+            path: "video-categories",
+            name: "Video Categories",
+            component: IndexVideoCategories,
+            meta: {
+              title: "Kategori Vidio",
+            },
+          },
+          {
             path: "profiles/organization-structure",
             name: "Profile_organization Structure",
             component: IndexOrganizationStructure,
@@ -314,7 +323,7 @@ const routes =[
         ]
       },
       {
-        path: '/list-program',
+        path: '/list-events',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -325,14 +334,14 @@ const routes =[
             name: "AgendaPage",
             component: IndexAgendaPage,
             meta: {
-              title: "Jadwal Program",
+              title: "Events Schedule",
             },
           },
         ]
       },
 
       {
-        path: '/program-detail/:id',
+        path: '/event-detail/:id',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -343,14 +352,14 @@ const routes =[
             name: "AgendaDetailPage",
             component: IndexAgendaDetailPage,
             meta: {
-              title: "Detail Program",
+              title: "Event Detail",
             },
           },
         ]
       },
 
       {
-        path: '/my-program',
+        path: '/my-events',
         component: Body,
         meta: {
           requiresAuth: true,
@@ -361,7 +370,7 @@ const routes =[
             name: "MyAgendaPage",
             component: IndexMyAgendaPage,
             meta: {
-              title: "Program Saya",
+              title: "My Events",
             },
           },
         ]

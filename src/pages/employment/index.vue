@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Breadcrumbs main="Kepegawaian" :title="$route.meta.title" />
+    <Breadcrumbs main="Productivity Champions" :title="$route.meta.title" />
     <div class="container-fluid">
       <div class="row">
         <employments-table />

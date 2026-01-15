@@ -2,8 +2,6 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header pb-3">
-        <h5 class="mb-3">{{ $t("Agenda Saya") }}</h5>
-
         <!-- Search & Filter Row -->
         <div class="row g-3">
           <!-- Search by Title -->
@@ -16,7 +14,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="form-control"
-                :placeholder="$t('Search Programs')"
+                :placeholder="$t('Search Events')"
                 @input="onSearchChange"
               />
               <button
@@ -54,7 +52,7 @@
           >
             <span class="text-muted" v-if="!isLoading">
               <strong>{{ filteredAgenda.length }}</strong>
-              {{ $t("Programs found") }}
+              {{ $t("Events found") }}
             </span>
           </div>
         </div>
@@ -88,10 +86,10 @@
         <div v-else-if="filteredAgenda.length === 0" class="text-center py-5">
           <i class="fa fa-calendar-o text-muted fa-3x mb-3"></i>
           <p class="text-muted" v-if="searchQuery || selectedStatus">
-            {{ $t("No Programs match your search") }}
+            {{ $t("No Events match your search") }}
           </p>
           <p class="text-muted" v-else>
-            {{ $t("You have not registered for any Programs yet") }}
+            {{ $t("You have not registered for any Events yet") }}
           </p>
           <button
             v-if="searchQuery || selectedStatus"
@@ -105,7 +103,7 @@
             to="/list-agenda"
             class="btn btn-primary"
           >
-            {{ $t("View Programs List") }}
+            {{ $t("View Events List") }}
           </router-link>
         </div>
 
@@ -120,7 +118,7 @@
               :show-status="true"
               :show-cancel-button="true"
               :is-cancelling="cancellingId === item.id_agenda_pengguna"
-              :path="`/agenda-detail/${item.events?.slug || item.slug}`"
+              :path="`/event-detail/${item.events?.slug || item.slug}`"
               @cancel="handleCancelRegistration"
             />
           </div>
@@ -284,8 +282,17 @@ const mapAgendaToCard = (item) => {
   const statusId = item.id_status || item.idstatus;
   const statusName =
     status?.nama_status || status?.namastatus || getStatusNameById(statusId);
-  const statusNameEn =
-    status?.nama_status_en || status?.namastatus_en || statusName;
+
+  // Manual translation mapping
+  const statusMapping = {
+    Terdaftar: "Registered",
+    Diterima: "Accepted",
+    Ditolak: "Rejected",
+    Selesai: "Completed",
+    Menunggu: "Pending",
+  };
+
+  const statusNameEn = statusMapping[statusName] || "Registered";
 
   return {
     id: agendaId,
