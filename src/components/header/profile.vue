@@ -53,6 +53,7 @@
 
 <script>
 import apiClient from "@/services/users";
+import { updateUser } from "@/services/referensi/users";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 export default {
@@ -173,6 +174,26 @@ export default {
         try {
           const token = localStorage.getItem("token");
           if (token) {
+            // Update status user menjadi Tidak Aktif (Lakukan sebelum logout agar token masih valid)
+            try {
+              const userDataStr = localStorage.getItem("userData");
+              const userData = userDataStr ? JSON.parse(userDataStr) : null;
+              const userId =
+                userData?.data?.[0]?.id_pengguna || userData?.data?.[0]?.id;
+
+              if (userId) {
+                const formData = new FormData();
+                formData.append("record[status]", "Tidak Aktif");
+                formData.append("_method", "PUT");
+                await updateUser(userId, formData);
+              }
+            } catch (err) {
+              console.error(
+                "Gagal update status logout (melanjutkan logout):",
+                err,
+              );
+            }
+
             await apiClient.get("/logout", {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -182,7 +203,7 @@ export default {
         } catch (err) {
           if (err.response && err.response.status === 401) {
             console.warn(
-              "Sesi sudah berakhir di server, membersihkan data lokal"
+              "Sesi sudah berakhir di server, membersihkan data lokal",
             );
           } else {
             console.error("Gagal menghubungi server untuk logout:", err);
@@ -195,7 +216,7 @@ export default {
           this.$swal.fire(
             this.$t("Success"),
             this.$t("You have successfully logged out"),
-            "success"
+            "success",
           );
         }
       }

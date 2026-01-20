@@ -7,7 +7,7 @@ import { onMounted, onUnmounted } from "vue";
 import { useIdleLogout } from "@/utils/useIdleLogout";
 import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 
-useIdleLogout(30);
+useIdleLogout();
 
 async function setupAppIdentity() {
   try {

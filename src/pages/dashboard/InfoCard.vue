@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { getUsers } from "@/services/referensi/users";
+import { getListUsers } from "@/services/referensi/listUsers";
 import { getEvents } from "@/services/general/events/events";
 import { getNews } from "@/services/general/website/news/news";
 import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
@@ -67,14 +67,14 @@ export default {
       stats: [
         // Row 1
         {
-          label: "Jumlah Pegawai",
+          label: "Jumlah Champions",
           value: 0,
           icon: "stroke-user",
           color: "primary",
           percent: 75,
         },
         {
-          label: "Agenda Aktif",
+          label: "Kegiatan Aktif",
           value: 0,
           icon: "stroke-calendar",
           color: "purple",
@@ -89,21 +89,21 @@ export default {
         },
         // Row 2
         {
-          label: "Pengguna Terdaftar",
+          label: "Champions Terdaftar",
           value: 0,
           icon: "stroke-clock",
           color: "cyan",
           percent: 70,
         },
         {
-          label: "Pengguna Diterima",
+          label: "Champions Diterima",
           value: 0,
           icon: "fa-solid fa-check",
           color: "success",
           percent: 45,
         },
         {
-          label: "Pengguna Ditolak",
+          label: "Champions Ditolak",
           value: 0,
           icon: "fa-solid fa-xmark",
           color: "danger",
@@ -126,7 +126,7 @@ export default {
           acceptedRes,
           rejectedRes,
         ] = await Promise.all([
-          getUsers(),
+          getListUsers(),
           getEvents({ filter: "tayang=Tayang" }),
           getNews({ filter: "tayang=Tayang" }),
           getEventUsers({ filter: `id_status=${STATUS_TERDAFTAR_ID}` }),
@@ -176,7 +176,7 @@ export default {
 .svg-icon {
   width: 24px;
   height: 24px;
-  stroke: currentColor; /* Default to stroke */
+  stroke: currentColor;
   fill: none;
   vertical-align: middle;
 }

@@ -8,8 +8,8 @@
     />
 
     <BaseTable
-      title="Daftar Program"
-      entityName="Program"
+      title="Daftar Kegiatan"
+      entityName="Kegiatan"
       :apiService="agendaApi"
       :FormModalComponent="AgendaFormModal"
       :DetailModalComponent="EventDetailModal"
@@ -31,12 +31,12 @@
               id="filterJudul"
               class="form-control"
               v-model="filters.judul"
-              placeholder="Masukkan judul agenda"
+              placeholder="Masukkan judul kegiatan"
             />
           </div>
           <div class="col-md-4">
             <label for="filterKategori" class="form-label text-dark fw-semibold"
-              >Kategori Agenda</label
+              >Kategori Kegiatan</label
             >
             <input
               type="text"

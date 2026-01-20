@@ -152,6 +152,7 @@ import { useToast } from "vue-toastification";
 import { Form, Field } from "vee-validate";
 import * as yup from "yup";
 import { login as loginAPI } from "@/services/auth";
+import { updateUser } from "@/services/referensi/users";
 import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
 import { userLevelUmum } from "@/constants/userLevels";
 
@@ -207,11 +208,24 @@ async function onSubmit() {
       const userDataToSave = userProfile ? [userProfile] : [];
       localStorage.setItem(
         "userData",
-        JSON.stringify({ data: userDataToSave })
+        JSON.stringify({ data: userDataToSave }),
       );
 
       const userName = userProfile?.nama || "Pengguna";
       toast.success(`Login berhasil! Selamat datang, ${userName}`);
+
+      // Update status user menjadi Aktif
+      try {
+        const userId = userProfile?.id_pengguna || userProfile?.id;
+        if (userId) {
+          const formData = new FormData();
+          formData.append("record[status]", "Aktif");
+          formData.append("_method", "PUT");
+          await updateUser(userId, formData);
+        }
+      } catch (err) {
+        console.error("Gagal update status login:", err);
+      }
 
       const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
       const redirectPath = userLevel === userLevelUmum ? "/my-profile" : "/";
@@ -221,7 +235,7 @@ async function onSubmit() {
       router.push(redirectPath);
     } else {
       toast.error(
-        responseData.message || "Login gagal. Token tidak ditemukan."
+        responseData.message || "Login gagal. Token tidak ditemukan.",
       );
     }
   } catch (error) {

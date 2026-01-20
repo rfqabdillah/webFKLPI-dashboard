@@ -2,7 +2,7 @@
   <div class="card">
     <div class="card-header pb-0 card-no-border">
       <div class="header-top">
-        <h5>Log Pengguna Online (< 1 Jam)</h5>
+        <h5>Log Pengguna Online</h5>
       </div>
     </div>
     <div class="card-body pt-0">
@@ -91,19 +91,34 @@ export default {
       const now = new Date();
       const oneHour = 60 * 60 * 1000;
 
-      // Filter users who logged in within the last 1 hour
       let filtered = this.allUsers.filter((u) => {
-        const d = new Date(u.lastlogin);
-        return now - d <= oneHour;
-      });
+        const isAktif = u.status === "Aktif";
 
-      filtered.sort((a, b) => new Date(b.lastlogin) - new Date(a.lastlogin));
+        let isRecent = false;
+        if (u.lastlogin) {
+          const d = new Date(u.lastlogin);
+          isRecent = now - d <= oneHour;
+        }
+
+        return isAktif || isRecent;
+      });
+      filtered.sort((a, b) => {
+        const aAktif = a.status === "Aktif";
+        const bAktif = b.status === "Aktif";
+
+        if (aAktif && !bAktif) return -1;
+        if (!aAktif && bAktif) return 1;
+
+        const dateA = new Date(a.lastlogin || 0);
+        const dateB = new Date(b.lastlogin || 0);
+        return dateB - dateA;
+      });
 
       this.onlineUsers = filtered.slice(0, 50);
     },
     async fetchUsers() {
       try {
-        const response = await getUsers();
+        const response = await getUsers({ limit: 100 });
         if (response && response.data) {
           let usersData = [];
           if (Array.isArray(response.data)) {

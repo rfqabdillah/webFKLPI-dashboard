@@ -187,23 +187,42 @@ export default {
       });
 
       let sortedAgendas = Object.values(agendaCounts).sort(
-        (a, b) => b.count - a.count
+        (a, b) => b.count - a.count,
       );
       sortedAgendas = sortedAgendas.slice(0, 5);
 
       if (sortedAgendas.length > 0) {
+        const counts = sortedAgendas.map((item) => item.count);
         this.series = [
           {
             name: "Peserta",
-            data: sortedAgendas.map((item) => item.count),
+            data: counts,
           },
         ];
+
+        // Calculate Y-axis scaling (Multiple of 10)
+        const maxVal = Math.max(...counts);
+        let targetMax = Math.ceil(maxVal / 10) * 10;
+        if (targetMax === 0) targetMax = 10; // Default min 10
+        let tickAmount = targetMax / 10;
+
+        // Limiting ticks if count forces it too high (e.g. > 100)
+        // If > 10 ticks, we might want to step by 20 or 50, but keeping it simple for now
+        // as per "Kelipatan 10" request.
+        // If tickAmount > 10, ApexCharts handles density well, or we can clamp tickAmount.
+        if (tickAmount > 10) tickAmount = undefined; // Let ApexCharts decide density but keep max
 
         this.chartOptions = {
           ...this.chartOptions,
           xaxis: {
             ...this.chartOptions.xaxis,
             categories: sortedAgendas.map((item) => item.title),
+          },
+          yaxis: {
+            ...this.chartOptions.yaxis,
+            max: targetMax,
+            min: 0,
+            tickAmount: tickAmount,
           },
         };
       } else {

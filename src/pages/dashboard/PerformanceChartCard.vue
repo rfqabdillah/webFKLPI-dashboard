@@ -204,7 +204,6 @@ export default {
         return;
       }
 
-      // Extract data array
       let data = [];
       if (Array.isArray(response.data)) {
         if (
@@ -222,7 +221,7 @@ export default {
 
       this.rawData = data;
 
-      // Calculate date range
+      // date range
       const days = this.period === "week" ? 7 : 30;
       const today = new Date();
       today.setHours(23, 59, 59, 999);
@@ -231,7 +230,7 @@ export default {
       startDate.setDate(startDate.getDate() - days + 1);
       startDate.setHours(0, 0, 0, 0);
 
-      // Initialize daily counts
+      // daily counts
       const dailyData = {};
       for (let i = 0; i < days; i++) {
         const date = new Date(startDate);
@@ -245,7 +244,6 @@ export default {
         };
       }
 
-      // Count registrations by date and status
       let totalReg = 0;
       let totalAcc = 0;
       let totalRej = 0;
@@ -261,7 +259,6 @@ export default {
 
         const statusId = entry.id_status;
 
-        // Count by status
         if (statusId === STATUS_DITERIMA_ID) {
           dailyData[key].accepted++;
           totalAcc++;
@@ -274,12 +271,10 @@ export default {
         }
       });
 
-      // Update totals
       this.totalRegistrations = totalReg + totalAcc + totalRej;
       this.totalAccepted = totalAcc;
       this.totalRejected = totalRej;
 
-      // Prepare chart data
       const categories = [];
       const registeredData = [];
       const acceptedData = [];
@@ -301,11 +296,25 @@ export default {
         { name: "Ditolak", data: rejectedData },
       ];
 
+      const allValues = [...registeredData, ...acceptedData, ...rejectedData];
+      const maxVal = allValues.length > 0 ? Math.max(...allValues) : 0;
+      let targetMax = Math.ceil(maxVal / 10) * 10;
+      if (targetMax === 0) targetMax = 10;
+      let tickAmount = targetMax / 10;
+
+      if (tickAmount > 10) tickAmount = undefined;
+
       this.chartOptions = {
         ...this.chartOptions,
         xaxis: {
           ...this.chartOptions.xaxis,
           categories: categories,
+        },
+        yaxis: {
+          ...this.chartOptions.yaxis,
+          max: targetMax,
+          min: 0,
+          tickAmount: tickAmount,
         },
       };
     },

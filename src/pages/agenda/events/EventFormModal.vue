@@ -69,7 +69,7 @@
 
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label fw-semibold">Kategori Program</label>
+            <label class="form-label fw-semibold">Kategori Kegiatan</label>
             <select
               class="form-select"
               v-model="formData.idakategoriagenda"
