@@ -206,14 +206,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  reactive,
-  computed,
-  onMounted,
-  watch,
-  defineAsyncComponent,
-} from "vue";
+import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import Swal from "sweetalert2";
 import { debounce } from "lodash-es";
@@ -261,17 +254,17 @@ const userLevelId = ref(null);
 // === Computed ===
 const canManage = computed(() => {
   return [userLevelAdministrator, userLevelOperator].includes(
-    userLevelId.value
+    userLevelId.value,
   );
 });
 const totalPages = computed(
-  () => Math.ceil(totalItems.value / perPage.value) || 1
+  () => Math.ceil(totalItems.value / perPage.value) || 1,
 );
 const startItem = computed(() =>
-  totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1
+  totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1,
 );
 const endItem = computed(() =>
-  Math.min(currentPage.value * perPage.value, totalItems.value)
+  Math.min(currentPage.value * perPage.value, totalItems.value),
 );
 
 // === Lifecycle ===
@@ -350,16 +343,8 @@ async function fetchData() {
     const pagination = responseData?.meta?.pagination || {};
 
     itemsList.value = data;
-    // Handle inconsistent API: if total seems wrong, calculate from last_page
     const apiTotal = pagination.total || 0;
-    const calculatedTotal =
-      (pagination.last_page || 1) * (pagination.per_page || perPage.value);
-    // Use calculated total if it's larger (API total seems incorrect)
-    totalItems.value = Math.max(
-      apiTotal,
-      data.length,
-      calculatedTotal > apiTotal ? calculatedTotal : apiTotal
-    );
+    totalItems.value = apiTotal || data.length;
   } catch (err) {
     console.error(err);
     toast.error(`Gagal memuat data ${props.title}`);

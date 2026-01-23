@@ -100,6 +100,14 @@
                   Ubah Status
                 </button>
                 <button
+                  class="btn btn-danger btn-sm"
+                  :disabled="isBulkUpdating"
+                  @click="bulkDeleteParticipants"
+                >
+                  <i class="fa fa-trash me-1"></i>
+                  Hapus Terpilih
+                </button>
+                <button
                   class="btn btn-outline-secondary btn-sm"
                   @click="clearSelection"
                 >
@@ -186,7 +194,7 @@
                           class="status-badge-btn"
                           :class="
                             getStatusBadgeClass(
-                              getParticipantStatusId(participant)
+                              getParticipantStatusId(participant),
                             )
                           "
                           :disabled="
@@ -198,7 +206,7 @@
                             <i
                               :class="
                                 getStatusIcon(
-                                  getParticipantStatusId(participant)
+                                  getParticipantStatusId(participant),
                                 )
                               "
                             ></i>
@@ -225,13 +233,22 @@
                     </td>
 
                     <td>
-                      <button
-                        class="btn btn-info btn-sm"
-                        @click="openParticipantDetail(participant)"
-                        title="Lihat Detail Peserta"
-                      >
-                        <i class="fa fa-eye"></i>
-                      </button>
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-info btn-sm"
+                          @click="openParticipantDetail(participant)"
+                          title="Lihat Detail Peserta"
+                        >
+                          <i class="fa fa-eye"></i>
+                        </button>
+                        <button
+                          class="btn btn-danger btn-sm"
+                          @click="confirmDeleteParticipant(participant)"
+                          title="Hapus Peserta"
+                        >
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -306,12 +323,14 @@ import { useToast } from "vue-toastification";
 import {
   getEventUsers,
   updateEventUser,
+  deleteEventUser,
 } from "@/services/general/eventUsers/eventUsers";
+import Swal from "sweetalert2";
 import { getStatuses } from "@/services/referensi/status";
 import { getInitials } from "@/utils/avatarUtils";
 
 const ParticipantDetailModal = defineAsyncComponent(() =>
-  import("./ParticipantDetailModal.vue")
+  import("./ParticipantDetailModal.vue"),
 );
 
 const props = defineProps({
@@ -324,6 +343,7 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const toast = useToast();
+
 const isLoading = ref(false);
 const error = ref(null);
 const participants = ref([]);
@@ -416,7 +436,7 @@ function toggleSelectAll() {
     selectedParticipants.value = [];
   } else {
     selectedParticipants.value = participants.value.map((p) =>
-      getParticipantId(p)
+      getParticipantId(p),
     );
   }
 }
@@ -476,6 +496,87 @@ async function bulkUpdateStatus() {
     clearSelection();
   } finally {
     isBulkUpdating.value = false;
+  }
+}
+
+async function bulkDeleteParticipants() {
+  if (selectedParticipants.value.length === 0) return;
+
+  const count = selectedParticipants.value.length;
+  const result = await Swal.fire({
+    title: "Hapus Peserta Terpilih",
+    text: `Apakah Anda yakin ingin menghapus ${count} peserta yang dipilih?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Ya, Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  });
+
+  if (result.isConfirmed) {
+    isBulkUpdating.value = true;
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      const deletePromises = selectedParticipants.value.map((id) =>
+        deleteEventUser(id)
+          .then(() => ({ id, status: "fulfilled" }))
+          .catch((err) => ({ id, status: "rejected", error: err })),
+      );
+
+      const results = await Promise.all(deletePromises);
+
+      // Process results
+      const deletedIds = [];
+      results.forEach((res) => {
+        if (res.status === "fulfilled") {
+          successCount++;
+          deletedIds.push(res.id);
+        } else {
+          failCount++;
+          console.error(`Gagal menghapus peserta ${res.id}:`, res.error);
+        }
+      });
+
+      if (deletedIds.length > 0) {
+        participants.value = participants.value.filter(
+          (p) => !deletedIds.includes(getParticipantId(p)),
+        );
+
+        selectedParticipants.value = selectedParticipants.value.filter(
+          (id) => !deletedIds.includes(id),
+        );
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} peserta berhasil dihapus.`);
+      }
+      if (failCount > 0) {
+        toast.error(`${failCount} peserta gagal dihapus.`);
+      }
+
+      if (successCount > 0) {
+        Swal.fire(
+          "Terhapus!",
+          `${successCount} peserta telah dihapus.${
+            failCount > 0 ? ` (${failCount} gagal)` : ""
+          }`,
+          "success",
+        );
+      }
+
+      if (selectedParticipants.value.length === 0) {
+        clearSelection();
+      }
+    } catch (err) {
+      console.error("Critical error in bulk delete:", err);
+      toast.error("Terjadi kesalahan saat menghapus peserta.");
+    } finally {
+      isBulkUpdating.value = false;
+    }
   }
 }
 
@@ -604,7 +705,7 @@ function getStatusType(statusName) {
 
 function updateLocalParticipantData(participantId, newStatusId) {
   const index = participants.value.findIndex(
-    (p) => getParticipantId(p) === participantId
+    (p) => getParticipantId(p) === participantId,
   );
 
   if (index !== -1) {
@@ -612,7 +713,7 @@ function updateLocalParticipantData(participantId, newStatusId) {
     participants.value[index].id_status = newStatusId;
 
     const newStatus = statusOptions.value.find(
-      (s) => s.idstatus === newStatusId
+      (s) => s.idstatus === newStatusId,
     );
     if (newStatus) {
       if (!participants.value[index].statuses) {
@@ -661,7 +762,6 @@ function getStatusIconByName(statusName) {
 }
 
 async function fetchParticipants() {
-  // Ambil id_agenda dari eventData (support kedua format)
   const idAgenda = props.eventData?.idagenda || props.eventData?.id_agenda;
 
   if (!idAgenda) {
@@ -674,7 +774,6 @@ async function fetchParticipants() {
   error.value = null;
 
   try {
-    // Gunakan format filter yang benar: id_agenda dengan underscore
     const params = {
       filter: `id_agenda=${idAgenda}`,
       limit: 100,
@@ -732,10 +831,55 @@ async function updateParticipantStatus(participant, newStatusId) {
   } catch (err) {
     console.error("Error updating status:", err);
     toast.error(
-      err.response?.data?.message || "Gagal memperbarui status peserta."
+      err.response?.data?.message || "Gagal memperbarui status peserta.",
     );
   } finally {
     isUpdatingStatus.value = null;
+  }
+}
+
+async function confirmDeleteParticipant(participant) {
+  const participantId = getParticipantId(participant);
+  if (!participantId) {
+    toast.error("ID Peserta tidak valid.");
+    return;
+  }
+
+  const participantName = getParticipantName(participant);
+  const result = await Swal.fire({
+    title: "Hapus Peserta",
+    text: `Apakah Anda yakin ingin menghapus "${participantName}"?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
+    cancelButtonText: '<i class="fa fa-times me-2"></i> Batal',
+    cancelButtonColor: "#efefef",
+    confirmButtonColor: "#d33",
+    reverseButtons: true,
+  });
+
+  if (result.isConfirmed) {
+    isLoading.value = true;
+    try {
+      await deleteEventUser(participantId);
+
+      participants.value = participants.value.filter(
+        (p) => getParticipantId(p) !== participantId,
+      );
+      const selectedIndex = selectedParticipants.value.indexOf(participantId);
+      if (selectedIndex !== -1) {
+        selectedParticipants.value.splice(selectedIndex, 1);
+      }
+
+      toast.success("Peserta berhasil dihapus.");
+      Swal.fire("Terhapus!", "Peserta telah dihapus.", "success");
+    } catch (err) {
+      console.error("Gagal menghapus peserta:", err);
+      toast.error(err.response?.data?.message || "Gagal menghapus peserta.");
+      Swal.fire("Gagal!", "Terjadi kesalahan saat menghapus peserta.", "error");
+    } finally {
+      isLoading.value = false;
+    }
   }
 }
 

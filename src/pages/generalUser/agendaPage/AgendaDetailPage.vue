@@ -377,7 +377,6 @@ const checkRegistration = async () => {
         Diterima: "Accepted",
         Ditolak: "Rejected",
         Selesai: "Completed",
-        Menunggu: "Pending",
       };
 
       const finalStatusName = statusName || "Terdaftar";
