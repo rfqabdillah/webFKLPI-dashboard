@@ -107,9 +107,13 @@
 
                   <div class="form-group mb-0">
                     <div class="checkbox p-0">
-                      <input id="checkbox1" type="checkbox" />
+                      <input
+                        id="checkbox1"
+                        type="checkbox"
+                        v-model="rememberMe"
+                      />
                       <label class="text-muted" for="checkbox1"
-                        >Remember password</label
+                        >Ingat password</label
                       >
                       <router-link class="link" to="/forgetpassword">
                         Lupa password?</router-link
@@ -163,6 +167,7 @@ const toast = useToast();
 // === State Login ===
 const isLoading = ref(false);
 const showPassword = ref(false);
+const rememberMe = ref(false);
 const user = reactive({
   email: "",
   password: "",
@@ -190,13 +195,17 @@ function togglePassword() {
 async function onSubmit() {
   isLoading.value = true;
 
-  // ID level untuk user "umum"
-
   try {
+    if (rememberMe.value) {
+      const data = btoa(JSON.stringify(user));
+      localStorage.setItem("remember_me_data", data);
+    } else {
+      localStorage.removeItem("remember_me_data");
+    }
+
     const response = await loginAPI(user.email, user.password);
     const responseData = response.data;
 
-    // Cek Token
     const token =
       responseData.token || (responseData.data && responseData.data.token);
     const userProfile =
@@ -214,7 +223,6 @@ async function onSubmit() {
       const userName = userProfile?.nama || "Pengguna";
       toast.success(`Login berhasil! Selamat datang, ${userName}`);
 
-      // Update status user menjadi Aktif
       try {
         const userId = userProfile?.id_pengguna || userProfile?.id;
         if (userId) {
@@ -294,6 +302,20 @@ function handleImageError() {
 
 // === Lifecycle ===
 onMounted(() => {
+  const savedData = localStorage.getItem("remember_me_data");
+  if (savedData) {
+    try {
+      const parsed = JSON.parse(atob(savedData));
+      if (parsed.email && parsed.password) {
+        user.email = parsed.email;
+        user.password = parsed.password;
+        rememberMe.value = true;
+      }
+    } catch (e) {
+      localStorage.removeItem("remember_me_data");
+    }
+  }
+
   fetchLogoData();
   window.addEventListener("app-settings-updated", fetchLogoData);
 });

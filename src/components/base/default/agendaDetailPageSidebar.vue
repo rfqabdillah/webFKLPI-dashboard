@@ -50,13 +50,22 @@
             :key="index"
             class="d-flex align-items-center mb-3"
           >
-            <img
-              :src="item.image"
-              :alt="item.title"
-              class="rounded"
-              style="width: 60px; height: 60px; object-fit: cover"
-              @error="handleImageError($event)"
-            />
+            <div class="flex-shrink-0" style="width: 60px; height: 60px">
+              <img
+                :src="item.image || defaultPosterUrl"
+                :alt="item.title"
+                class="rounded"
+                :style="{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: item.isFallback ? 'contain' : 'cover',
+                  padding: item.isFallback ? '8px' : '0',
+                  backgroundColor: item.isFallback ? '#f8f9fa' : 'transparent',
+                  border: item.isFallback ? '1px solid #e9ecef' : 'none',
+                }"
+                @error="handleImageError($event, item)"
+              />
+            </div>
             <div class="ms-3">
               <router-link
                 :to="`/event-detail/${item.slug || item.id}`"
@@ -66,7 +75,7 @@
                 {{
                   truncateText(
                     $i18n.locale === "en" ? item.title_en : item.title,
-                    40
+                    40,
                   )
                 }}
               </router-link>
@@ -97,15 +106,17 @@ const eventsRecentPost = ref([]);
 const isLoading = ref(false);
 const searchQuery = ref("");
 
-const defaultPosterUrl = "https://placehold.co/60x60/EBF4FF/7F9CF5?text=Agenda";
+import defaultImage from "@/assets/images/logo/Logo_Kementerian_Ketenagakerjaan.png";
+const defaultPosterUrl = defaultImage;
 
 const truncateText = (text, maxLength) => {
   if (!text) return "";
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-const handleImageError = (event) => {
+const handleImageError = (event, item) => {
   event.target.src = defaultPosterUrl;
+  item.isFallback = true;
 };
 const fetchEvents = async () => {
   isLoading.value = true;
@@ -129,6 +140,7 @@ const fetchEvents = async () => {
         id: item.id_agenda,
         slug: item.slug,
         image: item.poster || defaultPosterUrl,
+        isFallback: !item.poster,
         title: item.judul,
         title_en: item.judul_en || item.judul,
         date: item.tanggal_pelaksanaan,
@@ -138,7 +150,7 @@ const fetchEvents = async () => {
       .filter(
         (event) =>
           event.id !== currentAgendaId.value &&
-          event.slug !== currentAgendaId.value
+          event.slug !== currentAgendaId.value,
       )
       .slice(0, 3);
   } catch (error) {
@@ -166,7 +178,6 @@ onMounted(() => {
   color: #7366ff !important;
 }
 
-/* Skeleton Styles */
 .skeleton-img {
   background: #f0f0f0;
 }

@@ -334,7 +334,7 @@ const routes =[
             name: "AgendaPage",
             component: IndexAgendaPage,
             meta: {
-              title: "Events Schedule",
+              title: "Jadwal Agenda",
             },
           },
         ]
@@ -352,7 +352,7 @@ const routes =[
             name: "AgendaDetailPage",
             component: IndexAgendaDetailPage,
             meta: {
-              title: "Event Detail",
+              title: "Detail Agenda",
             },
           },
         ]
@@ -370,7 +370,7 @@ const routes =[
             name: "MyAgendaPage",
             component: IndexMyAgendaPage,
             meta: {
-              title: "My Events",
+              title: "Agenda Saya",
             },
           },
         ]
@@ -573,7 +573,6 @@ router.beforeEach((to, from, next) => {
           const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
           
           if (userLevel === userLevelUmum) {
-            // User "umum" should not access dashboard, redirect to profile
             next('/my-profile');
             return;
           }

@@ -164,7 +164,7 @@
               <div class="row g-3">
                 <div class="col-12">
                   <label class="form-label fw-semibold">
-                    {{ $t("ProfileSteps.Job.JobName") }}
+                    {{ $t("ProfileSteps.Job.positionName") }}
                     <span class="text-danger">*</span>
                   </label>
                   <input
@@ -172,7 +172,9 @@
                     class="form-control"
                     v-model="item.namapekerjaan"
                     :class="{ 'is-invalid': getError(index, 'namapekerjaan') }"
-                    :placeholder="$t('ProfileSteps.Job.JobNamePlaceholder')"
+                    :placeholder="
+                      $t('ProfileSteps.Job.positionNamePlaceholder')
+                    "
                     required
                     @blur="validateField(index, 'namapekerjaan')"
                   />
@@ -413,7 +415,7 @@ watch(
         }
       }
     });
-  }
+  },
 );
 
 // === Lifecycle ===
@@ -443,7 +445,7 @@ watch(
       await loadData(props.currentUserId);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // === Methods ===
@@ -668,7 +670,7 @@ function cancelEditMode() {
 
 function getJobTypeName(idtipepekerjaan) {
   const jt = jobTypeOptions.value.find(
-    (j) => j.idtipepekerjaan === idtipepekerjaan
+    (j) => j.idtipepekerjaan === idtipepekerjaan,
   );
   return jt ? jt.namatipepekerjaan : "-";
 }
@@ -730,13 +732,13 @@ watch(
           item.namapekerjaan &&
           item.namaperusahaan &&
           item.idtipepekerjaan &&
-          item.tanggalmulai
+          item.tanggalmulai,
       );
     }
 
     emit("validation-change", isValid);
   },
-  { deep: true }
+  { deep: true },
 );
 
 defineExpose({ validate, loadData });

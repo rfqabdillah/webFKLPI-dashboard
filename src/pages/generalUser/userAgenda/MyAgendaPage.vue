@@ -204,10 +204,6 @@ const selectedStatus = ref("");
 const cancellingId = ref(null);
 const statusOptions = ref([]);
 
-// Default placeholder image
-const defaultPosterUrl =
-  "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
-
 // Computed properties - filteredAgenda
 const filteredAgenda = computed(() => {
   let result = agendaList.value;
@@ -217,8 +213,8 @@ const filteredAgenda = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
     result = result.filter((item) => {
       const agenda = item.events || item;
-      const title = agenda.judul || agenda.title || "";
-      const titleEn = agenda.judul_en || agenda.title_en || "";
+      const title = agenda.judul || "";
+      const titleEn = agenda.judul_en || "";
       return (
         title.toLowerCase().includes(query) ||
         titleEn.toLowerCase().includes(query)
@@ -238,7 +234,7 @@ const filteredAgenda = computed(() => {
 });
 
 const totalPages = computed(() =>
-  Math.ceil(filteredAgenda.value.length / itemsPerPage)
+  Math.ceil(filteredAgenda.value.length / itemsPerPage),
 );
 
 const paginatedAgenda = computed(() => {
@@ -275,13 +271,12 @@ const mapAgendaToCard = (item) => {
   const agenda = item.events || item;
   const category = item["event-categories"];
   const status = item.status || item.statuses;
-  const agendaId = agenda.id_agenda || agenda.idagenda;
+  const agendaId = agenda.id_agenda;
   const isEnglish = locale.value === "en";
 
   // Get status info
-  const statusId = item.id_status || item.idstatus;
-  const statusName =
-    status?.nama_status || status?.namastatus || getStatusNameById(statusId);
+  const statusId = item.id_status;
+  const statusName = getStatusNameById(statusId);
 
   // Manual translation mapping
   const statusMapping = {
@@ -297,21 +292,15 @@ const mapAgendaToCard = (item) => {
   return {
     id: agendaId,
     slug: agenda.slug,
-    image: agenda.poster || defaultPosterUrl,
+    image: agenda.poster || "",
     tag1: isEnglish
-      ? category?.nama_kategori_agenda_en ||
-        category?.namakategoriagenda_en ||
-        category?.nama_kategori_agenda ||
-        category?.namakategoriagenda ||
-        "General"
-      : category?.nama_kategori_agenda ||
-        category?.namakategoriagenda ||
-        "Umum",
+      ? category?.nama_kategori_agenda_en || "General"
+      : category?.nama_kategori_agenda || "Umum",
     registration_deadline: agenda.tanggal_batas_pendaftaran,
     implementation_date: agenda.tanggal_pelaksanaan,
     place: agenda.tempat_pelaksanaan || "-",
     title: isEnglish
-      ? agenda.judul_en || agenda.judul || "Untitled"
+      ? agenda.judul_en || "Untitled"
       : agenda.judul || "Tanpa Judul",
     desc: isEnglish
       ? stripHtml(agenda.konten_en || agenda.konten)
@@ -319,7 +308,7 @@ const mapAgendaToCard = (item) => {
     students: registrantCounts.value[agendaId] || 0,
     locale: locale.value,
     // New fields for status and cancel
-    registrationId: item.id_agenda_pengguna || item.idagendapengguna,
+    registrationId: item.id_agenda_pengguna,
     statusId: statusId,
     statusName: statusName,
     statusNameEn: statusNameEn,
@@ -418,22 +407,12 @@ const goToPage = (page) => {
   }
 };
 
-const openDetail = (item) => {
-  const agenda = item.events || item;
-  const identifier = agenda.slug || agenda.id_agenda || agenda.idagenda;
-  if (identifier) {
-    router.push(`/agenda-detail/${identifier}`);
-  }
-};
-
-// Fetch status options from API
 const fetchStatusOptions = async () => {
   try {
     const res = await getStatuses({ limit: 100 });
     const responseData = Array.isArray(res.data) ? res.data[0] : res.data;
     const allStatuses = responseData?.data || [];
 
-    // Filter hanya status yang relevan untuk pendaftaran agenda
     const relevantStatusIds = [
       STATUS_TERDAFTAR_ID,
       STATUS_DITERIMA_ID,
@@ -448,13 +427,8 @@ const fetchStatusOptions = async () => {
       })
       .map((s) => ({
         id: s.id_status || s.idstatus,
-        name: s.nama_status || s.namastatus || "Unknown",
-        name_en:
-          s.nama_status_en ||
-          s.namastatus_en ||
-          s.nama_status ||
-          s.namastatus ||
-          "Unknown",
+        name: s.nama_status || "Unknown",
+        name_en: s.nama_status_en || "Unknown",
       }));
   } catch (err) {
     console.error("Error fetching status options:", err);
@@ -481,7 +455,6 @@ const resetFilters = () => {
   currentPage.value = 1;
 };
 
-// Handle cancel registration from card
 const handleCancelRegistration = async ({ registrationId, title }) => {
   if (!registrationId) {
     Swal.fire({
@@ -497,7 +470,7 @@ const handleCancelRegistration = async ({ registrationId, title }) => {
     icon: "warning",
     title: t("Cancel Registration"),
     html: `${t(
-      "Are you sure you want to cancel registration for event"
+      "Are you sure you want to cancel registration for event",
     )}:<br><br><strong>${title}</strong>?`,
     showCancelButton: true,
     reverseButtons: true,
@@ -511,7 +484,7 @@ const handleCancelRegistration = async ({ registrationId, title }) => {
 
   // Find the item to get the id_agenda_pengguna
   const item = agendaList.value.find(
-    (a) => (a.id_agenda_pengguna || a.idagendapengguna) === registrationId
+    (a) => a.id_agenda_pengguna === registrationId,
   );
 
   if (!item) {
@@ -524,7 +497,7 @@ const handleCancelRegistration = async ({ registrationId, title }) => {
     return;
   }
 
-  cancellingId.value = item.id_agenda_pengguna || item.idagendapengguna;
+  cancellingId.value = item.id_agenda_pengguna;
 
   try {
     await deleteEventUser(registrationId);
@@ -536,7 +509,6 @@ const handleCancelRegistration = async ({ registrationId, title }) => {
       confirmButtonColor: "#7366ff",
     });
 
-    // Refresh the agenda list
     await fetchMyAgenda();
   } catch (err) {
     console.error("Cancel registration error:", err);
@@ -567,7 +539,7 @@ onMounted(() => {
 .badge {
   font-size: 12px;
 }
-/* Pagination Styles */
+
 .pagination .page-link {
   border: 1px solid #dee2e6;
   color: #6c757d;
@@ -592,7 +564,6 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* Skeleton Loader Styles */
 .skeleton-card {
   border-radius: 12px;
   overflow: hidden;

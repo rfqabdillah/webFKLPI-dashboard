@@ -152,7 +152,7 @@
           </div>
 
           <div class="info-row">
-            <span class="info-label">{{ $t("Employee Type") }}</span>
+            <span class="info-label">{{ $t("Job") }}</span>
             <div class="info-value">
               <select
                 v-if="isEditing"
@@ -162,11 +162,7 @@
                 :disabled="employeeTypesLoading"
               >
                 <option value="" disabled>
-                  {{
-                    employeeTypesLoading
-                      ? $t("Loading")
-                      : $t("Select Employee Type")
-                  }}
+                  {{ employeeTypesLoading ? $t("Loading") : $t("Select Job") }}
                 </option>
                 <option
                   v-for="et in employeeTypeOptions"
@@ -363,7 +359,7 @@
                         @input="
                           updateEmailForm(
                             'currentPassword',
-                            $event.target.value
+                            $event.target.value,
                           )
                         "
                         :type="showEmailPassword ? 'text' : 'password'"
@@ -695,7 +691,7 @@ const currentEmployeeTypeName = computed(() => {
   const id = props.user.idjenispegawai;
   if (!id) return null;
   const found = employeeTypeOptions.value.find(
-    (et) => et.idjenispegawai === id
+    (et) => et.idjenispegawai === id,
   );
   return found?.namajenispegawai || props.employeeTypeName || null;
 });
@@ -731,7 +727,7 @@ watch(
         kabupatenOptions.value = [];
       }
     }
-  }
+  },
 );
 
 // Lifecycle
@@ -783,7 +779,7 @@ async function fetchEmployeeTypes() {
       response.data?.[0]?.data || response.data?.data || [];
   } catch (error) {
     console.error(error);
-    toast.error(t("Failed to load employee types"));
+    toast.error(t("Failed to load jobs"));
   } finally {
     employeeTypesLoading.value = false;
   }
@@ -814,7 +810,7 @@ async function fetchKabupaten(provCode) {
     const allData = response.data?.[0]?.data || response.data?.data || [];
     // Filter to only include kabupaten that START with the province code
     kabupatenOptions.value = allData.filter((item) =>
-      item.kodewilayah.startsWith(provCode + ".")
+      item.kodewilayah.startsWith(provCode + "."),
     );
   } catch (error) {
     console.error(error);

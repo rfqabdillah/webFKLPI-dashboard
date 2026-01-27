@@ -297,6 +297,28 @@
       </div>
     </template>
 
+    <!-- Sidebar Agenda Skeleton -->
+    <template v-else-if="type === 'sidebar-agenda'">
+      <div
+        v-for="n in count"
+        :key="n"
+        class="p-3 mb-3 rounded shadow-sm border bg-white d-flex align-items-center"
+      >
+        <div class="flex-shrink-0 me-3">
+          <BaseSkeleton
+            variant="custom"
+            width="60px"
+            height="50px"
+            rounded="8px"
+          />
+        </div>
+        <div class="flex-grow-1">
+          <BaseSkeleton variant="text" width="90%" height="16px" class="mb-2" />
+          <BaseSkeleton variant="text" width="60%" height="12px" />
+        </div>
+      </div>
+    </template>
+
     <!-- Default -->
     <template v-else>
       <BaseSkeleton
@@ -325,6 +347,7 @@ defineProps({
         "testimonial",
         "form-card",
         "agenda-detail",
+        "sidebar-agenda",
         "generic",
       ].includes(v),
   },

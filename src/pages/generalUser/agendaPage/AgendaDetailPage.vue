@@ -28,11 +28,24 @@
             </div>
 
             <!-- Poster Image -->
-            <div class="mb-4">
+            <div
+              class="mb-4 d-flex justify-content-center bg-light rounded-3 overflow-hidden"
+              :style="{
+                height: isFallbackImage ? '400px' : 'auto',
+                width: '100%',
+                maxWidth: isFallbackImage ? '800px' : '100%',
+                margin: '0 auto',
+              }"
+            >
               <img
-                :src="data.image"
+                :src="currentImageSrc"
                 :alt="data.title"
-                class="img-fluid rounded-3 w-100"
+                class="img-fluid w-100"
+                :style="{
+                  height: isFallbackImage ? '100%' : 'auto',
+                  objectFit: isFallbackImage ? 'contain' : 'cover',
+                  padding: isFallbackImage ? '40px' : '0',
+                }"
                 @error="handleImageError"
               />
             </div>
@@ -215,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import Swal from "sweetalert2";
@@ -253,8 +266,9 @@ const registrationStatusEn = ref("Registered");
 const error = ref(null);
 const statusOptions = ref([]);
 
-const defaultPosterUrl =
-  "https://placehold.co/800x400/EBF4FF/7F9CF5?text=Agenda";
+// Default fallback image
+import defaultImage from "@/assets/images/logo/Logo_Kementerian_Ketenagakerjaan.png";
+const defaultPosterUrl = defaultImage;
 
 const isDeadlinePassed = computed(() => {
   if (!data.value?.registration_deadline) return false;
@@ -278,7 +292,7 @@ const fetchDetail = async () => {
     const param = route.params.id;
     const isUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        param
+        param,
       );
 
     let item;
@@ -302,7 +316,7 @@ const fetchDetail = async () => {
 
     data.value = {
       id: item.id_agenda,
-      image: item.poster || defaultPosterUrl,
+      image: item.poster,
       kategori:
         item.kategori_agenda?.nama_kategori_agenda ||
         item["event-categories"]?.namakategoriagenda ||
@@ -366,7 +380,7 @@ const checkRegistration = async () => {
         const foundStatus = statusOptions.value.find(
           (s) =>
             s.idstatus === registrationStatusId.value ||
-            s.id_status === registrationStatusId.value
+            s.id_status === registrationStatusId.value,
         );
         statusName = foundStatus?.namastatus || foundStatus?.nama_status;
       }
@@ -406,11 +420,30 @@ const fetchStatusOptions = async () => {
   }
 };
 
-const handleImageError = (event) => {
-  event.target.src = defaultPosterUrl;
+const isFallbackImage = ref(false);
+const currentImageSrc = ref("");
+
+// Watch for data changes to init image
+watch(
+  () => data.value?.image,
+  (newVal) => {
+    if (!newVal) {
+      currentImageSrc.value = defaultPosterUrl;
+      isFallbackImage.value = true;
+    } else {
+      currentImageSrc.value = newVal;
+      isFallbackImage.value = false;
+    }
+  },
+);
+
+const handleImageError = () => {
+  if (!isFallbackImage.value) {
+    currentImageSrc.value = defaultPosterUrl;
+    isFallbackImage.value = true;
+  }
 };
 
-// Get reason why cancel is disabled
 // Get reason why cancel is disabled
 const getCancelDisabledReason = () => {
   const key = getAgendaCancelReasonKey(registrationStatusId.value);
@@ -494,7 +527,7 @@ const registerAgenda = async () => {
     icon: "question",
     title: t("Registration Confirmation"),
     html: `${t(
-      "Are you sure you want to register for event"
+      "Are you sure you want to register for event",
     )}:<br><br><strong>${eventTitle}</strong>?`,
     showCancelButton: true,
     confirmButtonText: t("Yes Register"),
@@ -560,7 +593,7 @@ const cancelRegistration = async () => {
     icon: "warning",
     title: t("Cancel Registration"),
     html: `${t(
-      "Are you sure you want to cancel registration for event"
+      "Are you sure you want to cancel registration for event",
     )}:<br><br><strong>${eventTitle}</strong>?`,
     showCancelButton: true,
     confirmButtonText: t("Yes Cancel"),

@@ -199,9 +199,6 @@ const selectedCategory = ref("");
 const categories = ref([]);
 const cancellingId = ref(null);
 
-const defaultPosterUrl =
-  "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
-
 // Computed properties
 const filteredAgenda = computed(() => {
   let result = agendaList.value;
@@ -209,7 +206,7 @@ const filteredAgenda = computed(() => {
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim();
     result = result.filter((agenda) =>
-      agenda.judul?.toLowerCase().includes(query)
+      agenda.judul?.toLowerCase().includes(query),
     );
   }
 
@@ -227,7 +224,7 @@ const filteredAgenda = computed(() => {
 });
 
 const totalPages = computed(() =>
-  Math.ceil(filteredAgenda.value.length / itemsPerPage)
+  Math.ceil(filteredAgenda.value.length / itemsPerPage),
 );
 
 const paginatedAgenda = computed(() => {
@@ -267,7 +264,7 @@ const mapAgendaToCard = (agenda) => {
   return {
     id: agenda.id_agenda,
     slug: agenda.slug,
-    image: agenda.poster || defaultPosterUrl,
+    image: agenda.poster || "",
     tag1: isEnglish
       ? agenda.kategori_agenda?.nama_kategori_agenda_en ||
         agenda.kategori_agenda?.nama_kategori_agenda ||
@@ -484,7 +481,7 @@ const handleCancelRegistration = async ({ registrationId, title }) => {
     icon: "warning",
     title: t("Cancel Registration"),
     html: `${t(
-      "Are you sure you want to cancel registration for event"
+      "Are you sure you want to cancel registration for event",
     )}:<br><br><strong>${title}</strong>?`,
     showCancelButton: true,
     reverseButtons: true,

@@ -15,10 +15,7 @@ export function useIdleLogout(timeoutMinutes = 30) {
           const userDataStr = localStorage.getItem("userData");
           const userData = userDataStr ? JSON.parse(userDataStr) : null;
           const userId =
-            userData?.data?.[0]?.id_pengguna ||
-            userData?.data?.[0]?.id ||
-            userData?.id ||
-            userData?.id_pengguna;
+            userData?.data?.[0]?.id_pengguna
 
           if (userId) {
             const formData = new FormData();

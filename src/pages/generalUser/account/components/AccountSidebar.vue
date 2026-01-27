@@ -1,5 +1,5 @@
 <template>
-  <div class="col-lg-4 sticky-column">
+  <div class="col-lg-4 sticky-column" ref="sidebarRef" :style="stickyStyle">
     <div class="card profile-sidebar shadow-sm">
       <!-- Banner -->
       <div class="sidebar-banner"></div>
@@ -101,16 +101,96 @@
         </div>
       </div>
     </div>
+
+    <!-- Upcoming Events Card -->
+    <div class="card mt-3 shadow-sm border-0">
+      <div class="card-header bg-white">
+        <div class="d-flex align-items-center">
+          <div class="section-icon bg-primary">
+            <i class="fa fa-calendar-check-o text-white"></i>
+          </div>
+          <h5 class="mb-0 ms-3">{{ $t("Upcoming Events") }}</h5>
+        </div>
+      </div>
+      <div class="card-body">
+        <div v-if="isLoadingAgendas" class="py-2">
+          <SkeletonGroup type="sidebar-agenda" :count="3" />
+        </div>
+
+        <div v-else-if="upcomingAgendas.length === 0" class="text-center py-3">
+          <p class="text-muted small mb-0">{{ $t("No upcoming events") }}</p>
+        </div>
+
+        <div v-else class="agenda-list">
+          <div
+            v-for="item in upcomingAgendas"
+            :key="item.id"
+            class="agenda-item p-3 mb-3 rounded shadow-sm border-start border-4 bg-light d-flex align-items-center justify-content-between"
+            :class="
+              item.daysRemaining <= 3 ? 'border-danger' : 'border-success'
+            "
+          >
+            <div
+              class="text-center rounded p-2 flex-shrink-0 me-3"
+              :class="
+                item.daysRemaining <= 3
+                  ? 'bg-danger text-white'
+                  : 'bg-white border border-success text-success'
+              "
+              style="min-width: 60px"
+            >
+              <div class="h4 fw-bold mb-0" style="line-height: 1">
+                {{ item.daysRemaining }}
+              </div>
+              <div style="font-size: 10px" class="fw-bold text-uppercase mt-1">
+                {{ $t("days left") }}
+              </div>
+            </div>
+
+            <div class="overflow-hidden flex-grow-1">
+              <h6
+                class="fw-bold text-dark mb-1 text-truncate"
+                :title="item.title"
+              >
+                {{ item.title }}
+              </h6>
+              <div class="text-muted small">
+                <div class="mb-1 d-flex align-items-center">
+                  <i class="fa fa-calendar me-2"></i>
+                  {{ formatShortDate(item.date, $i18n.locale) }}
+                </div>
+                <div class="d-flex align-items-center text-truncate">
+                  <i class="fa fa-map-marker me-2"></i>
+                  <span class="text-truncate">{{ item.place }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent border-0 pt-0 text-center">
+        <router-link
+          to="/my-events"
+          class="btn btn-link btn-sm text-decoration-none"
+        >
+          {{ $t("View More") }} <i class="fa fa-arrow-right ms-1"></i>
+        </router-link>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import VueEasyLightbox from "vue-easy-lightbox";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
+import { getEventUsers } from "@/services/general/eventUsers/eventUsers";
+import { formatShortDate } from "@/utils/formatDate";
+import { STATUS_DITERIMA_ID } from "@/constants/agendaStatus";
+import { SkeletonGroup } from "@/components/base/default/SkeletonLoader";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   user: {
@@ -126,7 +206,11 @@ const props = defineProps({
 const emit = defineEmits(["upload-photo", "image-error"]);
 
 const photoInputRef = ref(null);
+const sidebarRef = ref(null);
+const stickyStyle = ref({ position: "sticky", top: "100px" });
 const lightboxVisible = ref(false);
+const userAgendas = ref([]);
+const isLoadingAgendas = ref(false);
 
 const lightboxImages = computed(() => {
   return props.user.foto ? [props.user.foto] : [];
@@ -143,6 +227,62 @@ const fullName = computed(() => {
 
 const userRole = computed(() => {
   return props.user.roles?.[0]?.namalevel || props.user.nama_level || t("User");
+});
+
+const upcomingAgendas = computed(() => {
+  if (!userAgendas.value.length) return [];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const processed = userAgendas.value
+    .map((item) => {
+      // Filter by status 'Diterima' strict check
+      if (item.id_status !== STATUS_DITERIMA_ID) return null;
+
+      const agenda = item.events || item.agenda; // Handle both structures
+
+      if (!agenda) return null;
+
+      const dateStr = agenda.tanggal_pelaksanaan;
+      if (!dateStr) return null; // Skip if no date
+
+      const eventDate = new Date(dateStr);
+      if (isNaN(eventDate.getTime())) return null;
+
+      const diffTime = eventDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      const title =
+        locale.value === "en"
+          ? agenda.judul_en || agenda.judul || "Untitled"
+          : agenda.judul || "Tanpa Judul";
+
+      return {
+        id: agenda.id_agenda,
+        title: title,
+        date: agenda.tanggal_pelaksanaan,
+        place: agenda.tempat_pelaksanaan || "-",
+        daysRemaining: diffDays,
+      };
+    })
+    .filter((item) => {
+      // Filter out invalid items
+      if (!item) return false;
+      // Filter only future or today
+      if (item.daysRemaining < 0) return false;
+
+      // Strict client-side status check if API returns mixed statuses
+      // Item status is usually at the root of the userAgenda object passing through mapping
+      // But here we mapped it to a new object. We need to check the original source.
+      // Wait, 'map' runs before 'filter'. We need to check status inside map or change order.
+      // Let's filter on the source array first or checking in map.
+      return true;
+    })
+    .sort((a, b) => a.daysRemaining - b.daysRemaining) // Sort by nearest
+    .slice(0, 5); // Take top 5
+
+  return processed;
 });
 
 // Methods
@@ -168,6 +308,101 @@ const handlePhotoUpload = (event) => {
   emit("upload-photo", file);
   if (photoInputRef.value) {
     photoInputRef.value.value = "";
+  }
+};
+
+const fetchUserAgendas = async (userId) => {
+  if (!userId) return;
+  isLoadingAgendas.value = true;
+  try {
+    const response = await getEventUsers({
+      filter: `id_pengguna=${userId}`, // Removed server-side status filter
+      with: "agenda,status",
+    });
+
+    let data = [];
+    const rawData = response.data || response; // Handle if response is already the body/array
+
+    if (Array.isArray(rawData)) {
+      if (rawData.length > 0 && rawData[0].data) {
+        // Handle [{ data: [...], meta: ... }]
+        data = rawData[0].data;
+      } else {
+        // Handle direct array [...items]
+        data = rawData;
+      }
+    } else if (rawData && rawData.data) {
+      // Handle standard { data: [...] }
+      data = rawData.data;
+    } else {
+      // Handle array in data property but maybe different structure
+      data = rawData || [];
+    }
+
+    userAgendas.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching user agendas:", error);
+  } finally {
+    isLoadingAgendas.value = false;
+  }
+};
+
+watch(
+  () => props.user,
+  (newUser) => {
+    if (newUser && (newUser.id || newUser.id_pengguna || newUser.idpengguna)) {
+      fetchUserAgendas(newUser.id || newUser.id_pengguna || newUser.idpengguna);
+    }
+  },
+  { immediate: true },
+);
+
+onMounted(() => {
+  if (
+    props.user &&
+    (props.user.id || props.user.id_pengguna || props.user.idpengguna)
+  ) {
+    fetchUserAgendas(
+      props.user.id || props.user.id_pengguna || props.user.idpengguna,
+    );
+  }
+
+  updateStickyBehavior();
+  window.addEventListener("resize", updateStickyBehavior);
+});
+
+// onUnmounted(() => {
+//   window.removeEventListener("resize", updateStickyBehavior);
+// });
+
+watch(userAgendas, () => {
+  // Wait for DOM update
+  setTimeout(updateStickyBehavior, 500);
+});
+
+const updateStickyBehavior = () => {
+  if (!sidebarRef.value) return;
+
+  const sidebarHeight = sidebarRef.value.offsetHeight;
+  const windowHeight = window.innerHeight;
+  const topOffset = 100; // default top offset
+  const bottomOffset = 20; // desired bottom offset
+
+  // Check if sidebar fits in viewport (with top offset)
+  if (sidebarHeight + topOffset < windowHeight) {
+    // Fits: Stick to Top
+    stickyStyle.value = {
+      position: "sticky",
+      top: `${topOffset}px`,
+      alignSelf: "flex-start",
+    };
+  } else {
+    // Too tall: Stick to Bottom (allows natural scroll first)
+    stickyStyle.value = {
+      position: "sticky",
+      bottom: `${bottomOffset}px`,
+      alignSelf: "flex-end", // Helps in flex container context sometimes
+    };
   }
 };
 </script>
@@ -304,10 +539,9 @@ const handlePhotoUpload = (event) => {
   .sticky-column {
     position: -webkit-sticky;
     position: sticky;
-    top: 100px;
     z-index: 5;
     height: fit-content;
-    align-self: flex-start;
+    /* top/bottom and align-self are handled via JS style binding now */
   }
 }
 
@@ -328,5 +562,16 @@ const handlePhotoUpload = (event) => {
     width: 100px;
     height: 100px;
   }
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
 }
 </style>

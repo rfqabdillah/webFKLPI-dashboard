@@ -324,6 +324,7 @@
   "Title Prefix": "Gelar Depan",
   "Title Suffix": "Gelar Belakang",
   "Select Gender": "Pilih Jenis Kelamin",
+  "Select Job": "Pilih Pekerjaan",
   "Select Employee Type": "Pilih Jenis Pegawai",
   "Place of Birth": "Tempat Lahir",
   "Date of Birth": "Tanggal Lahir",
@@ -568,8 +569,8 @@
       "AddJob": "Tambah Pekerjaan",
       "EmptyState": "Belum ada data pekerjaan.",
       "DataHeader": "Data Pekerjaan",
-      "JobName": "Nama Pekerjaan",
-      "JobNamePlaceholder": "Masukkan nama pekerjaan",
+      "positionName": "Jabatan",
+      "positionNamePlaceholder": "Masukkan nama jabatan",
       "CompanyName": "Nama Perusahaan",
       "CompanyNamePlaceholder": "Masukkan nama perusahaan",
       "JobType": "Tipe Pekerjaan",
@@ -660,5 +661,8 @@
   },
   "Current password is required": "Password saat ini wajib diisi",
   "New password is required": "Password baru wajib diisi",
-  "Confirm password is required": "Konfirmasi password wajib diisi"
+  "Confirm password is required": "Konfirmasi password wajib diisi",
+  "days left": "hari lagi",
+  "View More": "Lihat Lainnya",
+  "Upcoming Events": "Agenda Mendatang"
 }

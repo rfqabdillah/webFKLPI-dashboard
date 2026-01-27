@@ -5,16 +5,16 @@
     @click="!path && $emit('click')"
   >
     <!-- Image Section -->
-    <component
-      :is="path ? 'router-link' : 'div'"
+    <router-link
+      v-if="path"
       :to="path"
       class="card-img-wrapper position-relative overflow-hidden d-block"
-      @click="!path && $emit('click')"
     >
       <img
-        :src="props.item.image"
+        :src="currentImageSrc"
         :alt="props.item.title"
         class="card-img-top agenda-image"
+        :class="{ 'fallback-mode': isFallbackImage }"
         @error="handleImageError"
       />
       <!-- Category Badge -->
@@ -26,7 +26,30 @@
           {{ props.item.tag1 }}
         </span>
       </div>
-    </component>
+    </router-link>
+
+    <div
+      v-else
+      class="card-img-wrapper position-relative overflow-hidden d-block cursor-pointer"
+      @click="$emit('click')"
+    >
+      <img
+        :src="currentImageSrc"
+        :alt="props.item.title"
+        class="card-img-top agenda-image"
+        :class="{ 'fallback-mode': isFallbackImage }"
+        @error="handleImageError"
+      />
+      <!-- Category Badge -->
+      <div class="position-absolute top-0 start-0 m-2">
+        <span
+          class="badge rounded-pill px-3 py-2"
+          style="background-color: #15406a"
+        >
+          {{ props.item.tag1 }}
+        </span>
+      </div>
+    </div>
 
     <!-- Card Body -->
     <div class="card-body d-flex flex-column">
@@ -37,7 +60,7 @@
           {{
             formatDate(
               props.item.registration_deadline,
-              props.item.locale || "id"
+              props.item.locale || "id",
             )
           }}
         </span>
@@ -68,7 +91,7 @@
             {{
               formatDate(
                 props.item.implementation_date,
-                props.item.locale || "id"
+                props.item.locale || "id",
               )
             }}</span
           >
@@ -132,7 +155,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatDate } from "@/utils/formatDate";
 
@@ -192,8 +215,26 @@ const props = defineProps({
 });
 
 // Default fallback image
-const defaultPosterUrl =
-  "https://placehold.co/400x250/EBF4FF/7F9CF5?text=Agenda";
+import defaultImage from "@/assets/images/logo/Logo_Kementerian_Ketenagakerjaan.png";
+
+const defaultPosterUrl = defaultImage;
+const isFallbackImage = ref(false);
+const currentImageSrc = ref("");
+
+// Initialize image source
+watch(
+  () => props.item.image,
+  (newVal) => {
+    if (!newVal) {
+      currentImageSrc.value = defaultPosterUrl;
+      isFallbackImage.value = true;
+    } else {
+      currentImageSrc.value = newVal;
+      isFallbackImage.value = false;
+    }
+  },
+  { immediate: true },
+);
 
 // Computed
 const canCancel = computed(() => {
@@ -236,8 +277,11 @@ const getStatusBarClass = () => {
 };
 
 // Handle image loading error
-const handleImageError = (event) => {
-  event.target.src = defaultPosterUrl;
+const handleImageError = () => {
+  if (!isFallbackImage.value) {
+    currentImageSrc.value = defaultPosterUrl;
+    isFallbackImage.value = true;
+  }
 };
 
 const getCancelDisabledReason = () => {
@@ -269,6 +313,7 @@ const handleCancelClick = () => {
 
 .card-img-wrapper {
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+  height: 200px;
 }
 
 .agenda-image {
@@ -278,7 +323,13 @@ const handleCancelClick = () => {
   transition: transform 0.3s ease;
 }
 
-.agenda-card:hover .agenda-image {
+.agenda-image.fallback-mode {
+  object-fit: contain;
+  padding: 40px; 
+  background-color: #f8f9fa;
+}
+
+.agenda-card:hover .agenda-image:not(.fallback-mode) {
   transform: scale(1.05);
 }
 
@@ -315,12 +366,10 @@ const handleCancelClick = () => {
   color: white;
 }
 
-/* Cancel Button Style */
 .btn-outline-danger.btn-sm {
   font-size: 13px;
 }
 
-/* Status Bar Styles */
 .status-bar {
   display: flex;
   align-items: center;
