@@ -12,7 +12,7 @@
     <BiodataFormFields
       v-if="selectedUser || mode === 'new' || isEditMode"
       ref="formRef"
-      v-model="formData"
+      :modelValue="formData"
       :mode="mode"
       :isEditMode="isEditMode"
       :isLoading="isLoadingUserData"
@@ -74,7 +74,7 @@ const formData = reactive({
   tempatlahir: "",
   tanggallahir: "",
   foto: null,
-  status: "Aktif",
+  status: "Tidak Aktif",
   minat: "",
 });
 
@@ -90,7 +90,7 @@ watch(
       selectionMade.value = true;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -108,7 +108,7 @@ watch(
     };
     emit("update:modelValue", data);
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Lifecycle
@@ -134,7 +134,7 @@ function resetSelection() {
 
   // Reset Form
   Object.keys(formData).forEach((key) => (formData[key] = ""));
-  formData.status = "Aktif";
+  formData.status = "Tidak Aktif";
   formData.foto = null;
   selectedPhotoFile.value = null;
   isPhotoRemoved.value = false;
@@ -165,7 +165,7 @@ async function selectUser(user) {
 function populateFormData(data) {
   if (!data) return;
 
-  formData.idpengguna = data.idpengguna || data.id_pengguna || null;
+  formData.idpengguna = data.idpengguna;
   formData.nama = data.nama || "";
   formData.gelardepan = data.gelardepan || data.gelar_depan || "";
   formData.gelarbelakang = data.gelarbelakang || data.gelar_belakang || "";
@@ -178,7 +178,7 @@ function populateFormData(data) {
   formData.tanggallahir = data.tanggallahir || data.tanggal_lahir || "";
   formData.alamat = data.alamat || "";
   formData.foto = data.foto || null;
-  formData.status = data.status || "Aktif";
+  formData.status = data.status || "Tidak Aktif";
   formData.minat = data.minat || "";
   formData.idjeniskelamin = data.idjeniskelamin || data.id_jenis_kelamin || "";
   formData.idjenispengguna =
@@ -211,10 +211,16 @@ function handlePhotoChange(file) {
   emit("photo-change", file);
 }
 
+function handleFormUpdate(data) {
+  Object.keys(data).forEach((key) => {
+    formData[key] = data[key];
+  });
+}
+
 async function validate() {
   if (!selectionMade.value && !isEditMode.value) {
     toast.error(
-      "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru"
+      "Silakan pilih apakah Anda ingin menggunakan data yang ada atau membuat data baru",
     );
     return false;
   }

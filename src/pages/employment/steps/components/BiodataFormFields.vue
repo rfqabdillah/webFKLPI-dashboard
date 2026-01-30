@@ -216,7 +216,8 @@
         </select>
       </div>
 
-      <div class="col-md-6 mb-3">
+      <!-- Status Akun (Hidden as per request, default is "Tidak Aktif") -->
+      <!-- <div class="col-md-6 mb-3">
         <label class="form-label fw-semibold d-block">Status Akun</label>
         <div class="form-check form-switch mt-2">
           <input
@@ -232,7 +233,7 @@
             {{ formData.status || "Tidak Aktif" }}
           </label>
         </div>
-      </div>
+      </div> -->
 
       <!-- Tempat & Tanggal Lahir -->
       <div class="col-md-6 mb-3">
@@ -465,7 +466,7 @@ watch(
   () => {
     emit("update:modelValue", formData);
   },
-  { deep: true }
+  { deep: true },
 );
 
 watch(
@@ -476,7 +477,7 @@ watch(
     } else {
       kabupatenOptions.value = [];
     }
-  }
+  },
 );
 
 // Lifecycle
@@ -593,18 +594,18 @@ async function fetchKabupaten(provCode) {
     const allData = response.data?.[0]?.data || response.data?.data || [];
     // Filter to only include kabupaten that START with the province code
     kabupatenOptions.value = allData.filter((item) =>
-      item.kodewilayah.startsWith(provCode + ".")
+      item.kodewilayah.startsWith(provCode + "."),
     );
 
     if (formData.kodekabupaten && kabupatenOptions.value.length > 0) {
       const currentVal = String(formData.kodekabupaten);
       const exists = kabupatenOptions.value.some(
-        (k) => k.kodewilayah === currentVal
+        (k) => k.kodewilayah === currentVal,
       );
       if (!exists) {
         const cleanCurrent = currentVal.replace(/\./g, "");
         const match = kabupatenOptions.value.find(
-          (k) => k.kodewilayah.replace(/\./g, "") === cleanCurrent
+          (k) => k.kodewilayah.replace(/\./g, "") === cleanCurrent,
         );
         if (match) formData.kodekabupaten = match.kodewilayah;
       }
