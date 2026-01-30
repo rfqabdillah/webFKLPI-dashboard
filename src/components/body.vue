@@ -121,14 +121,14 @@ export default {
         return JSON.parse(
           JSON.stringify(
             layoutClasses.find(
-              (item) => Object.keys(item).pop() === this.layout.settings.layout
-            )
-          )
+              (item) => Object.keys(item).pop() === this.layout.settings.layout,
+            ),
+          ),
         )[this.layout.settings.layout];
       },
       set: function () {
         this.layoutobj = layoutClasses.find(
-          (item) => Object.keys(item).pop() === this.layout.settings.layout
+          (item) => Object.keys(item).pop() === this.layout.settings.layout,
         );
         this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
           this.layout.settings.layout
@@ -182,7 +182,7 @@ export default {
       : defaultLayout;
 
     this.layoutobj = layoutClasses.find(
-      (item) => Object.keys(item).pop() === this.layout.settings.layout
+      (item) => Object.keys(item).pop() === this.layout.settings.layout,
     );
     this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
       this.layout.settings.layout
@@ -206,7 +206,7 @@ export default {
     },
     checkResponsiveLayout() {
       this.layoutobj = layoutClasses.find(
-        (item) => Object.keys(item).pop() === this.layout.settings.layout
+        (item) => Object.keys(item).pop() === this.layout.settings.layout,
       );
 
       if (
@@ -219,8 +219,8 @@ export default {
         const newlayout = JSON.parse(
           JSON.stringify(this.layoutobj).replace(
             "horizontal-wrapper",
-            "compact-wrapper"
-          )
+            "compact-wrapper",
+          ),
         );
 
         this.layoutobj = JSON.parse(JSON.stringify(newlayout))[
@@ -255,7 +255,7 @@ export default {
     },
     updateLayoutObject() {
       this.layoutobj = layoutClasses.find(
-        (item) => Object.keys(item).pop() === this.layout.settings.layout
+        (item) => Object.keys(item).pop() === this.layout.settings.layout,
       );
       if (this.layoutobj) {
         this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
