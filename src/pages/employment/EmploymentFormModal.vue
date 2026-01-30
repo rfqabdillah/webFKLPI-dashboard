@@ -169,7 +169,7 @@ import Step5Pendidikan from "./steps/Step5Pendidikan.vue";
 import Step6Pelatihan from "./steps/Step6Pelatihan.vue";
 import Step7Prestasi from "./steps/Step7Prestasi.vue";
 
-import { addUser, updateUser } from "@/services/referensi/users";
+import { addUser, updateUser, getUsers } from "@/services/referensi/users";
 import {
   addUserWorkUnit,
   updateUserWorkUnit,
@@ -343,7 +343,7 @@ const isEditMode = computed(() => !!props.fieldToEdit);
 const modalTitle = computed(() =>
   isEditMode.value
     ? `Edit Data ${props.entityName}`
-    : `Tambah Data ${props.entityName}`
+    : `Tambah Data ${props.entityName}`,
 );
 
 const currentUserId = computed(() => {
@@ -405,7 +405,7 @@ watch(
       Object.assign(wizardState.biodata.userData, newData);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(currentStepIndex, async (newIndex, oldIndex) => {
@@ -566,11 +566,11 @@ function validateSingleActiveStatus() {
   for (const category of categories) {
     if (!category.data) continue;
     const activeCount = category.data.filter(
-      (item) => item.status === "Aktif"
+      (item) => item.status === "Aktif",
     ).length;
     if (activeCount > 1) {
       throw new Error(
-        `Kategori ${category.name} hanya boleh memiliki satu data dengan status aktif.`
+        `Kategori ${category.name} hanya boleh memiliki satu data dengan status aktif.`,
       );
     }
   }
@@ -633,11 +633,70 @@ function createBiodataFormData() {
 async function saveBiodataCreate() {
   const formData = createBiodataFormData();
   const response = await addUser(formData);
-  return (
+
+  let newUserId =
     response.data?.idpengguna ||
     response.data?.data?.idpengguna ||
-    response.idpengguna
-  );
+    response.idpengguna ||
+    response.data?.id_pengguna ||
+    response.data?.data?.id_pengguna ||
+    response.data?.id ||
+    response.data?.data?.id;
+
+  if (newUserId) return newUserId;
+
+  // Fallback: Fetch user by email/NIK if ID is missing in create response
+  const userData = wizardState.biodata.userData;
+
+  const extractId = (res) => {
+    const responseData = res.data;
+
+    if (Array.isArray(responseData) && responseData.length > 0) {
+      const firstItem = responseData[0];
+      if (firstItem && firstItem.data && Array.isArray(firstItem.data)) {
+        const users = firstItem.data;
+        if (users.length > 0) {
+          return users[0].idpengguna || users[0].id_pengguna || users[0].id;
+        }
+      }
+      if (
+        firstItem &&
+        (firstItem.idpengguna || firstItem.id_pengguna || firstItem.id)
+      ) {
+        return firstItem.idpengguna || firstItem.id_pengguna || firstItem.id;
+      }
+    }
+
+    const list = responseData?.data || responseData || [];
+    if (Array.isArray(list) && list.length > 0) {
+      return list[0].idpengguna || list[0].id_pengguna || list[0].id;
+    }
+    return null;
+  };
+
+  await new Promise((r) => setTimeout(r, 1500));
+
+  if (userData.email) {
+    try {
+      const userRes = await getUsers({ email: userData.email, limit: 10 });
+      const id = extractId(userRes);
+      if (id) return id;
+    } catch (e) {
+      console.error("Fallback fetch by email failed", e);
+    }
+  }
+
+  if (userData.nik) {
+    try {
+      const userRes = await getUsers({ nik: userData.nik, limit: 10 });
+      const id = extractId(userRes);
+      if (id) return id;
+    } catch (e) {
+      console.error("Fallback fetch by NIK failed", e);
+    }
+  }
+
+  return null;
 }
 
 async function saveBiodataUpdate(userId) {
