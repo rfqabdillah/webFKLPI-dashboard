@@ -39,6 +39,23 @@ export default {
           return;
         }
 
+
+        try {
+          const userId = user.id_pengguna || user.id;
+          if (userId) {
+            const formData = new FormData();
+            formData.append("record[status]", "Aktif");
+            formData.append("_method", "PUT");
+
+            // Mengirim update status ke backend
+            await axios.post(`/users/${userId}`, formData, {
+              headers: { Authorization: `Bearer ${access_token}` }
+            });
+          }
+        } catch (err) {
+          console.error("Gagal update status login:", err);
+        }
+
         // Simpan token & user
         localStorage.setItem('token', access_token);
         localStorage.setItem(
