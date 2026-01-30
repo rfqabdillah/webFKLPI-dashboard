@@ -114,6 +114,7 @@
                 type="date"
                 class="form-control"
                 v-model="formData.tglbatasdaftar"
+                :max="formData.tglpelaksanaan"
                 :class="{ 'is-invalid': formErrors.tglbatasdaftar }"
                 required
               />
@@ -346,7 +347,7 @@ const validationSchema = yup.object().shape({
       (value) => {
         if (!value) return true;
         return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
-      }
+      },
     ),
   tglpelaksanaan: yup
     .date()
@@ -356,7 +357,11 @@ const validationSchema = yup.object().shape({
   tglbatasdaftar: yup
     .date()
     .required("Tanggal batas daftar wajib diisi.")
-    .typeError("Format tanggal tidak valid."),
+    .typeError("Format tanggal tidak valid.")
+    .max(
+      yup.ref("tglpelaksanaan"),
+      "Batas pendaftaran tidak boleh melebihi tanggal pelaksanaan.",
+    ),
   tayang: yup
     .string()
     .oneOf(["Tayang", "Draft"], "Status tidak valid.")
@@ -428,7 +433,7 @@ watch(
       fileInput.value.value = null;
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 );
 
 // Watcher untuk auto-generate slug
@@ -444,7 +449,7 @@ watch(
     } else {
       formData.slug = "";
     }
-  }
+  },
 );
 
 async function fetchCategories() {
@@ -486,7 +491,7 @@ function loadUserIdFromStorage() {
 
       if (user) {
         const parts = [user.gelardepan, user.nama, user.gelarbelakang].filter(
-          Boolean
+          Boolean,
         );
         authorName.value = parts.join(" ") || user.username || "User";
       }
