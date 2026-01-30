@@ -119,6 +119,7 @@
                         Lupa password?</router-link
                       >
                     </div>
+
                     <div class="text-end mt-3">
                       <button
                         class="btn btn-primary btn-block w-100"
@@ -132,6 +133,7 @@
                         Masuk
                       </button>
                     </div>
+
                   </div>
                   <p class="mt-4 mb-0 text-center">
                     Belum punya akun?<router-link to="/register" class="ms-2"
@@ -139,6 +141,25 @@
                     >
                   </p>
                 </Form>
+                <h6 class="text-muted mt-4 text-center">
+                  atau login dengan
+                </h6>
+
+                <div class="mt-3 text-center">
+                  <button
+                      type="button"
+                      class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center kemnaker-btn"
+                      @click="loginKemnaker"
+                  >
+                    <img
+                        src="/kemnaker-icon.png"
+                        alt="Login Kemnaker"
+                        class="kemnaker-icon"
+                    />
+                    Akun Kemnaker
+                  </button>
+                </div>
+
               </div>
             </div>
           </div>
@@ -180,21 +201,17 @@ const isLoadingLogo = ref(true);
 
 // === Schema Validasi ===
 const schema = yup.object({
-  email: yup
-    .string()
-    .email("Format email tidak valid")
-    .required("Email wajib diisi"),
+  email: yup.string().email("Format email tidak valid").required("Email wajib diisi"),
   password: yup.string().required("Password wajib diisi"),
 });
 
-// === Methods Login ===
+// === Methods ===
 function togglePassword() {
   showPassword.value = !showPassword.value;
 }
 
 async function onSubmit() {
   isLoading.value = true;
-
   try {
     if (rememberMe.value) {
       const data = btoa(JSON.stringify(user));
@@ -203,93 +220,55 @@ async function onSubmit() {
       localStorage.removeItem("remember_me_data");
     }
 
-    const response = await loginAPI(user.email, user.password);
+      const response = await loginAPI(user.email, user.password);
     const responseData = response.data;
-
-    const token =
-      responseData.token || (responseData.data && responseData.data.token);
-    const userProfile =
-      responseData.user || (responseData.data && responseData.data.user);
+    const token = responseData.token || (responseData.data && responseData.data.token);
+    const userProfile = responseData.user || (responseData.data && responseData.data.user);
 
     if (token) {
       localStorage.setItem("token", token);
+      localStorage.setItem("userData", JSON.stringify({ data: [userProfile] }));
 
-      const userDataToSave = userProfile ? [userProfile] : [];
-      localStorage.setItem(
-        "userData",
-        JSON.stringify({ data: userDataToSave }),
-      );
-
-      const userName = userProfile?.nama || "Pengguna";
-      toast.success(`Login berhasil! Selamat datang, ${userName}`);
-
-      try {
-        const userId = userProfile?.id_pengguna || userProfile?.id;
-        if (userId) {
-          const formData = new FormData();
-          formData.append("record[status]", "Aktif");
-          formData.append("_method", "PUT");
-          await updateUser(userId, formData);
-        }
-      } catch (err) {
-        console.error("Gagal update status login:", err);
-      }
+      toast.success(`Login berhasil! Selamat datang, ${userProfile?.nama || "Pengguna"}`);
 
       const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
-      const redirectPath = userLevel === userLevelUmum ? "/my-profile" : "/";
-
       store.dispatch("menu/refreshMenuByUserLevel");
-
-      router.push(redirectPath);
+      router.push(userLevel === userLevelUmum ? "/my-profile" : "/");
     } else {
-      toast.error(
-        responseData.message || "Login gagal. Token tidak ditemukan.",
-      );
+      toast.error(responseData.message || "Login gagal. Token tidak ditemukan.");
     }
   } catch (error) {
     console.error("Login Error:", error);
-    if (error.response && error.response.data) {
-      const message =
-        error.response.data.message ||
-        error.response.data.error ||
-        "Login gagal.";
-      toast.error(message);
-    } else {
-      toast.error("Kesalahan sistem / koneksi server.");
-    }
+    const message = error.response?.data?.message || error.response?.data?.error || "Kesalahan sistem / koneksi server.";
+    toast.error(message);
   } finally {
     isLoading.value = false;
   }
 }
 
+// === Login Kemnaker ===
+function loginKemnaker() {
+  window.location.href = "https://pengukuranproduktivitas.kemnaker.go.id/be/login/sso";
+}
+
+// === Logo ===
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
     const response = await getApplicationPub();
     let sourceData = null;
-
-    if (response.data && Array.isArray(response.data)) {
-      if (response.data[0] && response.data[0].data) {
-        const innerArray = response.data[0].data;
-        if (Array.isArray(innerArray) && innerArray.length > 0) {
-          sourceData = innerArray[0];
-        }
-      }
+    if (response.data?.[0]?.data?.[0]) {
+      sourceData = response.data[0].data[0];
     }
 
-    // Mapping Data
     if (sourceData) {
       appName.value = sourceData.namainstansi || "Login Page";
-      if (sourceData.logo && sourceData.logo !== "") {
-        dynamicLogoUrl.value = sourceData.logo;
-      } else {
-        dynamicLogoUrl.value = null;
-      }
+      dynamicLogoUrl.value = sourceData.logo || null;
     } else {
       dynamicLogoUrl.value = null;
     }
   } catch (error) {
-    console.error("Error fetching logo for login:", error);
+    console.error("Error fetching logo:", error);
     dynamicLogoUrl.value = null;
   } finally {
     isLoadingLogo.value = false;
@@ -324,6 +303,7 @@ onUnmounted(() => {
   window.removeEventListener("app-settings-updated", fetchLogoData);
 });
 </script>
+
 
 <style scoped>
 .is-invalid {
@@ -376,4 +356,37 @@ onUnmounted(() => {
 .eye-container:hover svg {
   color: #0d6efd;
 }
+.btn-outline-success {
+  border-color: #213f67;
+}
+
+.btn-outline-success:hover {
+  background-color: #213f67;
+  color: #fff;
+}
+.btn-outline-success:hover, .btn-outline-success:focus, .btn-outline-success:active, .btn-outline-success.active {
+  color: white;
+  background-color: #213f67 !important;
+  border-color: #213f67 !important;
+}
+.btn-outline-success {
+  color: #213f67;
+}
+.kemnaker-icon {
+  height: 26px;
+  margin-right: 10px;
+  transition: filter 0.2s ease;
+}
+
+/* Hover button */
+.kemnaker-btn:hover .kemnaker-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Biar background & teks juga putih */
+.kemnaker-btn:hover {
+  background-color: #198754;
+  color: #fff;
+}
+
 </style>
