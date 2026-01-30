@@ -93,9 +93,25 @@
               <span
                 v-for="(interest, index) in parseBubble(item.minat)"
                 :key="index"
-                class="badge bg-light text-primary border border-primary px-3 py-2"
+                class="badge bg-light text-primary border border-primary px-3 py-2 rounded-pill"
               >
                 {{ interest }}
+              </span>
+            </div>
+          </dd>
+        </dl>
+
+        <!-- Keahlian -->
+        <dl v-if="item.keahlian" class="detail-list mt-3">
+          <dt>Keahlian</dt>
+          <dd>
+            <div class="d-flex flex-wrap gap-2">
+              <span
+                v-for="(skill, index) in parseBubble(item.keahlian)"
+                :key="index"
+                class="badge bg-light text-success border border-success px-3 py-2 rounded-pill"
+              >
+                {{ skill }}
               </span>
             </div>
           </dd>
@@ -507,7 +523,7 @@ function combineRelationData(
   referenceData,
   userKey,
   refKey,
-  refIdKey
+  refIdKey,
 ) {
   if (!Array.isArray(userRelations) || !Array.isArray(referenceData)) {
     return [];
@@ -546,7 +562,7 @@ function processDetailItem(item) {
     item["work-units"] || [],
     "idpenggunaunitkerja",
     "idunitkerja",
-    "idunitkerja"
+    "idunitkerja",
   );
 
   // Process Riwayat Perusahaan (untuk Non-ASN)
@@ -555,7 +571,7 @@ function processDetailItem(item) {
     (company, index) => ({
       ...company,
       _index: index,
-    })
+    }),
   );
 
   // Process Riwayat Pekerjaan
@@ -564,7 +580,7 @@ function processDetailItem(item) {
     item["job-types"] || [],
     "idpenggunapekerjaan",
     "idtipepekerjaan",
-    "idtipepekerjaan"
+    "idtipepekerjaan",
   );
 
   // Process Riwayat Jabatan
@@ -573,7 +589,7 @@ function processDetailItem(item) {
     item["level"] || [],
     "idepnggunajenjang",
     "idjenjang",
-    "idjenjang"
+    "idjenjang",
   );
 
   // Process Riwayat Pangkat
@@ -582,7 +598,7 @@ function processDetailItem(item) {
     item["ranks"] || [],
     "idpenggunapangkat",
     "idpangkat",
-    "idpangkat"
+    "idpangkat",
   );
 
   // Process Riwayat Pendidikan
@@ -591,14 +607,14 @@ function processDetailItem(item) {
     item["education-levels"] || [],
     "idpenggunapendidikan",
     "idjenjangpendidikan",
-    "idjenjangpendidikan"
+    "idjenjangpendidikan",
   );
 
   // Process Riwayat Pelatihan
   const userTrainings = item["user-trainings"] || [];
   riwayatPelatihan.value = uniqueByKey(
     userTrainings,
-    "idpenggunapelatihan"
+    "idpenggunapelatihan",
   ).filter((t) => t.namapelatihan);
 
   // Process Riwayat Prestasi
@@ -607,7 +623,7 @@ function processDetailItem(item) {
     item["scale"] || [],
     "idpenggunaprestasi",
     "idskala",
-    "idskala"
+    "idskala",
   );
 }
 </script>

@@ -76,6 +76,7 @@ const formData = reactive({
   foto: null,
   status: "Tidak Aktif",
   minat: "",
+  keahlian: "",
 });
 
 // === Computed ===
@@ -180,6 +181,7 @@ function populateFormData(data) {
   formData.foto = data.foto || null;
   formData.status = data.status || "Tidak Aktif";
   formData.minat = data.minat || "";
+  formData.keahlian = data.keahlian || "";
   formData.idjeniskelamin = data.idjeniskelamin || data.id_jenis_kelamin || "";
   formData.idjenispengguna =
     data.idjenispengguna || data.id_jenis_pengguna || "";

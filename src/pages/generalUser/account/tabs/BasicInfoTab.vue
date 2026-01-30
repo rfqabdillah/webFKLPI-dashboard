@@ -257,6 +257,54 @@
               </template>
             </div>
           </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ $t("Skills") }}</span>
+            <div class="info-value">
+              <template v-if="isEditing">
+                <div class="interest-input-container">
+                  <div class="interest-bubbles">
+                    <span
+                      v-for="(skill, index) in skillList"
+                      :key="index"
+                      class="interest-bubble"
+                    >
+                      {{ skill }}
+                      <button
+                        type="button"
+                        class="bubble-remove"
+                        @click="removeSkill(index)"
+                      >
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </span>
+                    <input
+                      type="text"
+                      class="interest-input"
+                      v-model="skillInput"
+                      @keydown="handleSkillKeydown"
+                      :placeholder="$t('Type and press Enter')"
+                    />
+                  </div>
+                </div>
+                <small class="form-text text-muted">
+                  {{ $t("Press Enter or comma to add skill") }}
+                </small>
+              </template>
+              <template v-else>
+                <div v-if="user.keahlian" class="d-flex flex-wrap gap-1">
+                  <span
+                    v-for="(skill, idx) in skillsList"
+                    :key="idx"
+                    class="interest-chip"
+                  >
+                    {{ skill }}
+                  </span>
+                </div>
+                <span v-else>-</span>
+              </template>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -657,6 +705,8 @@ const provinceLoading = ref(false);
 const kabupatenLoading = ref(false);
 const interestInput = ref("");
 const interestList = ref([]);
+const skillInput = ref("");
+const skillList = ref([]);
 const showChangeEmail = ref(false);
 const showEmailPassword = ref(false);
 
@@ -684,6 +734,14 @@ const interestsList = computed(() => {
   return props.user.minat
     .split(",")
     .map((i) => i.trim())
+    .filter(Boolean);
+});
+
+const skillsList = computed(() => {
+  if (!props.user.keahlian) return [];
+  return props.user.keahlian
+    .split(",")
+    .map((s) => s.trim())
     .filter(Boolean);
 });
 
@@ -719,6 +777,16 @@ watch(
           .filter(Boolean);
       } else {
         interestList.value = [];
+      }
+
+      // Parse keahlian
+      if (props.editForm.keahlian) {
+        skillList.value = props.editForm.keahlian
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else {
+        skillList.value = [];
       }
 
       if (props.editForm.kodepropinsi) {
@@ -896,10 +964,49 @@ function updateMinatFormData() {
   });
 }
 
+// Skill handlers
+function handleSkillKeydown(event) {
+  if (event.key === "," || event.key === "Enter") {
+    event.preventDefault();
+    addSkill();
+  } else if (
+    event.key === "Backspace" &&
+    !skillInput.value &&
+    skillList.value.length > 0
+  ) {
+    skillList.value.pop();
+    updateKeahlianFormData();
+  }
+}
+
+function addSkill() {
+  const value = skillInput.value.replace(/,/g, "").trim();
+  if (value && !skillList.value.includes(value)) {
+    skillList.value.push(value);
+    updateKeahlianFormData();
+  }
+  skillInput.value = "";
+}
+
+function removeSkill(index) {
+  skillList.value.splice(index, 1);
+  updateKeahlianFormData();
+}
+
+function updateKeahlianFormData() {
+  emit("update:editForm", {
+    ...props.editForm,
+    keahlian: skillList.value.join(", "),
+  });
+}
+
 function handleCancel() {
   Object.keys(formErrors).forEach((key) => (formErrors[key] = ""));
   interestList.value = [];
   interestInput.value = "";
+  skillList.value = [];
+  skillInput.value = "";
+  kabupatenOptions.value = [];
   kabupatenOptions.value = [];
   emit("cancel-editing");
 }

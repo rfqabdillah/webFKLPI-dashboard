@@ -348,6 +348,39 @@
         </small>
       </div>
 
+      <!-- Keahlian -->
+      <div class="col-12 mb-3">
+        <label class="form-label fw-semibold">Keahlian</label>
+        <div class="interest-input-container">
+          <div class="interest-bubbles">
+            <span
+              v-for="(skill, index) in skillList"
+              :key="index"
+              class="interest-bubble"
+            >
+              {{ skill }}
+              <button
+                type="button"
+                class="bubble-remove"
+                @click="removeSkill(index)"
+              >
+                <i class="fa fa-times"></i>
+              </button>
+            </span>
+            <input
+              type="text"
+              class="interest-input"
+              v-model="skillInput"
+              @keydown="handleSkillKeydown"
+              placeholder="Ketik keahlian, pisahkan dengan koma"
+            />
+          </div>
+        </div>
+        <small class="form-text text-muted">
+          Tekan koma (,) atau Enter untuk menambahkan keahlian.
+        </small>
+      </div>
+
       <!-- Upload Foto -->
       <div class="col-12 mb-3">
         <label class="form-label fw-semibold">Upload Foto</label>
@@ -444,6 +477,8 @@ const photoPreviewUrl = ref(null);
 const fileInput = ref(null);
 const interestInput = ref("");
 const interestList = ref([]);
+const skillInput = ref("");
+const skillList = ref([]);
 
 // Validation Schema
 const validationSchema = yup.object().shape({
@@ -498,6 +533,10 @@ onMounted(() => {
 
   if (formData.minat) {
     interestList.value = parseBubble(formData.minat);
+  }
+
+  if (formData.keahlian) {
+    skillList.value = parseBubble(formData.keahlian);
   }
 });
 
@@ -670,6 +709,38 @@ function removeInterest(index) {
 
 function updateMinatFormData() {
   formData.minat = interestList.value.join(", ");
+}
+
+function handleSkillKeydown(event) {
+  if (event.key === "," || event.key === "Enter") {
+    event.preventDefault();
+    addSkill();
+  } else if (
+    event.key === "Backspace" &&
+    !skillInput.value &&
+    skillList.value.length > 0
+  ) {
+    skillList.value.pop();
+    updateKeahlianFormData();
+  }
+}
+
+function addSkill() {
+  const value = skillInput.value.replace(/,/g, "").trim();
+  if (value && !skillList.value.includes(value)) {
+    skillList.value.push(value);
+    updateKeahlianFormData();
+  }
+  skillInput.value = "";
+}
+
+function removeSkill(index) {
+  skillList.value.splice(index, 1);
+  updateKeahlianFormData();
+}
+
+function updateKeahlianFormData() {
+  formData.keahlian = skillList.value.join(", ");
 }
 
 async function validateField(field) {

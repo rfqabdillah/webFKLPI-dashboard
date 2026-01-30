@@ -604,7 +604,9 @@ function createBiodataFormData() {
   data.append("record[tempatlahir]", biodata.tempatlahir || "");
   data.append("record[tanggallahir]", biodata.tanggallahir || "");
   data.append("record[status]", biodata.status || "");
+  data.append("record[status]", biodata.status || "");
   data.append("record[minat]", biodata.minat || "");
+  data.append("record[keahlian]", biodata.keahlian || "");
 
   // ID references for related data (optional)
   if (biodata.idpenggunajenjang)

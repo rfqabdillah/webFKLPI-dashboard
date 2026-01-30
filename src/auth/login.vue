@@ -133,7 +133,6 @@
                         Masuk
                       </button>
                     </div>
-
                   </div>
                   <p class="mt-4 mb-0 text-center">
                     Belum punya akun?<router-link to="/register" class="ms-2"
@@ -141,25 +140,22 @@
                     >
                   </p>
                 </Form>
-                <h6 class="text-muted mt-4 text-center">
-                  atau login dengan
-                </h6>
+                <h6 class="text-muted mt-4 text-center">atau login dengan</h6>
 
                 <div class="mt-3 text-center">
                   <button
-                      type="button"
-                      class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center kemnaker-btn"
-                      @click="loginKemnaker"
+                    type="button"
+                    class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center kemnaker-btn"
+                    @click="loginKemnaker"
                   >
                     <img
-                        src="/kemnaker-icon.png"
-                        alt="Login Kemnaker"
-                        class="kemnaker-icon"
+                      src="/kemnaker-icon.png"
+                      alt="Login Kemnaker"
+                      class="kemnaker-icon"
                     />
                     Akun Kemnaker
                   </button>
                 </div>
-
               </div>
             </div>
           </div>
@@ -201,7 +197,10 @@ const isLoadingLogo = ref(true);
 
 // === Schema Validasi ===
 const schema = yup.object({
-  email: yup.string().email("Format email tidak valid").required("Email wajib diisi"),
+  email: yup
+    .string()
+    .email("Format email tidak valid")
+    .required("Email wajib diisi"),
   password: yup.string().required("Password wajib diisi"),
 });
 
@@ -220,26 +219,48 @@ async function onSubmit() {
       localStorage.removeItem("remember_me_data");
     }
 
-      const response = await loginAPI(user.email, user.password);
+    const response = await loginAPI(user.email, user.password);
     const responseData = response.data;
-    const token = responseData.token || (responseData.data && responseData.data.token);
-    const userProfile = responseData.user || (responseData.data && responseData.data.user);
+    const token =
+      responseData.token || (responseData.data && responseData.data.token);
+    const userProfile =
+      responseData.user || (responseData.data && responseData.data.user);
 
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem("userData", JSON.stringify({ data: [userProfile] }));
 
-      toast.success(`Login berhasil! Selamat datang, ${userProfile?.nama || "Pengguna"}`);
+      // Update Login Status
+      try {
+        const userId = userProfile?.id_pengguna || userProfile?.id;
+        if (userId) {
+          const formData = new FormData();
+          formData.append("record[status]", "Aktif");
+          formData.append("_method", "PUT");
+          await updateUser(userId, formData);
+        }
+      } catch (err) {
+        console.error("Gagal update status login:", err);
+      }
+
+      toast.success(
+        `Login berhasil! Selamat datang, ${userProfile?.nama || "Pengguna"}`,
+      );
 
       const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
       store.dispatch("menu/refreshMenuByUserLevel");
       router.push(userLevel === userLevelUmum ? "/my-profile" : "/");
     } else {
-      toast.error(responseData.message || "Login gagal. Token tidak ditemukan.");
+      toast.error(
+        responseData.message || "Login gagal. Token tidak ditemukan.",
+      );
     }
   } catch (error) {
     console.error("Login Error:", error);
-    const message = error.response?.data?.message || error.response?.data?.error || "Kesalahan sistem / koneksi server.";
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      "Kesalahan sistem / koneksi server.";
     toast.error(message);
   } finally {
     isLoading.value = false;
@@ -248,7 +269,8 @@ async function onSubmit() {
 
 // === Login Kemnaker ===
 function loginKemnaker() {
-  window.location.href = "https://pengukuranproduktivitas.kemnaker.go.id/be/login/sso";
+  window.location.href =
+    "https://pengukuranproduktivitas.kemnaker.go.id/be/login/sso";
 }
 
 // === Logo ===
@@ -303,7 +325,6 @@ onUnmounted(() => {
   window.removeEventListener("app-settings-updated", fetchLogoData);
 });
 </script>
-
 
 <style scoped>
 .is-invalid {
@@ -364,7 +385,10 @@ onUnmounted(() => {
   background-color: #213f67;
   color: #fff;
 }
-.btn-outline-success:hover, .btn-outline-success:focus, .btn-outline-success:active, .btn-outline-success.active {
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active,
+.btn-outline-success.active {
   color: white;
   background-color: #213f67 !important;
   border-color: #213f67 !important;
@@ -388,5 +412,4 @@ onUnmounted(() => {
   background-color: #198754;
   color: #fff;
 }
-
 </style>

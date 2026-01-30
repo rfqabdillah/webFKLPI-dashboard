@@ -354,14 +354,14 @@ export default {
         return JSON.parse(
           JSON.stringify(
             layoutClasses.find(
-              (item) => Object.keys(item).pop() === this.layout.settings.layout
-            )
-          )
+              (item) => Object.keys(item).pop() === this.layout.settings.layout,
+            ),
+          ),
         )[this.layout.settings.layout];
       },
       set: function () {
         this.layoutobj = layoutClasses.find(
-          (item) => Object.keys(item).pop() === this.layout.settings.layout
+          (item) => Object.keys(item).pop() === this.layout.settings.layout,
         );
         this.layoutobj = JSON.parse(JSON.stringify(this.layoutobj))[
           this.layout.settings.layout
@@ -410,7 +410,7 @@ export default {
           (this.$store.state.menu.hideLeftArrowRTL = true));
     }, 500);
     this.layoutobject = layoutClasses.find(
-      (item) => Object.keys(item).pop() === this.layout.settings.layout
+      (item) => Object.keys(item).pop() === this.layout.settings.layout,
     );
     this.layoutobject = JSON.parse(JSON.stringify(this.layoutobject))[
       this.layout.settings.layout
@@ -442,7 +442,6 @@ export default {
       });
     });
 
-    // Add scroll listener for horizontal sticky
     window.addEventListener("scroll", this.handleScroll);
   },
   methods: {
@@ -454,22 +453,21 @@ export default {
       localStorage.setItem("pins", JSON.stringify(pinsArray));
     },
     handleScroll() {
-      // Original scroll logic for material-type and advance-layout
       if (window.scrollY > 400) {
         if (
           this.layoutobject.split(" ").pop() === "material-type" ||
           this.layoutobject.split(" ").pop() === "advance-layout"
-        )
-          document.querySelector(".sidebar-main").className =
-            "sidebar-main hovered";
+        ) {
+          const sidebarMain = document.querySelector(".sidebar-main");
+          if (sidebarMain) sidebarMain.className = "sidebar-main hovered";
+        }
       } else {
-        if (document.getElementById("sidebar-main"))
-          document.querySelector(".sidebar-main").className = "sidebar-main";
+        const sidebarMain = document.querySelector(".sidebar-main");
+        if (sidebarMain) sidebarMain.className = "sidebar-main";
       }
     },
     togglePinnedName({ item }) {
       item.showPin = !item.showPin;
-      // this.active = !this.active
       if (this.menuItems.length > 0) {
         this.menuItems = "show";
       } else {

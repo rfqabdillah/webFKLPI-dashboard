@@ -108,6 +108,7 @@ const PROFILE_FIELDS = [
   "tempatlahir",
   "tanggallahir",
   "minat",
+  "keahlian",
   "idjeniskelamin",
   "idjenispegawai",
 ];
@@ -147,6 +148,7 @@ const editForm = reactive({
   tempatlahir: "",
   tanggallahir: "",
   minat: "",
+  keahlian: "",
   idjeniskelamin: "",
   idjenispegawai: "",
 });
@@ -278,6 +280,7 @@ const startEditing = () => {
   editForm.tempatlahir = user.value.tempatlahir || "";
   editForm.tanggallahir = user.value.tanggallahir || "";
   editForm.minat = user.value.minat || "";
+  editForm.keahlian = user.value.keahlian || "";
   editForm.idjeniskelamin = user.value.idjeniskelamin || "";
   editForm.idjenispegawai = user.value.idjenispegawai || "";
   isEditing.value = true;
@@ -479,7 +482,7 @@ const requestChangeEmail = async () => {
   const result = await Swal.fire({
     title: t("Change Email"),
     text: t(
-      "A verification link will be sent to your new email address. Do you want to continue?"
+      "A verification link will be sent to your new email address. Do you want to continue?",
     ),
     icon: "question",
     showCancelButton: true,
@@ -505,7 +508,7 @@ const requestChangeEmail = async () => {
     await Swal.fire({
       title: t("Verification Email Sent"),
       text: t(
-        "Please check your new email address and click the verification link to complete the email change."
+        "Please check your new email address and click the verification link to complete the email change.",
       ),
       icon: "success",
       confirmButtonColor: "#0d6efd",
