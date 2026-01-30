@@ -30,6 +30,8 @@ import IndexBanners from "@/pages/settings/banners/index.vue";
 import IndexMenus from "@/pages/settings/menu/index.vue";
 import IndexContacts from "@/pages/settings/contacts/index.vue";
 
+import authSso from '../auth/auth_sso.vue';
+
 // Mulai Referensi
 import IndexUsers from "@/pages/general/user/index.vue";
 import IndexRegions from "@/pages/general/regions/index.vue";
@@ -64,6 +66,14 @@ const routes =[
             component: Login,
             meta: {
             title: 'Login',
+            }
+          },
+          {
+            path: 'auth_sso',
+            name: 'AUTH SSO',
+            component: authSso,
+            meta: {
+              title: ' login',
             }
           },
         ]
