@@ -105,7 +105,7 @@ async function fetchDetail() {
     error.value = err.message || "Gagal memuat detail data.";
     if (err.response) {
       debugMessage.value = `Status ${err.response.status}: ${JSON.stringify(
-        err.response.data
+        err.response.data,
       )}`;
     }
     toast.error("Gagal memuat detail data.");
@@ -136,7 +136,7 @@ watch(() => props.itemToView, fetchDetail, { deep: true });
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 1200px;
+  max-width: 65vw;
   max-height: 90vh;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   display: flex;

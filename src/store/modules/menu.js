@@ -15,6 +15,9 @@ const getCurrentUserLevel = () => {
       if (userData?.data?.[0]?.roles?.id_level) {
         return userData.data[0].roles.id_level;
       }
+      if (userData?.data?.[0]?.id_peran) {
+        return userData.data[0].id_peran;
+      }
     }
   } catch (error) {
     console.error('Error getting user level:', error);

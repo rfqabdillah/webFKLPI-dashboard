@@ -7,7 +7,7 @@
       class="nav-right col-xxl-7 col-xl-6 col-md-7 col-8 pull-right right-header p-0 ms-auto"
     >
       <ul class="nav-menus">
-        <Language />
+        <!-- <Language /> -->
         <Profile />
       </ul>
     </div>

@@ -1,4 +1,4 @@
-import {createRouter, createWebHashHistory} from "vue-router";
+import {createRouter, createWebHistory, createWebHashHistory} from "vue-router";
 import Body from '../components/body';
 import { userLevelUmum } from '@/constants/userLevels';
 import { menuItems } from '../data/menu';
@@ -8,53 +8,52 @@ import Login from '@/auth/login.vue';
 import Register from '@/auth/register.vue';
 import ForgetPassword from '@/auth/forgetpassword.vue';
 import ResetPassword from '@/auth/resetpassword.vue';
-
-import IndexEmployments from "@/pages/employment/index.vue";
-
-import IndexEvents from "@/pages/agenda/events/index.vue";
-import IndexEventCategories from "@/pages/agenda/eventCategories/index.vue";
-
-import IndexNews from "@/pages/news/news/index.vue";
-import IndexNewsCategories from "@/pages/news/newsCategories/index.vue";
-import IndexPages from "@/pages/pages/index.vue";
-import IndexAnnouncements from "@/pages/announcements/index.vue";
-import IndexRelatedLinks from "@/pages/relatedLinks/index.vue";
-import IndexMeasurementBooks from "@/pages/measurementBooks/index.vue";
-import IndexDocumentTypes from "@/pages/documentTypes/index.vue";
-import IndexOrganizationStructure from "@/pages/profiles/organizationStructure/index.vue"
-import IndexGallery from "@/pages/gallery/gallery/index.vue";
-import IndexPhotoGallery from "@/pages/gallery/photoGallery/index.vue";
-import IndexVideos from "@/pages/videos/videos/index.vue";
-import IndexVideoCategories from "@/pages/videos/videoCategories/index.vue";
-import IndexBanners from "@/pages/settings/banners/index.vue";
-import IndexMenus from "@/pages/settings/menu/index.vue";
-import IndexContacts from "@/pages/settings/contacts/index.vue";
-
 import authSso from '../auth/auth_sso.vue';
 
-// Mulai Referensi
-import IndexUsers from "@/pages/general/user/index.vue";
-import IndexRegions from "@/pages/general/regions/index.vue";
-import IndexUserTypes from "@/pages/general/userTypes/index.vue";
+import AgendaIndex from "@/pages/agenda/agenda/index.vue"
+import KategoriAgendaIndex from "@/pages/agenda/kategoriAgenda/index.vue"
 
-import IndexVocationalFields from "@/pages/personnel/vocationalFields/index.vue";
-import IndexVocationalSubfields from "@/pages/personnel/vocationalSubfields/index.vue";
-import IndexRanks from "@/pages/personnel/ranks/index.vue";
-import IndexScale from "@/pages/personnel/scale/index.vue";
-import IndexLevelCategories from "@/pages/personnel/levelCategories/index.vue";
-import IndexPositionLevels from "@/pages/personnel/positionLevels/index.vue";
-import IndexEducationLevels from "@/pages/personnel/educationLevels/index.vue";
-import IndexWorkUnits from "@/pages/personnel/workUnits/index.vue";
-import IndexEmployeeStatuses from "@/pages/personnel/employeeStatuses/index.vue";
-import IndexEmployeeTypes from "@/pages/personnel/employeeTypes/index.vue";
+import MouIndex from "@/pages/dokumen/mou/index.vue";
+import LaporanIndex from "@/pages/dokumen/laporan/index.vue";
+
+import TnaTrainingIndex from "@/pages/pelatihan/tnaPelatihan/index.vue";
+
+import FKLPIIndex from "@/pages/organisasi/organisasi/fklpi/index.vue"
+import PerusahaanIndex from "@/pages/organisasi/perusahaan/index.vue";
+import LembagaIndex from "@/pages/organisasi/lembaga/lembaga/index.vue";
+import JenisLembagaIndex from "@/pages/organisasi/lembaga/jenisLembaga/index.vue";
+
+import PembinaanIndex from "@/pages/pembinaan/daftarPembinaan/index.vue";
+import JenisPembinaanIndex from "@/pages/pembinaan/jenisPembinaan/index.vue";
+import MetodePembinaanIndex from "@/pages/pembinaan/metodePembinaan/index.vue";
+
+import AplikasiIndex from "@/pages/website/settings/aplikasi/index.vue";
+import BannerIndex from "@/pages/website/settings/banners/index.vue";
+import MenuIndex from "@/pages/website/settings/menu/index.vue";
+import DokumenIndex from "@/pages/website/dokumen/index.vue";
+import FaqIndex from "@/pages/website/faq/index.vue";
+import HalamanIndex from "@/pages/website/halaman/index.vue";
+import BeritaIndex from "@/pages/website/berita/berita/index.vue";
+import KategoriBeritaIndex from "@/pages/website/berita/kategoriBerita/index.vue";
+import LinkTerkaitIndex from "@/pages/website/linkTerkait/index.vue";
+
+// Mulai referensi
+import PenggunaIndex from "@/pages/referensi/umum/pengguna/index.vue";
+import PeranIndex from "@/pages/referensi/umum/peran/index.vue";
+import WilayahIndex from "@/pages/referensi/umum/wilayah/index.vue";
+import TestimoniIndex from "@/pages/website/testimoni/index.vue";  
+
+import JabatanIndex from "@/pages/referensi/kepengurusan/jabatan/index.vue";
+import StatusPengurusIndex from "@/pages/referensi/kepengurusan/dataKepengurusan/statusPengurus/index.vue";
+import ProfesiIndex from "@/pages/referensi/kepengurusan/dataKepengurusan/profesi/index.vue";
+import GolonganDarahIndex from "@/pages/referensi/kepengurusan/dataKepengurusan/golonganDarah/index.vue";
+import JenisKelaminIndex from "@/pages/referensi/kepengurusan/dataKepengurusan/jenisKelamin/index.vue";
+import PeriodeIndex from "@/pages/referensi/kepengurusan/periode/index.vue";
+import SkalaIndex from "@/pages/referensi/kepengurusan/skala/index.vue";
+
+import ProgramPelatihanIndex from "@/pages/referensi/programPelatihan/index.vue";
 
 
-import IndexUserProfile from "@/pages/generalUser/account/index.vue";
-import IndexAgendaPage from "@/pages/generalUser/agendaPage/index.vue";
-import IndexAgendaDetailPage from "@/pages/generalUser/agendaPage/agendaDetailIndex.vue";
-import IndexMyAgendaPage from "@/pages/generalUser/userAgenda/index.vue";
-import IndexTestimoniPage from "@/pages/generalUser/testimoni/index.vue";
-import IndexAdminTestimoni from "@/pages/testimoni/index.vue";
 
 const routes =[
     {
@@ -113,424 +112,361 @@ const routes =[
     }
   },
     {
-        path: '/',
-        component: Body,
-        children: [
-          {
-            path: '',
-            name: 'defaultRoot',
-            component: Default,
-            meta: {
-              title: 'Dashboard',
-              requiresAuth: true, 
-            }
-          },
-        ]
+      path: '/',
+      component: Body,
+      children: [
+        {
+          path: '',
+          name: 'defaultRoot',
+          component: Default,
+          meta: {
+            title: 'Dashboard',
+            requiresAuth: true, 
+          }
+        },
+      ]
+    },
+    {
+      path: '/agenda',
+      component: Body,
+      meta: {
+        requiresAuth: true,
       },
-      {
-        path: '/productivity-champions',
-        component: Body,
-        meta: {
+      children: [
+        {
+          path: "",
+          name: "agenda",
+          component: AgendaIndex,
+          meta: {
+            title: "Daftar Agenda",
+          },
+        },
+        {
+          path: "agenda-categories",
+          name: "kategori agenda",
+          component: KategoriAgendaIndex,
+          meta: {
+            title: "Daftar Kategori Agenda",
+          },
+        },
+      ]
+    },
+    {
+      path: '/reports',
+      component: Body,
+      meta: {
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "",
+          name: "laporan",
+          component: LaporanIndex,
+          meta: {
+            title: "Laporan",
+          },
+        },
+      ]
+    },
+    {
+      path: '/organization',
+      component: Body,
+      meta: {
           requiresAuth: true,
         },
-        children: [
-          {
-            path: "",
-            name: "Productivity Champions",
-            component: IndexEmployments,
-            meta: {
-              title: "Productivity Champions",
-            },
+      children: [
+        {
+          path: "fklpi",
+          name: "fklpi",
+          component: FKLPIIndex,
+          meta: {
+            title: "FKLPI P/D",
           },
-        ]
-      },
-      {
-        path: '/',
-        component: Body,
-        meta: {
-          requiresAuth: true,
         },
-        children: [
-          {
-            path: "events",
-            name: "Agenda_events",
-            component: IndexEvents,
-            meta: {
-              title: "Daftar Kegiatan",
-            },
+        {
+          path: "uptp-uptd",
+          name: "uptp-uptd",
+          component: LembagaIndex,
+          meta: {
+            title: "UPTP/UPTD",
           },
-          {
-            path: "event-categories",
-            name: "Agenda_eventCategories",
-            component: IndexEventCategories,
-            meta: {
-              title: "Kategori Kegiatan",
-            },
-          },
-        ]
-      },
-      {
-        path: '/website/testimoni',
-        component: Body,
-        meta: {
-          requiresAuth: true,
         },
-        children: [
-          {
-            path: "",
-            name: "AdminTestimoni",
-            component: IndexAdminTestimoni,
-            meta: {
-              title: "Kelola Testimoni",
-            },
+        {
+          path: "uptp-uptd-categories",
+          name: "uptp-uptd-categories",
+          component: JenisLembagaIndex,
+          meta: {
+            title: "Kategori UPTP/UPTD",
           },
-        ]
-      },
-      {
-        path: '/website',
-        component: Body,
-        meta: {
-          requiresAuth: true,
         },
-        children: [
-          {
-            path: "news",
-            name: "news",
-            component: IndexNews,
-            meta: {
-              title: "Daftar Berita",
-            },
+        {
+          path: "companies",
+          name: "perusahaan",
+          component: PerusahaanIndex,
+          meta: {
+            title: "Perusahaan",
           },
-          {
-            path: "news-categories",
-            name: "newsCategories",
-            component: IndexNewsCategories,
-            meta: {
-              title: "Kategori Berita",
-            },
-          },
-          {
-            path: "pages",
-            name: "Pages",
-            component: IndexPages,
-            meta: {
-              title: "Halaman",
-            },
-          },
-          {
-            path: "announcements",
-            name: "Announcements",
-            component: IndexAnnouncements,
-            meta: {
-              title: "Pengumuman",
-            },
-          },
-          {
-            path: "related-links",
-            name: "Related Links",
-            component: IndexRelatedLinks,
-            meta: {
-              title: "Link Terkait",
-            },
-          },
-          {
-            path: "documents",
-            name: "Measurement books (Dokumen)",
-            component: IndexMeasurementBooks,
-            meta: {
-              title: "Dokumen",
-            },
-          },
-          {
-            path: "document-types",
-            name: "Document Types",
-            component: IndexDocumentTypes,
-            meta: {
-              title: "Jenis Dokumen",
-            },
-          }, 
-          {
-            path: "gallery",
-            name: "Gallery",
-            component: IndexGallery,
-            meta: {
-              title: "Galeri",
-            },
-          },
-          {
-            path: "photo-gallery",
-            name: "Photo Gallery",
-            component: IndexPhotoGallery,
-            meta: {
-              title: "Galeri Foto",
-            },
-          },
-          {
-            path: "videos",
-            name: "Videos",
-            component: IndexVideos,
-            meta: {
-              title: "Vidio",
-            },
-          },
-          {
-            path: "video-categories",
-            name: "Video Categories",
-            component: IndexVideoCategories,
-            meta: {
-              title: "Kategori Vidio",
-            },
-          },
-          {
-            path: "profiles/organization-structure",
-            name: "Profile_organization Structure",
-            component: IndexOrganizationStructure,
-            meta: {
-              title: "Struktur Organisasi",
-            },
-          },
-          {
-            path: "settings/banners",
-            name: "Settings_banners",
-            component: IndexBanners,
-            meta: {
-              title: "Banner",
-            },
-          },
-          {
-            path: "settings/menus",
-            name: "Settings_menus",
-            component: IndexMenus,
-            meta: {
-              title: "Menu",
-            },
-          },
-          {
-            path: "settings/contacts",
-            name: "Settings_contacts",
-            component: IndexContacts,
-            meta: {
-              title: "Kontak",
-            },
-          },
-        ]
-      },
-      {
-        path: '/my-profile',
-        component: Body,
-        meta: {
-          requiresAuth: true,
         },
-        children: [
-          {
-            path: "",
-            name: "MyProfile",
-            component: IndexUserProfile,
-            meta: {
-              title: "Profil Saya",
-            },
-          },
-        ]
+      ]
+    },
+    {
+      path: '/training',
+      component: Body,
+      meta: {
+        requiresAuth: true,
       },
-      {
-        path: '/list-events',
-        component: Body,
-        meta: {
-          requiresAuth: true,
+      children: [
+        {
+          path: "",
+          name: "program pelatihan",
+          component: ProgramPelatihanIndex,
+          meta: {
+            title: "Program Pelatihan",
+          },
         },
-        children: [
-          {
-            path: "",
-            name: "AgendaPage",
-            component: IndexAgendaPage,
-            meta: {
-              title: "Jadwal Agenda",
-            },
-          },
-        ]
+      ]
+    },
+    {
+      path: '/tna',
+      component: Body,
+      meta: {
+        requiresAuth: true,
       },
-
-      {
-        path: '/event-detail/:id',
-        component: Body,
-        meta: {
-          requiresAuth: true,
+      children: [
+        {
+          path: "",
+          name: "tna pelatihan",
+          component: TnaTrainingIndex,
+          meta: {
+            title: "TNA",
+          },
         },
-        children: [
-          {
-            path: "",
-            name: "AgendaDetailPage",
-            component: IndexAgendaDetailPage,
-            meta: {
-              title: "Detail Agenda",
-            },
-          },
-        ]
+      ]
+    },
+    {
+      path: '/development',
+      component: Body,
+      meta: {
+        requiresAuth: true,
       },
-
-      {
-        path: '/my-events',
-        component: Body,
-        meta: {
-          requiresAuth: true,
+      children: [
+        {
+          path: "",
+          name: "pembinaan",
+          component: PembinaanIndex,
+          meta: {
+            title: "Daftar Pembinaan",
+          },
         },
-        children: [
-          {
-            path: "",
-            name: "MyAgendaPage",
-            component: IndexMyAgendaPage,
-            meta: {
-              title: "Agenda Saya",
-            },
+        {
+          path: "development-types",
+          name: "jenis pembinaan",
+          component: JenisPembinaanIndex,
+          meta: {
+            title: "Jenis Pembinaan",
           },
-        ]
-      },
-
-      {
-        path: '/testimoni',
-        component: Body,
-        meta: {
-          requiresAuth: true,
         },
-        children: [
-          {
-            path: "",
-            name: "TestimoniPage",
-            component: IndexTestimoniPage,
-            meta: {
-              title: "Testimoni Saya",
-            },
+        {
+          path: "development-methods",
+          name: "metode pembinaan",
+          component: MetodePembinaanIndex,
+          meta: {
+            title: "Metode Pembinaan",
           },
-        ]
-      },
-
-      {
-        path: '/general',
-        component: Body,
-        meta: {
-          requiresAuth: true,
         },
-        children: [
-          {
-            path: "users",
-            name: "General_users",
-            component: IndexUsers,
-            meta: {
-              title: "Pengguna",
-            },
-          },
-          {
-            path: "regions",
-            name: "General_regions",
-            component: IndexRegions,
-            meta: {
-              title: "Wilayah",
-            },
-          },
-          {
-            path: "user-types",
-            name: "General_userTypes",
-            component: IndexUserTypes,
-            meta: {
-              title: "Jenis Pengguna",
-            },
-          },
-        ]
-      },
+      ]
+    },
       {
-        path: '/personnel',
-        component: Body,
-        meta: {
-          requiresAuth: true,
+          path: '/website',
+          component: Body,
+          meta: {
+            requiresAuth: true,
+          },
+          children: [
+            {
+              path: "news",
+              name: "berita",
+              component: BeritaIndex,
+              meta: {
+                title: "Daftar Berita",
+              },
+            },
+            {
+              path: "news-categories",
+              name: "kategoriBerita",
+              component: KategoriBeritaIndex,
+              meta: {
+                title: "Kategori Berita",
+              },
+            },
+            {
+              path: "documents",
+              name: "dokumen",
+              component: DokumenIndex,
+              meta: {
+                title: "Dokumen",
+              },
+            },
+            {
+              path: "faq",
+              name: "faq",
+              component: FaqIndex,
+              meta: {
+                title: "FAQ",
+              },
+            },
+            {
+              path: "pages",
+              name: "pages",
+              component: HalamanIndex,
+              meta: {
+                title: "Halaman",
+              },
+            },
+            {
+              path: "settings/banners",
+              name: "banner",
+              component: BannerIndex,
+              meta: {
+                title: "Banner",
+              },
+            },
+            {
+              path: "settings/menus",
+              name: "menu",
+              component: MenuIndex,
+              meta: {
+                title: "Menu",
+              },
+            },
+            {
+              path: "settings/applications",
+              name: "aplikasi",
+              component: AplikasiIndex,
+              meta: {
+                title: "Aplikasi",
+              },
+            },
+            {
+              path: "testimonials",
+              name: "testimoni",
+              component: TestimoniIndex,
+              meta: {
+                title: "Testimoni",
+              },
+            },
+            {
+              path: "related-links",
+              name: "link terkait",
+              component: LinkTerkaitIndex,
+              meta: {
+                title: "Link Terkait",
+              },
+            },
+          ]
         },
-        children: [
-          // {
-          //   path: 'vocational-fields',
-          //   name: 'Personnel_VocationalFields',
-          //   component: IndexVocationalFields,
-          //   meta: {
-          //     title: 'Kejuruan',
-          //   }
-          // },
-          // {
-          //   path: 'vocational-subfields',
-          //   name: 'Personnel_VocationalSubfields',
-          //   component: IndexVocationalSubfields,
-          //   meta: {
-          //     title: 'Sub Kejuruan',
-          //   }
-          // },
-          {
-            path: 'ranks',
-            name: 'Personnel_Ranks',
-            component: IndexRanks,
-            meta: {
-              title: 'Pangkat',
-            }
+        {
+          path: '/general',
+          component: Body,
+          meta: {
+            requiresAuth: true,
           },
-          {
-            path: 'level-categories',
-            name: 'Personnel_LevelCategories',
-            component: IndexLevelCategories,
-            meta: {
-              title: 'Jenjang Kategori',
-            }
+          children: [
+            {
+              path: "users",
+              name: "pengguna",
+              component: PenggunaIndex,
+              meta: {
+                title: "Pengguna",
+              },
+            },
+            {
+              path: "roles",
+              name: "peran",
+              component: PeranIndex,
+              meta: {
+                title: "Peran",
+              },
+            },
+            {
+              path: "regions",
+              name: "wilayah",
+              component: WilayahIndex,
+              meta: {
+                title: "Wilayah",
+              },
+            },
+          ]
+        },
+        {
+          path: '/management',
+          component: Body,
+          meta: {
+            requiresAuth: true,
           },
-          {
-            path: 'position-levels',
-            name: 'Personnel_PositionLevels',
-            component: IndexPositionLevels,
-            meta: {
-              title: 'Jenjang Jabatan',
-            }
-          },
-          {
-            path: 'education-levels',
-            name: 'Personnel_EducationLevels',
-            component: IndexEducationLevels,
-            meta: {
-              title: 'Jenjang Pendidikan',
-            }
-          },
-          {
-            path: 'work-units',
-            name: 'Personnel_WorkUnits',
-            component: IndexWorkUnits,
-            meta: {
-              title: 'Unit Kerja',
-            }
-          },
-          {
-            path: 'employee-statuses',
-            name: 'Personnel_EmployeStatuses',
-            component: IndexEmployeeStatuses,
-            meta: {
-              title: 'Status Pegawai',
-            }
-          },
-          {
-            path: 'professions',
-            name: 'Personnel_EmployeTypes',
-            component: IndexEmployeeTypes,
-            meta: {
-              title: 'Profesi',
-            }
-          },
-          {
-            path: 'scale',
-            name: 'Personnel_Scale',
-            component: IndexScale,
-            meta: {
-              title: 'Skala',
-            }
-          },
-        ]
-      },
-
+          children: [
+            {
+              path: "positions",
+              name: "jabatan",
+              component: JabatanIndex,
+              meta: {
+                title: "Jabatan",
+              },
+            },
+            {
+              path: "blood-types",
+              name: "golongan darah",
+              component: GolonganDarahIndex,
+              meta: {
+                title: "Golongan Darah",
+              },
+            },
+            {
+              path: "genders",
+              name: "jenis kelamin",
+              component: JenisKelaminIndex,
+              meta: {
+                title: "Jenis Kelamin",
+              },
+            },
+            {
+              path: "professions",
+              name: "profesi",
+              component: ProfesiIndex,
+              meta: {
+                title: "Profesi",
+              },
+            },
+            {
+              path: "status-positions",
+              name: "status Pengurus",
+              component: StatusPengurusIndex,
+              meta: {
+                title: "Status Pengurus",
+              },
+            },
+            {
+              path: "periods",
+              name: "Periode",
+              component: PeriodeIndex,
+              meta: {
+                title: "Periode",
+              },
+            },
+            {
+              path: "scale",
+              name: "skala",
+              component: SkalaIndex,
+              meta: {
+                title: "Skala",
+              },
+            },
+          ]
+        },
 
 ]
 const router=createRouter({
-    history: createWebHashHistory(process.env.BASE_URL),
+    history: createWebHistory(process.env.BASE_URL),
     routes
 })
 
@@ -564,7 +500,7 @@ router.beforeEach((to, from, next) => {
   
 
   if (to.meta.title) {
-    document.title = `${to.meta.title} - Direktorat Bina Peningkatan Produktivitas Nasional`;
+    document.title = `${to.meta.title} - Forum Komunikasi Lembaga Pelatihan dengan Industri`;
   }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
@@ -580,12 +516,12 @@ router.beforeEach((to, from, next) => {
         const userDataString = localStorage.getItem('userData');
         if (userDataString) {
           const userData = JSON.parse(userDataString);
-          const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
+          const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level || userData?.data?.[0]?.id_peran;
           
-          if (userLevel === userLevelUmum) {
-            next('/my-profile');
-            return;
-          }
+          // if (userLevel === userLevelUmum) {
+          //   next('/my-profile');
+          //   return;
+          // }
         }
       } catch (error) {
         console.error('Error checking user level in router guard:', error);
@@ -596,17 +532,17 @@ router.beforeEach((to, from, next) => {
         const userDataString = localStorage.getItem('userData');
         if (userDataString) {
           const userData = JSON.parse(userDataString);
-          const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level;
+          const userLevel = userData?.data?.[0]?.id_level || userData?.data?.[0]?.roles?.id_level || userData?.data?.[0]?.id_peran;
           
           const accessAllowed = checkMenuAccess(menuItems.data, to.path, userLevel);
           
           if (accessAllowed === false) {
-            if (userLevel === userLevelUmum) {
-              next('/my-profile');
-            } else {
-              next('/'); 
-            }
-            return;
+            // if (userLevel === userLevelUmum) {
+            //   next('/my-profile');
+            // } else {
+            //   next('/'); 
+            // }
+            // return;
           }
         }
     } catch (e) {

@@ -5,13 +5,13 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
 import { useIdleLogout } from "@/utils/useIdleLogout";
-import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+import { getAplikasi } from "@/services/public/aplikasiPublic";
 
-useIdleLogout();
+// useIdleLogout();
 
 async function setupAppIdentity() {
   try {
-    const response = await getApplicationPub();
+    const response = await getAplikasi();
     let sourceData = null;
 
     if (response.data && Array.isArray(response.data)) {
@@ -24,9 +24,9 @@ async function setupAppIdentity() {
     }
 
     if (sourceData) {
-      if (sourceData.namainstansi) {
-        document.title = sourceData.namainstansi;
-      }
+      // if (sourceData.nama_instansi) {
+      //   document.title = sourceData.nama_instansi;
+      // }
 
       if (sourceData.favicon && sourceData.favicon !== "") {
         let link = document.querySelector("link[rel~='icon']");
@@ -47,7 +47,6 @@ async function setupAppIdentity() {
 
 onMounted(() => {
   setupAppIdentity();
-
   window.addEventListener("app-settings-updated", setupAppIdentity);
 });
 

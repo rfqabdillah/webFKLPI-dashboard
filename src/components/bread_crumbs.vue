@@ -7,7 +7,7 @@
       <div class="col-6">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="/api/api"><i class="fa fa-home"></i></a>
+            <a href="/"><i class="fa fa-home"></i></a>
           </li>
           <li v-if="main && main !== title" class="breadcrumb-item">
             {{ $t(main) }}

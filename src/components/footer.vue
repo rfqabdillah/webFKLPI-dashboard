@@ -37,13 +37,13 @@
                 ></i>
                 <span
                   style="white-space: pre-line"
-                  v-html="settings.alamat_instansi || '-'"
+                  v-html="settings.alamat || '-'"
                 ></span>
               </div>
 
               <div class="d-flex mb-3 text-white align-items-center">
                 <i class="fa fa-phone me-3 text-center" style="width: 20px"></i>
-                <span>{{ settings.telepone || "-" }}</span>
+                <span>{{ settings.telepon || "-" }}</span>
               </div>
 
               <div class="d-flex mb-4 text-white align-items-center">
@@ -63,6 +63,19 @@
                   title="Email"
                 >
                   <i class="fa-solid fa-envelope"></i>
+                </a>
+                <a
+                  v-if="settings.whatsapp"
+                  :href="
+                    formatWhatsappLink(
+                      settings.whatsapp,
+                      'Halo, saya ingin informasi lebih lanjut mengenai layanan Anda',
+                    )
+                  "
+                  target="_blank"
+                  class="social-link"
+                >
+                  <i class="fa-brands fa-whatsapp"></i>
                 </a>
                 <a
                   v-if="settings.facebook"
@@ -89,21 +102,12 @@
                   <i class="fa-brands fa-x-twitter"></i>
                 </a>
                 <a
-                  v-if="settings.whatsapp"
-                  :href="settings.whatsapp"
-                  target="_blank"
-                  class="social-link"
-                >
-                  <i class="fa-brands fa-whatsapp"></i>
-                </a>
-                <a
                   v-if="settings.tiktok"
                   :href="settings.tiktok"
                   target="_blank"
                   class="social-link"
                 >
                   <i class="fa-brands fa-tiktok"></i>
-                  <!-- Fallback if tiktok icon missing -->
                 </a>
                 <a
                   v-if="settings.youtube"
@@ -133,7 +137,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
-import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+import { getAplikasi } from "@/services/public/aplikasiPublic";
 
 const store = useStore();
 const settings = ref({});
@@ -143,7 +147,7 @@ const footer = computed(() => store.getters["layout/footer"]);
 
 onMounted(async () => {
   try {
-    const response = await getApplicationPub();
+    const response = await getAplikasi();
     let sourceData = null;
 
     if (response.data && Array.isArray(response.data)) {
@@ -162,6 +166,17 @@ onMounted(async () => {
     console.error("Failed to fetch footer settings:", error);
   }
 });
+
+const formatWhatsappLink = (phone, message) => {
+  if (!phone) return "#";
+  let cleanPhone = phone.replace(/\D/g, "");
+  if (cleanPhone.startsWith("0")) {
+    cleanPhone = "62" + cleanPhone.slice(1);
+  }
+
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+};
 </script>
 
 <style scoped>
@@ -206,7 +221,6 @@ onMounted(async () => {
 </style>
 
 <style>
-/* Responsive Footer Adjustment */
 .page-wrapper.compact-wrapper .page-body-wrapper .footer {
   margin-left: 265px;
   width: auto;
@@ -226,8 +240,6 @@ onMounted(async () => {
     margin-left: 0;
   }
 }
-
-/* Adjust padding for Dubai (compact-wrapper) layout */
 .page-wrapper.compact-wrapper .footer .container-padded {
   padding-left: 30px !important;
   padding-right: 30px !important;

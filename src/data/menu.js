@@ -15,33 +15,108 @@ export var menuItems = {
       "active": false
     },
     {
-      "title": "Productivity Champions",
-      "icon": "stroke-user",
-      "iconf": "fill-user",
+    "title": "Agenda",
+    "icon": "stroke-calendar",
+    "iconf": "fill-calendar",
+    "type": "sub",
+    "active": false,
+    "children": [
+      {
+        "path": "/agenda",
+        "title": "Daftar Agenda",
+        "type": "link",
+        "active": false
+      },
+      {
+        "path": "/agenda/agenda-categories",
+        "title": "Kategori Agenda",
+        "type": "link",
+        "active": false
+      }
+    ]
+    },
+    {
+      "title": "Laporan",
+      "icon": "stroke-file",
+      "iconf": "fill-file",
       "type": "link",
-      "path": "/productivity-champions",
+      "path": "/reports",
       "active": false
     },
     {
-      "title": "Agenda",
-      "icon": "stroke-calendar",
-      "iconf":"settings-hex",
-      "type": "sub",
-      "active": false,
-      "children": [
-        {
-          "path": "/events",
-          "title": "Daftar Kegiatan",
-          "type": "link",
-          "active":false
-        },
-        {
-          "path": "/event-categories",
-          "title": "Kategori Kegiatan",
-          "type": "link",
-          "active":false
-        },
-      ]
+    "title": "Organisasi",
+    "icon": "stroke-board",
+    "iconf": "fill-board",
+    "type": "sub",
+    "active": false,
+    "children": [
+      {
+        "path": "/organization/fklpi",
+        "title": "FKLPI P/D",
+        "type": "link",
+        "active": false
+      },
+      {
+        "title": "UPTP/UPTD",
+        "type": "sub",
+        "active": false,
+        "children": [
+          {
+            "path": "/organization/uptp-uptd",
+            "title": "Daftar UPTP/UPTD",
+            "type": "link",
+            "active": false
+          },
+          {
+            "path": "/organization/uptp-uptd-categories",
+            "title": "Kategori UPTP/UPTD",
+            "type": "link",
+            "active": false
+          }
+        ]
+      },
+      {
+        "path": "/organization/companies",
+        "title": "Perusahaan",
+        "type": "link",
+        "active": false
+      },
+    ]
+    },
+    {
+      "title": "TNA",
+      "icon": "stroke-search",
+      "iconf": "fill-search",
+      "type": "link",
+      "path": "/tna",
+      "active": false
+    },
+    {
+    "title": "Pembinaan",
+    "icon": "stroke-task",
+    "iconf": "fill-task",
+    "type": "sub",
+    "active": false,
+    "children": [
+      {
+        "path": "/development",
+        "title": "Daftar Pembinaan",
+        "type": "link",
+        "active":false
+      },
+      {
+        "path": "/development/development-types",
+        "title": "Jenis Pembinaan",
+        "type": "link",
+        "active":false
+      },
+      {
+        "path": "/development/development-methods",
+        "title": "Metode Pembinaan",
+        "type": "link",
+        "active":false
+      },
+    ]
     },
     {
     "title": "Website",
@@ -70,98 +145,34 @@ export var menuItems = {
         ]
       },
       {
+        "path": "/website/documents",
+        "title": "Dokumen Lainnya",
+        "type": "link",
+        "active": false
+      },
+      {
+        "path": "/website/faq",
+        "title": "FAQ",
+        "type": "link",
+        "active": false
+      },
+      {
         "path": "/website/pages",
         "title": "Halaman",
         "type": "link",
-        "active":false
-      },
-      {
-        "path": "/website/announcements",
-        "title": "Pengumuman",
-        "type": "link",
-        "active":false
-      },
-      {
-        "path": "/website/related-links",
-        "title": "Link Terkait",
-        "type": "link",
-        "active":false
-      },
-      {
-        "path": "/website/documents",
-        "title": "Dokumen",
-        "type": "link",
-        "active":false
-      },
-      
-      {
-        "path": "/website/document-types",
-        "title": "Jenis Dokumen",
-        "type": "link",
-        "active":false
-      },
-      {
-        "path": "/website/testimoni",
-        "title": "Testimoni",
-        "type": "link",
-        "active":false
-      },
-      {
-        "title": "Galeri",
-        "type": "sub",
-        "active": false,
-        "children": [
-          {
-            "path": "/website/gallery",
-            "title": "Galeri",
-            "type": "link",
-            "active":false
-          },
-          {
-            "path": "/website/photo-gallery",
-            "title": "Galeri Foto",
-            "type": "link",
-            "active":false
-          },
-        ]
-      },
-      {
-        "title": "Video",
-        "type": "sub",
-        "active": false,
-        "children": [
-          {
-            "path": "/website/videos",
-            "title": "Daftar Video",
-            "type": "link",
-            "active": false
-          },
-          {
-            "path": "/website/video-categories",
-            "title": "Kategori Video",
-            "type": "link",
-            "active": false
-          }
-        ]
-      },
-      {
-        "title": "Profil",
-        "type": "sub",
-        "active": false,
-        "children": [
-          {
-            "path": "/website/profiles/organization-structure",
-            "title": "Struktur Organisasi",
-            "type": "link",
-            "active":false
-          },
-        ]
+        "active": false
       },
       {
         "title": "Pengaturan",
         "type": "sub",
         "active": false,
         "children": [
+          {
+            "path": "/website/settings/applications",
+            "title": "Aplikasi",
+            "type": "link",
+            "active":false
+          },
           {
             "path": "/website/settings/banners",
             "title": "Banner",
@@ -174,53 +185,22 @@ export var menuItems = {
             "type": "link",
             "active":false
           },
-          {
-            "path": "/website/settings/contacts",
-            "title": "Kontak",
-            "type": "link",
-            "active":false
-          },
         ]
+      },
+      {
+        "path": "/website/related-links",
+        "title": "Link Terkait",
+        "type": "link",
+        "active": false
+      },
+      {
+        "path": "/website/testimonials",
+        "title": "Testimoni",
+        "type": "link",
+        "active":false
       },
     ]
     },
-    {
-      "title": "Profil Saya",
-      "icon": "stroke-user",
-      "iconf": "fill-user",
-      "type": "link",
-      "path": "/my-profile",
-      "active": false,
-      "allowedLevels": [userLevelUmum]
-    },
-    {
-      "title": "My Events",
-      "icon": "stroke-big-checklist",
-      "iconf": "fill-big-checklist",
-      "type": "link",
-      "path": "/my-events",
-      "active": false,
-      "allowedLevels": [userLevelUmum]
-    },
-    {
-      "title": "Events Schedule",
-      "icon": "stroke-calendar",
-      "iconf": "fill-calendar",
-      "type": "link",
-      "path": "/list-events",
-      "active": false,
-      "allowedLevels": [userLevelUmum]
-    },
-    {
-      "title": "Testimoni",
-      "icon": "message-box",
-      "iconf": "message-box",
-      "type": "link",
-      "path": "/testimoni",
-      "active": false,
-      "allowedLevels": [userLevelUmum]
-    },
-  
     {
       "headTitle1": "Referensi",
       "type": "headtitle",
@@ -241,21 +221,21 @@ export var menuItems = {
           "active":false
         },
         {
-          "path": "/general/regions",
-          "title": "Wilayah",
+          "path": "/general/roles",
+          "title": "Peran",
           "type": "link",
           "active":false
         },
         {
-          "path": "/general/user-types",
-          "title": "Jenis Pengguna",
+          "path": "/general/regions",
+          "title": "Wilayah",
           "type": "link",
           "active":false
         },
       ]
     },
     {
-      "title": "Kepegawaian",
+      "title": "Kepengurusan",
       "icon": "stroke-social",
       "iconf":"fill-social",
       "type": "sub",
@@ -263,74 +243,63 @@ export var menuItems = {
       "allowedLevels": [userLevelAdministrator],
       "children": [
         {
-          "title": "Data Kepegawaian",
-          "type": "sub",
-          "active": false,
-          "children": [
-            {
-              "path": "/personnel/professions",
-              "title": "Profesi",
-              "type": "link",
-              "active": false
-            },
-            {
-              "path": "/personnel/employee-statuses",
-              "title": "Status Pegawai",
-              "type": "link",
-              "active": false
-            }
-          ]
-        },
-        // {
-        //   "path": "/personnel/vocational-fields",
-        //   "title": "Kejuruan",
-        //   "type": "link",
-        //   "active":false
-        // },
-        // {
-        //   "path": "/personnel/vocational-subfields",
-        //   "title": "Sub Kejuaraan",
-        //   "type": "link",
-        //   "active":false
-        // },
-        {
-          "path": "/personnel/ranks",
-          "title": "Pangkat",
+          "path": "/management/positions",
+          "title": "Jabatan",
           "type": "link",
           "active":false
         },
         {
-          "path": "/personnel/level-categories",
-          "title": "Jenjang Kategori",
-          "type": "link",
-          "active":false
-        },
-        {
-          "path": "/personnel/position-levels",
-          "title": "Jenjang jabatan",
-          "type": "link",
-          "active":false
-        },
-        {
-          "path": "/personnel/education-levels",
-          "title": "Jenjang Pendidikan",
-          "type": "link",
-          "active":false
-        },
-        {
-          "path": "/personnel/work-units",
-          "title": "Unit Kerja",
-          "type": "link",
-          "active":false
-        },
-        {
-          "path": "/personnel/scale",
-          "title": "Skala",
-          "type": "link",
-          "active":false
-        },
+        "title": "Data Kepengurusan",
+        "type": "sub",
+        "active": false,
+        "children": [
+          {
+            "path": "/management/blood-types",
+            "title": "Golongan Darah",
+            "type": "link",
+            "active":false
+          },
+          {
+            "path": "/management/genders",
+            "title": "Jenis Kelamin",
+            "type": "link",
+            "active":false
+          },
+          {
+            "path": "/management/professions",
+            "title": "Profesi",
+            "type": "link",
+            "active":false
+          },
+          {
+            "path": "/management/status-positions",
+            "title": "Status Pengurus",
+            "type": "link",
+            "active":false
+          },
+        ]
+      },
+      {
+        "path": "/management/periods",
+        "title": "Periode",
+        "type": "link",
+        "active": false
+      },
+      {
+        "path": "/management/scale",
+        "title": "Skala",
+        "type": "link",
+        "active": false
+      },
       ]
     },
-
+    {
+      "title": "Program Pelatihan",
+      "icon": "stroke-learning",
+      "iconf": "fill-learning",
+      "type": "link",
+      "path": "/training",
+      "active": false
+    },
   ]
 }

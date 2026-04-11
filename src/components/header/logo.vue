@@ -47,7 +47,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useStore } from "vuex";
-import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+import { getAplikasi } from "@/services/public/aplikasiPublic";
 
 const store = useStore();
 
@@ -70,7 +70,7 @@ function handleImageError() {
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplicationPub();
+    const response = await getAplikasi();
 
     let sourceData = null;
 
@@ -84,7 +84,7 @@ async function fetchLogoData() {
     }
 
     if (sourceData) {
-      appName.value = sourceData.namainstansi || "Aplikasi";
+      appName.value = sourceData.nama_instansi || "Aplikasi";
 
       if (sourceData.logo && sourceData.logo !== "") {
         dynamicLogoUrl.value = sourceData.logo;

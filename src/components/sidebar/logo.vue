@@ -35,7 +35,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useStore } from "vuex";
-import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+import { getAplikasi } from "@/services/public/aplikasiPublic";
 
 const store = useStore();
 const sidebarType = computed(() => store.state.menu.togglesidebar);
@@ -55,10 +55,9 @@ function handleImageError() {
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplicationPub();
+    const response = await getAplikasi();
     let sourceData = null;
 
-    // Karena di frontend hanya ada 1 data aplikasi, langsung ambil data pertama
     if (response.data && Array.isArray(response.data)) {
       if (response.data[0] && response.data[0].data) {
         const innerArray = response.data[0].data;

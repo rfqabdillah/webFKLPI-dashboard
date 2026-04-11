@@ -79,7 +79,7 @@ function handleOverlayClick(e) {
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 1000px;
+  max-width: 65vw;
   max-height: 90vh;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   display: flex;

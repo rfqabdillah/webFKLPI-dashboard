@@ -119,7 +119,7 @@ import { Form, Field } from "vee-validate";
 import * as yup from "yup";
 import { useToast } from "vue-toastification";
 import axios from "@/utils/axiosEncrypt.js";
-import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
+import { getAplikasi } from "@/services/public/aplikasiPublic";
 
 const toast = useToast();
 
@@ -212,7 +212,7 @@ async function onSubmit() {
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplicationPub();
+    const response = await getAplikasi();
     let sourceData = null;
 
     if (response.data && Array.isArray(response.data)) {

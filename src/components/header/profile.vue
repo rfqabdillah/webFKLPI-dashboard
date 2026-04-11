@@ -37,7 +37,7 @@
       <div class="media-body">
         <span>{{ user.nama }}</span>
         <p class="mb-0 font-roboto">
-          {{ user.nama_level }} <i class="middle fa fa-angle-down"></i>
+          {{ user.nama_peran }} <i class="middle fa fa-angle-down"></i>
         </p>
       </div>
     </div>
@@ -53,7 +53,7 @@
 
 <script>
 import apiClient from "@/services/users";
-import { updateUser } from "@/services/referensi/users";
+import { updateUser } from "@/services/referensi/pengguna";
 import { getInitials, getRandomColor } from "@/utils/avatarUtils";
 
 export default {
@@ -63,7 +63,7 @@ export default {
       isLoading: true,
       user: {
         nama: this.$t("User"),
-        nama_level: this.$t("Role"),
+        nama_peran: this.$t("Role"),
         photo: null,
       },
       userDataCheckInterval: null,
@@ -80,23 +80,18 @@ export default {
   mounted() {
     this.loadUserData();
 
-    // Listen for storage changes from other tabs/windows
     window.addEventListener("storage", this.handleStorageChange);
 
-    // Listen for custom event when user updates profile in same tab
     window.addEventListener("userDataUpdated", this.handleUserDataUpdate);
 
-    // Fallback: Check for userData changes periodically (in case events don't fire)
     this.userDataCheckInterval = setInterval(() => {
       this.loadUserData();
-    }, 3000); // Check every 3 seconds
+    }, 3000);
   },
   beforeUnmount() {
-    // Clean up event listeners
     window.removeEventListener("storage", this.handleStorageChange);
     window.removeEventListener("userDataUpdated", this.handleUserDataUpdate);
 
-    // Clear interval
     if (this.userDataCheckInterval) {
       clearInterval(this.userDataCheckInterval);
     }
@@ -111,21 +106,18 @@ export default {
     },
 
     handleStorageChange(e) {
-      // Triggered when localStorage changes in another tab/window
       if (e.key === "userData") {
         this.loadUserData();
       }
     },
 
     handleUserDataUpdate() {
-      // Triggered by custom event when user updates profile
       this.loadUserData();
     },
 
     loadUserData() {
       const storedUserData = localStorage.getItem("userData");
       if (!storedUserData) {
-        // Small delay so skeleton is visible
         setTimeout(() => {
           this.isLoading = false;
         }, 300);
@@ -137,12 +129,11 @@ export default {
         const userProfile = parsedData.data?.[0];
 
         if (userProfile) {
-          // Only update if data actually changed (to avoid unnecessary re-renders)
           if (this.user.nama !== userProfile.nama) {
             this.user.nama = userProfile.nama || this.$t("User");
           }
-          if (this.user.nama_level !== userProfile.nama_level) {
-            this.user.nama_level = userProfile.nama_level || this.$t("Role");
+          if (this.user.nama_peran !== userProfile.nama_peran) {
+            this.user.nama_peran = userProfile.nama_peran || this.$t("Role");
           }
           if (this.user.photo !== userProfile.foto) {
             this.user.photo = userProfile.foto || null;
@@ -151,7 +142,6 @@ export default {
       } catch (error) {
         console.error("Gagal parse user data dari localStorage:", error);
       } finally {
-        // Small delay so skeleton is visible
         setTimeout(() => {
           this.isLoading = false;
         }, 300);
@@ -160,13 +150,13 @@ export default {
 
     async logout() {
       const result = await this.$swal.fire({
-        text: this.$t("Are you sure you want to logout?"),
+        text: "Apakah anda yakin ingin keluar?",
         icon: "warning",
         showCancelButton: true,
         cancelButtonColor: "#efefef",
         confirmButtonColor: "#0d6efd",
-        cancelButtonText: this.$t("Cancel"),
-        confirmButtonText: this.$t("Confirm"),
+        cancelButtonText: "Batal",
+        confirmButtonText: "Konfirmasi",
         reverseButtons: true,
       });
 
@@ -213,11 +203,7 @@ export default {
           localStorage.removeItem("userData");
 
           this.$router.replace("/auth");
-          this.$swal.fire(
-            this.$t("Success"),
-            this.$t("You have successfully logged out"),
-            "success",
-          );
+          this.$swal.fire("Sukses", "Anda berhasil logout", "success");
         }
       }
     },

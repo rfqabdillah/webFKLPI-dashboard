@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { updateUser, default as apiClient } from "@/services/referensi/users";
+import { updateUser, default as apiClient } from "@/services/referensi/pengguna";
 
 export function useIdleLogout(timeoutMinutes = 30) {
   const router = useRouter();

@@ -173,9 +173,9 @@ import { useToast } from "vue-toastification";
 import { Form, Field } from "vee-validate";
 import * as yup from "yup";
 import { login as loginAPI } from "@/services/auth";
-import { updateUser } from "@/services/referensi/users";
-import { getApplicationPub } from "@/services/general/website/settings/applicationsPublic";
-import { userLevelUmum } from "@/constants/userLevels";
+import { updatePengguna } from "@/services/referensi/pengguna";
+import { getAplikasi } from "@/services/public/aplikasiPublic";
+// import { userLevelPerusahaan } from "@/constants/userLevels";
 
 const router = useRouter();
 const store = useStore();
@@ -232,12 +232,12 @@ async function onSubmit() {
 
       // Update Login Status
       try {
-        const userId = userProfile?.id_pengguna || userProfile?.id;
+        const userId = userProfile?.id;
         if (userId) {
           const formData = new FormData();
           formData.append("record[status]", "Aktif");
           formData.append("_method", "PUT");
-          await updateUser(userId, formData);
+          await updatePengguna(userId, formData);
         }
       } catch (err) {
         console.error("Gagal update status login:", err);
@@ -247,9 +247,13 @@ async function onSubmit() {
         `Login berhasil! Selamat datang, ${userProfile?.nama || "Pengguna"}`,
       );
 
-      const userLevel = userProfile?.id_level || userProfile?.roles?.id_level;
-      store.dispatch("menu/refreshMenuByUserLevel");
-      router.push(userLevel === userLevelUmum ? "/my-profile" : "/");
+      // const userLevel =
+      //   userProfile?.id_level ||
+      //   userProfile?.roles?.id_level ||
+      //   userProfile?.id_peran;
+      // store.dispatch("menu/refreshMenuByUserLevel");
+      // router.push(userLevel === userLevelPerusahaan ? "/my-profile" : "/");
+      router.push("/");
     } else {
       toast.error(
         responseData.message || "Login gagal. Token tidak ditemukan.",
@@ -270,14 +274,14 @@ async function onSubmit() {
 // === Login Kemnaker ===
 function loginKemnaker() {
   window.location.href =
-    "https://pengukuranproduktivitas.kemnaker.go.id/be/login/sso";
+    "https://pengukuranproduktivitas.kemnaker.go.id/be/login/sso2";
 }
 
 // === Logo ===
 async function fetchLogoData() {
   isLoadingLogo.value = true;
   try {
-    const response = await getApplicationPub();
+    const response = await getAplikasi();
     let sourceData = null;
     if (response.data?.[0]?.data?.[0]) {
       sourceData = response.data[0].data[0];

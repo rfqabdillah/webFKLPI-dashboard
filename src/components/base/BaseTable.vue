@@ -5,6 +5,7 @@
       v-if="isFormModalVisible"
       :field-to-edit="itemBeingEdited"
       :entity-name="entityName"
+      :fixed-filters="fixedFilters"
       @close="closeModal"
       @save-successful="handleSaveSuccessful"
     />
@@ -17,12 +18,12 @@
       @close="closeDetailModal"
     />
 
-    <div class="card">
-      <div class="card-header">
+    <div :class="{ card: !noCard }">
+      <div v-if="!noCard" class="card-header">
         <h3>{{ title }}</h3>
       </div>
 
-      <div class="card-body">
+      <div :class="{ 'card-body': !noCard }">
         <div class="d-flex justify-content-end align-items-start mb-3">
           <div class="d-flex gap-2">
             <button
@@ -44,7 +45,7 @@
               >
             </button>
             <button
-              v-if="canManage"
+              v-if="canManage && !isReadOnly"
               class="btn btn-success"
               @click="openAddModal"
             >
@@ -85,7 +86,7 @@
                     :sort-direction="sortDirection"
                   />
                 </th>
-                <th v-if="canManage">Aksi</th>
+                <th v-if="canManage || DetailModalComponent || $slots['custom-actions']">Aksi</th>
               </tr>
             </thead>
 
@@ -126,26 +127,30 @@
                       >
                         <i class="fa fa-eye"></i>
                       </button>
-                      <button
-                        class="btn btn-warning btn-sm"
-                        @click="openEditModal(item)"
-                        title="Ubah Data"
-                      >
-                        <i class="fa fa-pencil"></i>
-                      </button>
-                      <button
-                        class="btn btn-danger btn-sm"
-                        @click="confirmDelete(item)"
-                        title="Hapus Data"
-                      >
-                        <i class="fa fa-trash"></i>
-                      </button>
+                      <!-- Slot for custom actions between Detail and Edit -->
+                      <slot name="custom-actions-middle" :item="item"></slot>
+                      <template v-if="!isReadOnly">
+                        <button
+                          class="btn btn-warning btn-sm"
+                          @click="openEditModal(item)"
+                          title="Ubah Data"
+                        >
+                          <i class="fa fa-pencil"></i>
+                        </button>
+                        <button
+                          class="btn btn-danger btn-sm"
+                          @click="confirmDelete(item)"
+                          title="Hapus Data"
+                        >
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </template>
                     </div>
                   </td>
                 </tr>
                 <tr v-if="itemsList.length === 0">
                   <td
-                    :colspan="columns.length + (canManage ? 2 : 1)"
+                    :colspan="columns.length + (canManage || DetailModalComponent || $slots['custom-actions'] ? 2 : 1)"
                     class="text-center text-muted"
                   >
                     Tidak ada data yang cocok atau tersedia.
@@ -221,14 +226,18 @@ const props = defineProps({
   title: { type: String, required: true },
   entityName: { type: String, default: "Data" },
   apiService: { type: Object, required: true },
-  FormModalComponent: { type: Object, required: true },
+  FormModalComponent: { type: Object, required: false, default: null },
   DetailModalComponent: { type: Object, required: false, default: null },
   columns: { type: Array, required: true },
   primaryKey: { type: String, required: true },
   deleteItemNameKey: { type: String, required: true },
   initialFilters: { type: Object, default: () => ({}) },
+  fixedFilters: { type: Object, default: () => ({}) },
   initialSortColumn: { type: String, default: "id" },
   initialSortDirection: { type: String, default: "asc" },
+  deleteNote: { type: String, default: "" },
+  isReadOnly: { type: Boolean, default: false },
+  noCard: { type: Boolean, default: false },
 });
 
 // === Emits ===
@@ -284,11 +293,8 @@ watch(filters, () => debouncedFetch(), { deep: true });
 // === Methods ===
 function loadUserRole() {
   try {
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    userLevelId.value =
-      userData?.data?.[0]?.id_level ||
-      userData?.data?.[0]?.roles?.id_level ||
-      null;
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    userLevelId.value = userData?.data?.[0]?.id_peran || null;
   } catch {
     userLevelId.value = null;
   }
@@ -324,8 +330,24 @@ async function fetchData() {
   try {
     const filterParts = [];
     for (const key in filters) {
-      if (filters[key]) {
-        filterParts.push(`${key}=${encodeURIComponent(filters[key])}`);
+      if (
+        filters[key] !== "" &&
+        filters[key] !== null &&
+        filters[key] !== undefined
+      ) {
+        filterParts.push(`${key}=${filters[key]}`);
+      }
+    }
+    for (const key in props.fixedFilters) {
+      if (
+        props.fixedFilters[key] !== "" &&
+        props.fixedFilters[key] !== null &&
+        props.fixedFilters[key] !== undefined &&
+        !key.startsWith("_")
+      ) {
+        filterParts.push(
+          `${key}=${props.fixedFilters[key]}`,
+        );
       }
     }
     const filterString = filterParts.join(",");
@@ -354,10 +376,19 @@ async function fetchData() {
 }
 
 async function confirmDelete(item) {
-  const itemName = item[props.deleteItemNameKey] || "data ini";
+  const itemName =
+    item[props.deleteItemKeyName] ||
+    item[props.deleteItemNameKey] ||
+    "data ini";
+
+  let deleteText = `Apakah Anda yakin ingin menghapus "${itemName}"?`;
+  if (props.deleteNote) {
+    deleteText += `<br/>${props.deleteNote}`;
+  }
+
   const result = await Swal.fire({
     title: `Hapus Data`,
-    text: `Apakah Anda yakin ingin menghapus "${itemName}"?`,
+    html: deleteText,
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: '<i class="fa fa-check me-2"></i> Hapus',
