@@ -86,6 +86,16 @@
       </span>
       <span v-else class="text-muted">-</span>
     </template>
+
+    <template #custom-actions="{ item }">
+      <button
+        class="btn btn-info btn-sm"
+        title="Lihat Kartu Nama"
+        @click="showKartuNama(item)"
+      >
+        <i class="fa-solid fa-id-card"></i>
+      </button>
+    </template>
   </BaseTable>
 
   <Teleport to="body">
@@ -94,6 +104,12 @@
       :imgs="lightboxImgs"
       @hide="hideImage"
     ></vue-easy-lightbox>
+
+    <KartuAnggotaModal
+      v-if="isKartuVisible"
+      :idPengurus="selectedPengurusId"
+      @close="closeKartuNama"
+    />
   </Teleport>
 </template>
 
@@ -101,6 +117,7 @@
 import { defineAsyncComponent, ref } from "vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
+import KartuAnggotaModal from "./kartuAnggota.vue";
 import {
   getOrganisasiPengurus,
   deleteOrganisasiPengurus,
@@ -135,7 +152,6 @@ const initialFilters = {
   nama_jabatan: "",
 };
 
-// Lightbox
 const lightboxVisible = ref(false);
 const lightboxImgs = ref("");
 
@@ -146,6 +162,19 @@ function showImage(imageUrl) {
 
 function hideImage() {
   lightboxVisible.value = false;
+}
+
+const isKartuVisible = ref(false);
+const selectedPengurusId = ref(null);
+
+function showKartuNama(item) {
+  selectedPengurusId.value = item.id_pengurus;
+  isKartuVisible.value = true;
+}
+
+function closeKartuNama() {
+  isKartuVisible.value = false;
+  selectedPengurusId.value = null;
 }
 
 function getStatusStyle(statusName) {

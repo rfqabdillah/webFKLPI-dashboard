@@ -164,7 +164,7 @@
         <div class="row detail-grid-container">
           <div class="col-md-6">
             <dl class="detail-list">
-              <dt><i class="fa fa-instagram me-1"></i>Instagram</dt>
+              <dt><i class="fa-brands fa-instagram me-1"></i>Instagram</dt>
               <dd>
                 <a
                   v-if="item.instagram_organisasi"
@@ -176,7 +176,7 @@
                 <span v-else class="text-muted">-</span>
               </dd>
 
-              <dt><i class="fa fa-facebook me-1"></i>Facebook</dt>
+              <dt><i class="fa-brands fa-facebook me-1"></i>Facebook</dt>
               <dd>
                 <a
                   v-if="item.facebook_organisasi"
@@ -192,7 +192,7 @@
 
           <div class="col-md-6">
             <dl class="detail-list">
-              <dt><i class="fa fa-youtube me-1"></i>YouTube</dt>
+              <dt><i class="fa-brands fa-youtube me-1"></i>YouTube</dt>
               <dd>
                 <a
                   v-if="item.youtube_organisasi"
@@ -204,7 +204,7 @@
                 <span v-else class="text-muted">-</span>
               </dd>
 
-              <dt><i class="fa fa-twitter me-1"></i>Twitter</dt>
+              <dt><i class="fa-brands fa-x-twitter me-1"></i>X(Twitter)</dt>
               <dd>
                 <a
                   v-if="item.twitter_organisasi"
